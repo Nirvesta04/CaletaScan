@@ -1,0 +1,25 @@
+# E2 - Baseline ViT-B/16 sobre Kaggle, MISMO split que E1.
+# Exigido por la rubrica del Avance ("Resultados preliminares ViT").
+#
+# Todo lo que puede mantenerse fijo respecto de E1 se mantiene fijo: split,
+# resolucion, aumentacion, loss, batch EFECTIVO y pasos de gradiente. Lo unico
+# distinto a proposito es el optimizador, porque forzar la receta del ResNet
+# sobre un ViT no seria justo, seria sabotear una rama.
+name: e2_vit_b_16_kaggle
+model: vit_b_16          # IMAGENET1K_V1 (81,07)
+dataset: kaggle
+
+epochs: 30
+batch_size: 32           # medido: a batch 64 el ViT derrama a memoria del
+accum_steps: 2           # sistema y cae a 1,5 img/s. 32x2 = 64 efectivo, igual que E1.
+
+# Receta ViT: decaimiento por capa y warmup largo.
+lr: 1.0e-4
+llrd: 0.70               # bloque de profundidad d usa lr * 0.70^(13-d)
+weight_decay: 0.05
+warmup_frac: 0.08        # los ViT son inestables en los primeros cientos de pasos
+
+label_smoothing: 0.1
+grad_clip: 1.0           # no opcional en ViT
+num_workers: 8
+seeds: [0, 1, 2]
