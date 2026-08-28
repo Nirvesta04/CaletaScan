@@ -859,6 +859,17 @@ requirements.txt</div>
   <h4>Entorno</h4>
   <p><code>requirements.txt</code> con versiones fijadas y, en el README, la advertencia de la bitácora §2: torch debe instalarse desde <code>--index-url https://download.pytorch.org/whl/cu124</code> o se obtiene la variante CPU-only en silencio.</p>
   </div>
+
+  <div class="find warn">
+    <span class="tag">Trampa · Windows</span>
+    <h4>Todo script con <code>num_workers &gt; 0</code> necesita el guard <code>__main__</code></h4>
+    <div class="col">
+    <p>En Windows los workers del DataLoader arrancan por <code>spawn</code>, que <strong>reimporta el módulo principal</strong> en cada proceso hijo. Sin proteger el punto de entrada, cada worker vuelve a ejecutar el script completo y se generan procesos sin parar hasta colgar la máquina.</p>
+    </div>
+    <div class="fx">if __name__ == "__main__":
+    main()</div>
+    <p class="col">Por lo mismo, un script con workers no se puede pasar por <em>stdin</em> (<code>python - &lt; script.py</code>): el hijo intenta reejecutar <code>&lt;stdin&gt;</code> y falla con <code>OSError [Errno 22]</code>. Aplica a <code>train.py</code>, <code>evaluate.py</code> y a cualquier notebook convertido a script.</p>
+  </div>
 </section>
 
 <!-- ============ 13 ============ -->
@@ -892,7 +903,7 @@ requirements.txt</div>
   <ol>
     <li><strong><code>git init</code> y primer commit</strong> con los datos, scripts y este documento. Antes de cualquier otra cosa: el historial vale 20 % y no se puede fabricar después.</li>
     <li><s>Añadir <code>seq_id</code> y <code>occ</code> como columnas a <code>fishnet_crops.csv</code>.</s> <span class="pill">hecho</span> El CSV trae ahora <code>seq_id</code>, <code>n_boxes</code>, <code>occ_max</code> y <code>occ_union</code>; los recuentos de split no cambiaron.</li>
-    <li><strong><code>src/data.py</code> + <code>models.py</code></strong> con la fábrica de pesos de §4.1 explícita — nunca <code>DEFAULT</code>.</li>
+    <li><s><code>src/data.py</code> + <code>models.py</code> con la fábrica de pesos de §4.1 explícita.</s> <span class="pill">hecho</span> Verificado: los grupos de parámetros cubren cada parámetro exactamente una vez, el decaimiento por capa da 0,0097× en el embedding (= 0,70¹³) y 1,0× en la cabeza, y ambos modelos parten la pérdida en ln(20) = 2,996 y bajan.</li>
     <li><strong>E1 y E2</strong> (Kaggle). Baselines exigidos por la rúbrica. Rápidos: minutos.</li>
     <li><strong><code>evaluate.py</code> con bootstrap de clúster</strong>. Se escribe una vez y sirve para todo lo demás.</li>
     <li><strong>E3</strong>, la demostración de la fuga. Es el resultado más vendible de la presentación.</li>
