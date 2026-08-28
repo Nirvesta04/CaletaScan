@@ -680,7 +680,7 @@ label smooth  0.1 (idéntico en ambas ramas o en ninguna)</div>
     </table>
   </div>
   <div class="col">
-  <p>Para Fishnet, <code>seq_id</code> no está en <code>fishnet_crops.csv</code>; se recupera con un <em>merge</em> por <code>(img_id, bbox_id)</code> contra <code>foid_labels_v100.csv</code>. <strong>Conviene añadirlo como columna al CSV de splits</strong> para no repetir el <em>merge</em> en cada evaluación.</p>
+  <p><code>seq_id</code> ya es una columna de <code>fishnet_crops.csv</code>, verificada contra <code>foid_labels_v100.csv</code> en las 99.019 filas: no hace falta ningún <em>merge</em> en tiempo de evaluación. El train cubre 3.489 secuencias de las 4.624 del subconjunto.</p>
 
   <h3>8.3 Comparar dos modelos</h3>
   <p>Publicar «ResNet 0,71 / ViT 0,74» sin una prueba no responde si la diferencia es real.</p>
@@ -697,16 +697,20 @@ label smooth  0.1 (idéntico en ambas ramas o en ninguna)</div>
   <h3>8.4 La prueba de la hipótesis del enunciado</h3>
   <p>El enunciado afirma que «ViT separa mejor peces amontonados y superpuestos». Eso es contrastable <em>hoy</em>, sin detector: para cada caja se calcula el solapamiento máximo con otra caja de la misma imagen, relativo al área propia, y se estratifica el test.</p>
   </div>
-  <div class="fx">occ(b) = max_{b' ≠ b, misma imagen}  área(b ∩ b') / área(b)</div>
+  <div class="fx">occ_max(b)   = max_{b' ≠ b}  área(b ∩ b') / área(b)      <span class="c">// mayor solapamiento individual</span>
+occ_union(b) = área( b ∩ ⋃_{b' ≠ b} b' ) / área(b)      <span class="c">// área total tapada</span></div>
+  <div class="col">
+  <p>Ambas están precalculadas como columnas de <code>fishnet_crops.csv</code>. <strong>La estratificación principal usa <code>occ_union</code></strong>: un pez tapado por tres cajas del 20 % da <code>occ_max</code> = 0,20 pero <code>occ_union</code> ≈ 0,60, que describe mejor lo que ve el modelo. Se calculan sobre <em>todas</em> las cajas de la imagen, incluidas las 725 descartadas por tamaño, porque la oclusión es una propiedad de la escena y no del subconjunto que se modela.</p>
+  </div>
   <div class="tw">
     <table>
-      <caption>Recortes de pez (<code>is_fish=1</code>) por estrato de oclusión. Los cuatro estratos del test tienen ≥ 553 recortes, suficiente para un macro-F1 por estrato con IC utilizable. El 73,2 % de todas las cajas solapa con alguna otra.</caption>
+      <caption>Recortes de pez (<code>is_fish=1</code>) por estrato de <code>occ_union</code>. Los cuatro estratos del test tienen ≥ 497 recortes, suficiente para un macro-F1 por estrato con IC utilizable. El 79,5 % de los recortes de pez solapa con alguna otra caja.</caption>
       <thead><tr><th>Estrato de oclusión</th><th class="num">train</th><th class="num">val</th><th class="num">test</th></tr></thead>
       <tbody>
-        <tr><td class="name">0 · aislado</td><td class="num">6.465</td><td class="num">1.617</td><td class="num">1.171</td></tr>
-        <tr><td class="name">(0 , 0,10] · leve</td><td class="num">2.742</td><td class="num">584</td><td class="num">553</td></tr>
-        <tr><td class="name">(0,10 , 0,30] · moderada</td><td class="num">4.894</td><td class="num">989</td><td class="num">945</td></tr>
-        <tr><td class="name">&gt; 0,30 · fuerte</td><td class="num">18.110</td><td class="num">2.989</td><td class="num">2.191</td></tr>
+        <tr><td class="name">0 · aislado</td><td class="num">6.167</td><td class="num">1.573</td><td class="num">1.144</td></tr>
+        <tr><td class="name">(0 , 0,10] · leve</td><td class="num">2.488</td><td class="num">534</td><td class="num">497</td></tr>
+        <tr><td class="name">(0,10 , 0,30] · moderada</td><td class="num">4.026</td><td class="num">818</td><td class="num">844</td></tr>
+        <tr><td class="name">&gt; 0,30 · fuerte</td><td class="num">19.530</td><td class="num">3.254</td><td class="num">2.375</td></tr>
       </tbody>
     </table>
   </div>
@@ -887,7 +891,7 @@ requirements.txt</div>
   <p>Quedan cerca de cuatro semanas hasta el 28 de septiembre. El orden importa: cada paso desbloquea al siguiente y deja un commit visible.</p>
   <ol>
     <li><strong><code>git init</code> y primer commit</strong> con los datos, scripts y este documento. Antes de cualquier otra cosa: el historial vale 20 % y no se puede fabricar después.</li>
-    <li><strong>Añadir <code>seq_id</code> y <code>occ</code> como columnas</strong> a <code>fishnet_crops.csv</code> en <code>build_splits.py</code>. Ambas se necesitan en cada evaluación y regenerar el CSV es idempotente.</li>
+    <li><s>Añadir <code>seq_id</code> y <code>occ</code> como columnas a <code>fishnet_crops.csv</code>.</s> <span class="pill">hecho</span> El CSV trae ahora <code>seq_id</code>, <code>n_boxes</code>, <code>occ_max</code> y <code>occ_union</code>; los recuentos de split no cambiaron.</li>
     <li><strong><code>src/data.py</code> + <code>models.py</code></strong> con la fábrica de pesos de §4.1 explícita — nunca <code>DEFAULT</code>.</li>
     <li><strong>E1 y E2</strong> (Kaggle). Baselines exigidos por la rúbrica. Rápidos: minutos.</li>
     <li><strong><code>evaluate.py</code> con bootstrap de clúster</strong>. Se escribe una vez y sirve para todo lo demás.</li>

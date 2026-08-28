@@ -66,6 +66,10 @@ NA_ALIAS = {
 NON_FISH = {"Human", "No fish", "Water", "Oil"}
 # soporte minimo en train para que una clase l1 se modele aparte
 MIN_TRAIN_BOXES = 100
+# lado minimo de caja en px; por debajo el recorte no da para 224x224
+MIN_BOX = 24
+# resolucion de la grilla con que se mide el area ocluida (error < 1/OCC_GRID)
+OCC_GRID = 64
 
 
 # --------------------------------------------------------------------------
@@ -196,6 +200,58 @@ def split_by_group(rows):
 # PARTE B
 # --------------------------------------------------------------------------
 
+def occlusion(i, bs):
+    """
+    Cuanto de la caja bs[i] esta tapado por las demas cajas de su imagen.
+
+    Devuelve dos medidas, porque no miden lo mismo:
+
+    occ_max    el solapamiento individual mas grande, relativo al area propia.
+               Barato y exacto. Es la definicion usada en el protocolo.
+    occ_union  la fraccion del area propia cubierta por la UNION de las otras
+               cajas, sin contar dos veces donde ellas se solapan entre si.
+               Un pez tapado por tres cajas del 20% da occ_max=0.20 pero
+               occ_union~0.60, que describe mejor la escena. Se estima
+               rasterizando a OCC_GRID x OCC_GRID.
+
+    Se mide sobre TODAS las cajas de la imagen, incluidas las que despues se
+    descartan por tamano: la oclusion es una propiedad de la escena, no del
+    subconjunto que terminamos modelando.
+    """
+    x0, y0, x1, y1 = bs[i]
+    w, h = x1 - x0, y1 - y0
+    if w <= 0 or h <= 0:
+        return 0.0, 0.0
+    area = float(w * h)
+
+    vecinas, occ_max = [], 0.0
+    for j, (u0, v0, u1, v1) in enumerate(bs):
+        if j == i:
+            continue
+        iw = min(x1, u1) - max(x0, u0)
+        ih = min(y1, v1) - max(y0, v0)
+        if iw <= 0 or ih <= 0:
+            continue
+        occ_max = max(occ_max, iw * ih / area)
+        vecinas.append((u0, v0, u1, v1))
+
+    if not vecinas:
+        return 0.0, 0.0
+    if len(vecinas) == 1:
+        return occ_max, occ_max          # union == interseccion unica, sin rasterizar
+
+    g = OCC_GRID
+    cx = x0 + (np.arange(g) + 0.5) * w / g
+    cy = y0 + (np.arange(g) + 0.5) * h / g
+    cov = np.zeros((g, g), dtype=bool)
+    for u0, v0, u1, v1 in vecinas:
+        cov |= (((cy[:, None] >= v0) & (cy[:, None] < v1)) &
+                ((cx[None, :] >= u0) & (cx[None, :] < u1)))
+    # la union no puede ser menor que el mayor solapamiento individual; cuando
+    # la grilla lo subestima (error acotado por 1/OCC_GRID) se impone la cota
+    return occ_max, max(occ_max, float(cov.mean()))
+
+
 def build_fishnet_crops():
     manifest = os.path.join(FISHNET, "subset_manifest.csv")
     labels = os.path.join(FISHNET, "foid_labels_v100.csv")
@@ -209,12 +265,13 @@ def build_fishnet_crops():
 
     # dimensiones reales (PIL lee solo la cabecera del JPEG)
     dims = {}
-    def dim(img_id):
+    ids = sorted(have)          # lista, no el set: zip() sobre un set dos veces
+    def dim(img_id):            # depende de un orden de iteracion no garantizado
         p = os.path.join(FISHNET, "images", img_id + ".jpg")
         with Image.open(p) as im:
             return im.size
     with ThreadPoolExecutor(16) as pool:
-        for img_id, wh in zip(have, pool.map(dim, have)):
+        for img_id, wh in zip(ids, pool.map(dim, ids)):
             dims[img_id] = wh
 
     # soporte por clase en train para decidir el espacio de etiquetas
@@ -222,29 +279,48 @@ def build_fishnet_crops():
         r["label_l1"] for r in rows if r["train"] == "True")
     modeled = {c for c, n in train_count.items() if n >= MIN_TRAIN_BOXES}
 
-    out, dropped = [], collections.Counter()
-    for r in rows:
+    def sane(r):
+        """Coordenadas saneadas: el CSV trae x_min>x_max y valores fuera de
+        rango (p.ej. y_min=-1), asi que se ordenan y se recortan a la imagen."""
         w, h = dims[r["img_id"]]
         x0, x1 = sorted((int(r["x_min"]), int(r["x_max"])))
         y0, y1 = sorted((int(r["y_min"]), int(r["y_max"])))
-        # el CSV trae coordenadas fuera de rango (p.ej. y_min=-1): se recortan
-        x0, y0 = max(0, x0), max(0, y0)
-        x1, y1 = min(w, x1), min(h, y1)
-        if x1 - x0 < 24 or y1 - y0 < 24:
+        return max(0, x0), max(0, y0), min(w, x1), min(h, y1)
+
+    # agrupar por imagen para poder medir oclusion entre cajas vecinas
+    per_img = collections.defaultdict(list)
+    for r in rows:
+        per_img[r["img_id"]].append((r, sane(r)))
+
+    occ = {}
+    for img_id, items in per_img.items():
+        bs = [b for _, b in items]
+        for i, (r, _) in enumerate(items):
+            occ[(img_id, r["bbox_id"])] = occlusion(i, bs)
+
+    out, dropped = [], collections.Counter()
+    for r in rows:
+        x0, y0, x1, y1 = sane(r)
+        if x1 - x0 < MIN_BOX or y1 - y0 < MIN_BOX:
             dropped["caja_muy_chica"] += 1
             continue
         split = ("train" if r["train"] == "True"
                  else "val" if r["val"] == "True" else "test")
         lab = r["label_l1"]
+        occ_max, occ_union = occ[(r["img_id"], r["bbox_id"])]
         out.append({
             "dataset": "fishnet",
             "path": "data/raw/fishnet/images/%s.jpg" % r["img_id"],
-            "img_id": r["img_id"], "cam_id": r["cam_id"], "bbox_id": r["bbox_id"],
+            "img_id": r["img_id"], "cam_id": r["cam_id"],
+            "seq_id": r["seq_id"], "bbox_id": r["bbox_id"],
             "x0": x0, "y0": y0, "x1": x1, "y1": y1,
             "label_l1": lab,
             "label_l2": r["label_l2"],
             "label_model": lab if lab in modeled else "Other_rare",
             "is_fish": int(lab not in NON_FISH),
+            "n_boxes": len(per_img[r["img_id"]]),
+            "occ_max": round(occ_max, 4),
+            "occ_union": round(occ_union, 4),
             "split": split,
         })
     return out, {"dropped": dict(dropped), "modeled": sorted(modeled),
@@ -288,8 +364,10 @@ def main():
     print("\n[B] Fishnet: manifiesto de recortes...", flush=True)
     frows, finfo = build_fishnet_crops()
     if frows:
-        cols = ["dataset", "path", "img_id", "cam_id", "bbox_id", "x0", "y0", "x1", "y1",
-                "label_l1", "label_l2", "label_model", "is_fish", "split"]
+        cols = ["dataset", "path", "img_id", "cam_id", "seq_id", "bbox_id",
+                "x0", "y0", "x1", "y1",
+                "label_l1", "label_l2", "label_model", "is_fish",
+                "n_boxes", "occ_max", "occ_union", "split"]
         with open(os.path.join(OUT, "fishnet_crops.csv"), "w", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, cols)
             w.writeheader()
@@ -326,13 +404,42 @@ def render_readme(krows, kreport, frows, finfo):
           "coinciden si ambas identifican la misma foto de origen.", ""]
     if frows:
         fs = collections.Counter(r["split"] for r in frows)
+        seqs = {s: len({r["seq_id"] for r in frows if r["split"] == s})
+                for s in ("train", "val", "test")}
+        tr_seq = {r["seq_id"] for r in frows if r["split"] == "train"}
+        leak = {s: sum(1 for r in frows
+                       if r["split"] == s and r["seq_id"] in tr_seq)
+                for s in ("val", "test")}
         L += ["## Fishnet Open Images v1.0.0", "",
-              "Split **oficial** del CSV, respetado sin cambios (mitad del test",
-              "proviene de camaras no vistas en entrenamiento).", "",
-              "Recortes por particion: %s" % dict(fs), "",
-              "Columnas de etiqueta: `label_l1` (especie), `label_l2` (grupo grueso),",
-              "`label_model` (l1 con la cola colapsada en `Other_rare`), `is_fish`",
-              "(0 para Human/No fish/Water/Oil).", ""]
+              "Split **oficial** del CSV, respetado sin cambios.", "",
+              "Recortes por particion: %s" % dict(fs),
+              "Secuencias por particion: %s" % seqs, "",
+              "### Aviso: el split oficial NO esta agrupado por secuencia", "",
+              "Una secuencia (`seq_id`) son fotogramas consecutivos del mismo lance,",
+              "practicamente duplicados entre si. El split oficial se armo caja por",
+              "caja, asi que hay secuencias repartidas entre particiones:", "",
+              "| particion | recortes | de secuencia vista en train |",
+              "|---|---|---|"]
+        for s in ("val", "test"):
+            L.append("| %s | %d | %d (%.1f%%) |"
+                     % (s, fs[s], leak[s], 100.0 * leak[s] / fs[s]))
+        L += ["",
+              "Para una evaluacion honesta hay que purgar de val/test toda caja cuya",
+              "`seq_id` aparezca en train, y reportar ambos numeros.", "",
+              "### Columnas", "",
+              "- `label_l1` especie (34 clases)",
+              "- `label_l2` grupo grueso (15 clases)",
+              "- `label_model` l1 con la cola colapsada en `Other_rare`",
+              "- `is_fish` 0 para Human/No fish/Water/Oil",
+              "- `seq_id` secuencia de origen; es la unidad de clustering para el",
+              "  bootstrap y para purgar la fuga",
+              "- `n_boxes` cajas totales en la imagen; base del conteo por imagen",
+              "- `occ_max` mayor solapamiento individual con otra caja, relativo al",
+              "  area propia",
+              "- `occ_union` fraccion del area propia cubierta por la union de las",
+              "  otras cajas; estratificar por esta columna es lo que permite probar",
+              "  si el ViT resiste mejor la oclusion, que es la hipotesis del enunciado",
+              ""]
     return "\n".join(L)
 
 

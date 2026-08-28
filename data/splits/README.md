@@ -28,11 +28,36 @@ coinciden si ambas identifican la misma foto de origen.
 
 ## Fishnet Open Images v1.0.0
 
-Split **oficial** del CSV, respetado sin cambios (mitad del test
-proviene de camaras no vistas en entrenamiento).
+Split **oficial** del CSV, respetado sin cambios.
 
 Recortes por particion: {'train': 72885, 'val': 12927, 'test': 13207}
+Secuencias por particion: {'train': 3489, 'val': 1040, 'test': 1160}
 
-Columnas de etiqueta: `label_l1` (especie), `label_l2` (grupo grueso),
-`label_model` (l1 con la cola colapsada en `Other_rare`), `is_fish`
-(0 para Human/No fish/Water/Oil).
+### Aviso: el split oficial NO esta agrupado por secuencia
+
+Una secuencia (`seq_id`) son fotogramas consecutivos del mismo lance,
+practicamente duplicados entre si. El split oficial se armo caja por
+caja, asi que hay secuencias repartidas entre particiones:
+
+| particion | recortes | de secuencia vista en train |
+|---|---|---|
+| val | 12927 | 6783 (52.5%) |
+| test | 13207 | 6048 (45.8%) |
+
+Para una evaluacion honesta hay que purgar de val/test toda caja cuya
+`seq_id` aparezca en train, y reportar ambos numeros.
+
+### Columnas
+
+- `label_l1` especie (34 clases)
+- `label_l2` grupo grueso (15 clases)
+- `label_model` l1 con la cola colapsada en `Other_rare`
+- `is_fish` 0 para Human/No fish/Water/Oil
+- `seq_id` secuencia de origen; es la unidad de clustering para el
+  bootstrap y para purgar la fuga
+- `n_boxes` cajas totales en la imagen; base del conteo por imagen
+- `occ_max` mayor solapamiento individual con otra caja, relativo al
+  area propia
+- `occ_union` fraccion del area propia cubierta por la union de las
+  otras cajas; estratificar por esta columna es lo que permite probar
+  si el ViT resiste mejor la oclusion, que es la hipotesis del enunciado
