@@ -1,0 +1,912 @@
+<title>Protocolo de Modelado Caleta-Scan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+:root{
+  --paper:#eceff0; --surface:#f7f9f9; --surface-2:#e1e7e7; --rule:#c7d1d1; --rule-soft:#dae1e1;
+  --ink:#16232b; --ink-2:#42535b; --ink-3:#6e8085;
+  --accent:#0f6b63; --accent-2:#0b544e; --accent-soft:#d6e6e3;
+  --signal:#a8531b; --signal-soft:#f1e3d5;
+  --danger:#94292a; --danger-soft:#f0dcdc;
+  --ok:#2c6640;
+  --shadow:0 1px 2px rgba(22,35,43,.06), 0 6px 20px -12px rgba(22,35,43,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
+    --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
+    --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
+    --signal:#dd8f4e; --signal-soft:#37271a;
+    --danger:#e0797a; --danger-soft:#3a2020;
+    --ok:#74c288;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
+  --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
+  --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
+  --signal:#dd8f4e; --signal-soft:#37271a;
+  --danger:#e0797a; --danger-soft:#3a2020;
+  --ok:#74c288;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.mono,code,kbd{font-family:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace}
+h1,h2,h3,h4,.disp{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 120px}
+.grid{display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:1080px){
+  .grid{grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start}
+}
+main{min-width:0;display:flex;flex-direction:column;gap:56px}
+.col{max-width:70ch}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-bottom:2px solid var(--ink); margin-bottom:44px; padding:52px 0 22px;
+}
+.kicker{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); font-weight:600;
+}
+h1{font-size:clamp(34px,5.2vw,52px);line-height:1.03;margin:14px 0 0;font-weight:700;letter-spacing:-.018em}
+.sub{font-size:19px;color:var(--ink-2);margin:16px 0 0;max-width:62ch;line-height:1.5}
+.mastmeta{
+  display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+}
+.mastmeta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- index ---------- */
+nav.idx{display:none}
+@media (min-width:1080px){
+  nav.idx{
+    display:block;position:sticky;top:28px;
+    font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.45;
+  }
+  nav.idx .lbl{
+    font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+    padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid var(--rule);display:block;
+  }
+  nav.idx a{
+    display:flex;gap:9px;padding:5px 0;color:var(--ink-2);text-decoration:none;
+    border-left:2px solid transparent;padding-left:9px;margin-left:-11px;
+  }
+  nav.idx a:hover{color:var(--accent);border-left-color:var(--accent)}
+  nav.idx a span{color:var(--ink-3);min-width:14px}
+}
+
+/* ---------- sections ---------- */
+section{scroll-margin-top:24px}
+h2{
+  font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
+  font-weight:600;margin:0 0 6px;font-family:"IBM Plex Mono",monospace;
+}
+h2 .n{color:var(--ink-3);margin-right:10px}
+.h2big{font-size:clamp(25px,3.4vw,33px);line-height:1.14;font-weight:600;margin:0 0 20px;letter-spacing:-.012em}
+h3{font-size:19px;font-weight:600;margin:34px 0 10px;line-height:1.3;letter-spacing:-.005em}
+h4{font-size:13.5px;font-weight:600;margin:22px 0 7px;color:var(--ink-2);
+   font-family:"IBM Plex Mono",monospace;letter-spacing:.03em}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px;padding-left:22px}
+li{margin:0 0 7px}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+em{font-style:italic}
+a{color:var(--accent);text-underline-offset:2px}
+hr.soft{border:0;border-top:1px solid var(--rule-soft);margin:34px 0}
+
+.lead{font-size:18.5px;color:var(--ink-2);line-height:1.55;margin-bottom:22px}
+
+/* ---------- blocks ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:20px 22px;margin:22px 0;box-shadow:var(--shadow);
+}
+.card > :last-child{margin-bottom:0}
+
+.find{
+  border-left:3px solid var(--danger);background:var(--danger-soft);
+  padding:18px 22px;margin:24px 0;border-radius:0 3px 3px 0;
+}
+.find.warn{border-left-color:var(--signal);background:var(--signal-soft)}
+.find.good{border-left-color:var(--accent);background:var(--accent-soft)}
+.find .tag{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:600;color:var(--danger);display:block;margin-bottom:7px;
+}
+.find.warn .tag{color:var(--signal)}
+.find.good .tag{color:var(--accent-2)}
+.find h4{margin-top:0;font-family:Archivo,sans-serif;font-size:17px;color:var(--ink);letter-spacing:0}
+.find > :last-child{margin-bottom:0}
+
+.dec{
+  display:grid;grid-template-columns:auto 1fr;gap:4px 16px;
+  border:1px solid var(--rule);border-top:3px solid var(--accent);
+  border-radius:0 0 3px 3px;padding:18px 22px;margin:22px 0;background:var(--surface);
+}
+.dec dt{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);padding-top:5px;white-space:nowrap;
+}
+.dec dd{margin:0 0 6px;font-size:16px}
+.dec dd:last-child{margin-bottom:0}
+.dec dd.err{color:var(--signal)}
+
+/* ---------- formula ---------- */
+.fx{
+  font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.75;
+  background:var(--surface-2);border-left:3px solid var(--rule);
+  padding:15px 18px;margin:18px 0;overflow-x:auto;white-space:pre;
+}
+.fx .c{color:var(--ink-3)}
+code{
+  background:var(--surface-2);padding:1.5px 5px;border-radius:2px;
+  font-size:.86em;color:var(--ink);
+}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;
+      font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+th{
+  text-align:left;padding:10px 14px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;border-bottom:1.5px solid var(--rule);white-space:nowrap;
+  background:var(--surface-2);
+}
+td{padding:8px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+td.name{font-family:"Source Serif 4",serif;font-size:15px}
+tr.hi td{background:var(--danger-soft)}
+tr.tot td{border-top:1.5px solid var(--rule);font-weight:600}
+.dn{color:var(--danger);font-weight:600}
+.up{color:var(--ok);font-weight:600}
+caption{
+  caption-side:bottom;text-align:left;padding:10px 14px;font-size:13px;color:var(--ink-3);
+  font-family:"Source Serif 4",serif;line-height:1.45;border-top:1px solid var(--rule-soft);
+}
+
+/* ---------- stat strip ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+       background:var(--rule);border:1px solid var(--rule);border-radius:3px;margin:22px 0}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .v{font-family:Archivo,sans-serif;font-size:25px;font-weight:600;letter-spacing:-.02em;
+         font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+         text-transform:uppercase;color:var(--ink-3);margin-top:5px;line-height:1.35}
+.stat.alert .v{color:var(--danger)}
+
+/* ---------- misc ---------- */
+.pill{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;padding:2.5px 8px;border-radius:2px;
+  background:var(--accent-soft);color:var(--accent-2);vertical-align:2px;
+}
+.pill.s{background:var(--signal-soft);color:var(--signal)}
+.pill.d{background:var(--danger-soft);color:var(--danger)}
+footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
+       font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);line-height:1.6}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II</div>
+  <h1>Protocolo de Modelado</h1>
+  <p class="sub">Cómo implementar la comparación ResNet vs. ViT sin errores de diseño experimental: qué se entrena, con qué receta, contra qué métrica y con qué prueba estadística.</p>
+  <div class="mastmeta">
+    <span><b>Estado</b> · datos listos, modelos sin empezar</span>
+    <span><b>Bloquea</b> · Avance 28-sep</span>
+    <span><b>Base</b> · BITACORA.md §4 (decisiones cerradas)</span>
+    <span><b>Fecha</b> · 27-ago-2026</span>
+  </div>
+</header>
+
+<div class="grid">
+
+<nav class="idx">
+  <span class="lbl">Contenido</span>
+  <a href="#s1"><span>1</span>Hallazgos nuevos</a>
+  <a href="#s2"><span>2</span>Qué se modela</a>
+  <a href="#s3"><span>3</span>Matriz de corridas</a>
+  <a href="#s4"><span>4</span>Comparación justa</a>
+  <a href="#s5"><span>5</span>Preproceso</a>
+  <a href="#s6"><span>6</span>Desbalance</a>
+  <a href="#s7"><span>7</span>Optimización</a>
+  <a href="#s8"><span>8</span>Métricas e IC</a>
+  <a href="#s9"><span>9</span>Interpretabilidad</a>
+  <a href="#s10"><span>10</span>Calibración y OOD</a>
+  <a href="#s11"><span>11</span>Velocidad</a>
+  <a href="#s12"><span>12</span>Reproducibilidad</a>
+  <a href="#s13"><span>13</span>Riesgos</a>
+  <a href="#s14"><span>14</span>Ruta al Avance</a>
+</nav>
+
+<main>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <h2><span class="n">01</span>Hallazgos que cambian el plan</h2>
+  <div class="col">
+  <p class="h2big">Cuatro cosas que se midieron hoy y que hay que incorporar antes de escribir la primera línea de <code>train.py</code>.</p>
+  <p class="lead">La bitácora deja los datos cerrados. Al auditarlos para diseñar el entrenamiento aparecieron cuatro cosas que no estaban registradas. Tres son problemas; la cuarta es una restricción de hardware. Todas están medidas, no supuestas.</p>
+  </div>
+
+  <div class="find">
+    <span class="tag">Hallazgo 1 · fuga de datos</span>
+    <h4>El split oficial de Fishnet filtra por secuencia</h4>
+    <div class="col">
+    <p>La bitácora asume que el split oficial es limpio porque «la mitad del test viene de cámaras no vistas». Eso es cierto a nivel de cámara, pero el split <strong>no está agrupado por secuencia</strong>, y una secuencia son fotogramas consecutivos del mismo lance.</p>
+    <p>En el CSV oficial completo, <strong>3.743 de 13.097 secuencias cruzan particiones</strong>. El <strong>44,5 % de las cajas de test</strong> pertenecen a una secuencia que también aparece en train (45,8 % dentro de nuestro subconjunto).</p>
+    <p>Para comprobar que esos fotogramas son casi duplicados y no solo «del mismo barco», se midió la correlación de Pearson entre miniaturas de 64×64 px en 80 pares al azar que cruzan train/test:</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v">0,872</div><div class="k">corr. media · misma secuencia</div></div>
+      <div class="stat"><div class="v">0,034</div><div class="k">corr. media · línea base</div></div>
+      <div class="stat alert"><div class="v">54 %</div><div class="k">pares con corr &gt; 0,90</div></div>
+      <div class="stat alert"><div class="v">29 %</div><div class="k">pares con corr &gt; 0,95</div></div>
+    </div>
+    <div class="col">
+    <p>Es <em>la misma fuga que en Kaggle</em>, más disimulada: en Kaggle son rotaciones de una foto, aquí son fotogramas del mismo lance. Un modelo puede memorizar el pez concreto y el operario concreto.</p>
+    <p>Purgar de val/test toda caja cuya secuencia esté en train deja el test en 7.159 cajas (−45,8 %). El efecto por clase es muy desigual:</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>Cajas de test antes y después de purgar las secuencias contaminadas. Ninguna clase queda en cero, pero cuatro quedan por debajo de 30 cajas.</caption>
+        <thead><tr><th>Clase (<code>label_model</code>)</th><th class="num">train</th><th class="num">test oficial</th><th class="num">test purgado</th><th class="num">Δ</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Human</td><td class="num">39.131</td><td class="num">8.149</td><td class="num">4.901</td><td class="num dn">−40 %</td></tr>
+          <tr class="hi"><td class="name">Yellowfin tuna</td><td class="num">8.267</td><td class="num">898</td><td class="num">83</td><td class="num dn">−91 %</td></tr>
+          <tr><td class="name">Unknown</td><td class="num">4.975</td><td class="num">514</td><td class="num">212</td><td class="num dn">−59 %</td></tr>
+          <tr><td class="name">Albacore</td><td class="num">4.831</td><td class="num">523</td><td class="num">129</td><td class="num dn">−75 %</td></tr>
+          <tr><td class="name">Mahi mahi</td><td class="num">3.167</td><td class="num">836</td><td class="num">528</td><td class="num dn">−37 %</td></tr>
+          <tr class="hi"><td class="name">Skipjack tuna</td><td class="num">2.503</td><td class="num">196</td><td class="num">11</td><td class="num dn">−94 %</td></tr>
+          <tr class="hi"><td class="name">Shortbill spearfish</td><td class="num">1.794</td><td class="num">181</td><td class="num">7</td><td class="num dn">−96 %</td></tr>
+          <tr><td class="name">Swordfish</td><td class="num">1.249</td><td class="num">257</td><td class="num">141</td><td class="num dn">−45 %</td></tr>
+          <tr><td class="name">Striped marlin</td><td class="num">705</td><td class="num">315</td><td class="num">230</td><td class="num dn">−27 %</td></tr>
+          <tr><td class="name">Tuna</td><td class="num">393</td><td class="num">388</td><td class="num">351</td><td class="num dn">−10 %</td></tr>
+          <tr class="hi"><td class="name">Bigeye tuna</td><td class="num">305</td><td class="num">53</td><td class="num">22</td><td class="num dn">−58 %</td></tr>
+          <tr class="hi"><td class="name">Great barracuda</td><td class="num">139</td><td class="num">22</td><td class="num">12</td><td class="num dn">−45 %</td></tr>
+          <tr class="tot"><td class="name">Total</td><td class="num">72.885</td><td class="num">13.207</td><td class="num">7.159</td><td class="num dn">−46 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+    <p><strong>Que el 91 % del test de Yellowfin tuna sea material filtrado es el dato central.</strong> Es la segunda clase de pez más grande del dataset: cualquier número que se reporte sobre ella con el split oficial mide memorización, no generalización.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Hallazgo 2 · atajo espurio</span>
+    <h4>En Kaggle, el fondo solo ya predice la especie</h4>
+    <div class="col">
+    <p>El dataset trae máscaras GT de segmentación. Se usaron para <em>borrar el pez</em> y entrenar una regresión logística multinomial sobre un histograma de color RGB 8×8×8 del <strong>fondo únicamente</strong>, respetando el split por grupo (3.236 imágenes, 120 por clase y partición):</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v">45,9 %</div><div class="k">accuracy · solo fondo</div></div>
+      <div class="stat"><div class="v">46,1 %</div><div class="k">balanced accuracy</div></div>
+      <div class="stat"><div class="v">11,1 %</div><div class="k">azar (9 clases)</div></div>
+      <div class="stat"><div class="v">4,1×</div><div class="k">sobre el azar</div></div>
+    </div>
+    <div class="col">
+    <p>Cada especie se fotografió en una sesión distinta, sobre una superficie y una iluminación levemente distintas. El fondo lleva información de clase que no tiene nada que ver con el pez. Un modelo que llegue a 99 % en Kaggle puede estar apoyándose en esto, y el split por grupo <em>no lo arregla</em>: la fuga de grupo y el atajo de fondo son problemas independientes.</p>
+    <p>Esto convierte el dataset de Kaggle en algo distinto de lo que parecía: no es el benchmark del proyecto, es el <strong>banco de pruebas donde se demuestran los modos de fallo</strong>. Y es un activo, porque casi ningún grupo del curso va a poder cuantificar su propio atajo.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Hallazgo 3 · estadística</span>
+    <h4>El test de Kaggle tiene n = 62, no n = 1.336</h4>
+    <div class="col">
+    <p>Las 1.336 imágenes de test provienen de <strong>62 fotos originales</strong>. Las rotaciones de una misma foto no son observaciones independientes, así que el intervalo de confianza calculado sobre imágenes está mal por un factor de <span class="mono">√(1336/62) ≈ 4,6</span>.</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>IC 95 % de la accuracy global. La columna correcta es la de grupos. Por clase hay solo 4–8 originales de test, así que el recall por clase es aún más ruidoso.</caption>
+        <thead><tr><th>Accuracy observada</th><th class="num">IC 95 % contando imágenes</th><th class="num">IC 95 % correcto (grupos)</th></tr></thead>
+        <tbody>
+          <tr><td class="name">0,80</td><td class="num">± 2,1 pp</td><td class="num dn">± 10,0 pp</td></tr>
+          <tr><td class="name">0,90</td><td class="num">± 1,6 pp</td><td class="num dn">± 7,5 pp</td></tr>
+          <tr><td class="name">0,95</td><td class="num">± 1,2 pp</td><td class="num dn">± 5,4 pp</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col">Consecuencia directa: <strong>una diferencia de 2 puntos entre ResNet y ViT en Kaggle no es una diferencia.</strong> Reportarla como tal es el error que más barato sale evitar y más caro sale cometer frente al profesor.</p>
+  </div>
+
+  <div class="find good">
+    <span class="tag">Hallazgo 4 · hardware</span>
+    <h4>ViT-B/16 no cabe en batch 64 en la RTX 3060 Ti</h4>
+    <div class="col">
+    <p>Medido en esta máquina (fwd+bwd, AMP fp16, AdamW, 224 px):</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>No es un OOM: en Windows/WDDM PyTorch derrama a memoria compartida del sistema y sigue corriendo 230× más lento. Si nadie mide, se pierde una tarde creyendo que «ViT es lento».</caption>
+        <thead><tr><th>Modelo</th><th class="num">batch</th><th class="num">img/s</th><th class="num">VRAM pico</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="name">ResNet-50</td><td class="num">32</td><td class="num">312,5</td><td class="num">1,79 GB</td><td>ok</td></tr>
+          <tr><td class="name">ResNet-50</td><td class="num">64</td><td class="num">344,6</td><td class="num">3,12 GB</td><td>ok</td></tr>
+          <tr><td class="name">ViT-B/16</td><td class="num">32</td><td class="num">123,9</td><td class="num">3,65 GB</td><td>ok</td></tr>
+          <tr class="hi"><td class="name">ViT-B/16</td><td class="num">64</td><td class="num">1,5</td><td class="num">5,82 GB</td><td>colapso por derrame</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col"><strong>Regla operativa:</strong> ViT corre a batch físico 32 con acumulación ×2 para igualar el batch efectivo 64 de ResNet. Nunca subir el batch de ViT sin volver a medir img/s.</p>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <h2><span class="n">02</span>Qué se modela exactamente</h2>
+  <div class="col">
+  <p class="h2big">Dos tareas con roles distintos, y una posición honesta sobre «contar».</p>
+
+  <h3>Tarea A — Kaggle, 9 especies</h3>
+  <p>Clasificación de imagen completa, 9 clases, sobre <code>data/splits/kaggle_split.csv</code>. <strong>No es el resultado principal del proyecto.</strong> Su función es ser un entorno controlado, rápido (18 s/época en ResNet, 51 s en ViT) y con máscaras GT, donde se demuestran tres cosas que en Fishnet costarían días: el efecto de la fuga, el atajo de fondo, y que el pipeline de interpretabilidad funciona.</p>
+
+  <h3>Tarea B — Fishnet, recortes de caja</h3>
+  <p>Clasificación de recortes sobre <code>data/splits/fishnet_crops.csv</code>: 72.885 train / 12.927 val / 13.207 test. <strong>Este es el resultado que se compara y se defiende.</strong> Tiene desbalance real, oclusión real, cámaras múltiples y cola larga.</p>
+
+  <h3>El espacio de etiquetas: tres decisiones pendientes, resueltas</h3>
+  <p>La bitácora dejó cuatro columnas de etiqueta y la decisión abierta. Se resuelve así:</p>
+  </div>
+
+  <dl class="dec">
+    <dt>Decisión</dt><dd>Objetivo de entrenamiento = <code>label_model</code> (19 clases + <code>Other_rare</code>). Se reporta además <code>label_l2</code> por agregación de las predicciones, sin reentrenar.</dd>
+    <dt>Por qué</dt><dd>Colapsar la cola en <code>Other_rare</code> en vez de borrarla preserva el análisis de cola larga, que es exactamente donde ResNet y ViT suelen separarse. Agregar l1→l2 <em>post-hoc</em> da el segundo nivel gratis y garantiza consistencia jerárquica.</dd>
+    <dt>Error que evita</dt><dd class="err">Entrenar dos modelos separados para l1 y l2 duplica el costo y permite que se contradigan entre sí.</dd>
+  </dl>
+
+  <dl class="dec">
+    <dt>Decisión</dt><dd><code>Unknown</code> (4.975 en train) se mantiene como clase entrenable, pero <strong>se excluye del macro-F1 de especies</strong> y se reporta aparte como «opción de rechazo».</dd>
+    <dt>Por qué</dt><dd><code>Unknown</code> no es una especie: es «el anotador no pudo identificarlo». Como salida operativa es útil —un sistema de muelle debería poder decir «no sé»— pero promediarla dentro del macro-F1 de especies mezcla dos cosas distintas.</dd>
+    <dt>Error que evita</dt><dd class="err">Que el macro-F1 suba o baje por una clase que no es una especie y cuyo criterio de etiquetado es la incertidumbre del anotador.</dd>
+  </dl>
+
+  <dl class="dec">
+    <dt>Decisión</dt><dd><code>Tuna</code> (393 train / 388 test) se trata como <strong>superclase ambigua</strong>: se entrena, pero al evaluar se aplica crédito jerárquico — predecir Yellowfin/Albacore/Bigeye/Skipjack cuando la verdad es <code>Tuna</code> cuenta como acierto en la métrica l2 y se contabiliza aparte en l1.</dd>
+    <dt>Por qué</dt><dd>Un recorte etiquetado <code>Tuna</code> <em>es</em> alguno de los atunes específicos; el anotador solo no resolvió cuál. Penalizar al modelo por acertar la especie es penalizarlo por el ruido de etiqueta. Y no es un caso marginal: 351 de las 388 cajas de test sobreviven a la purga, así que pesa dentro del test limpio.</dd>
+    <dt>Error que evita</dt><dd class="err">Un macro-F1 sistemáticamente deprimido por una confusión inevitable, atribuida por error a la arquitectura.</dd>
+  </dl>
+
+  <div class="col">
+  <h3>Cuántas especies puede prometer el proyecto</h3>
+  <p>Reineta, merluza y congrio son el <em>caso de uso</em> del enunciado, no el espacio de etiquetas: ninguna está en los datos. El objetivo es un clasificador multi-especie sobre los taxones disponibles. FishNet aporta 31 taxones de pez (más <code>Human</code>, <code>No fish</code>, <code>Water</code>, <code>Oil</code>), y el umbral de <code>MIN_TRAIN_BOXES = 100</code> modela 17 aparte.</p>
+  <p>La pregunta natural es si conviene bajar ese umbral para cubrir más especies. La respuesta, medida, es que <strong>no compra nada</strong>:</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>El techo no es el umbral de entrenamiento, es el soporte de test limpio: Oilfish queda con 0 cajas tras purgar, Pomfret con 1, Lancetfish con 3, Sickle pomfret con 4. Se pueden entrenar; no se puede reportar un F1 creíble sobre ellas.</caption>
+      <thead><tr><th>Umbral <code>MIN_TRAIN_BOXES</code></th><th class="num">Taxones modelados aparte</th><th class="num">Con ≥ 30 cajas de test purgado</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td class="name">100 · actual</td><td class="num">17</td><td class="num">13</td></tr>
+        <tr><td class="name">50</td><td class="num">22</td><td class="num">13</td></tr>
+        <tr><td class="name">30</td><td class="num">24</td><td class="num">13</td></tr>
+        <tr><td class="name">10</td><td class="num">25</td><td class="num">13</td></tr>
+        <tr><td class="name">1 · todas</td><td class="num">31</td><td class="num">13</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+  <p>Se mantiene el umbral en 100. La promesa defendible del proyecto queda entonces: <strong>9 especies en Kaggle, 17 taxones modelados en FishNet, 13 de ellos con métricas estadísticamente defendibles</strong>, más <code>Other_rare</code> que preserva la cola sin borrarla. El informe debe distinguir explícitamente entre «clases que el modelo predice» y «clases sobre las que reportamos F1»; confundirlas es prometer una cobertura que el test no respalda.</p>
+
+  <h3>Sobre «contar»: qué se promete y qué no</h3>
+  <p>El enunciado pide «contar y clasificar». Contar exige localizar, y localizar exige un detector, que no es lo que la rúbrica compara. La posición defendible:</p>
+  <ul>
+    <li><strong>Se promete</strong> conteo por especie <em>dadas las cajas</em>: con las cajas GT de Fishnet se cuenta cuántos individuos de cada especie hay por imagen y se reporta el error absoluto medio de conteo por imagen. Mide exactamente la contribución del clasificador al conteo, que es la parte que se está comparando.</li>
+    <li><strong>Se declara fuera de alcance</strong> la detección entrenada, con la justificación de que introducir un detector distinto por rama invalidaría la comparación controlada. Si se implementa, va como componente <em>compartido y congelado</em> entre ambas ramas, para que la única variable siga siendo la arquitectura del clasificador.</li>
+    <li><strong>Se declara imposible con Kaggle</strong>, que tiene un pez por imagen sobre fondo liso. Ya está en la bitácora §5 y va al informe tal cual.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <h2><span class="n">03</span>Matriz de corridas</h2>
+  <div class="col">
+  <p class="h2big">Nueve corridas, en orden de dependencia. Las cinco primeras cierran el Avance.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Tiempos de cómputo GPU medidos en esta máquina; no incluyen carga de datos ni evaluación. E1–E5 suman aproximadamente 6 h de GPU con 3 semillas cada una.</caption>
+      <thead><tr><th>#</th><th>Corrida</th><th>Datos</th><th>Para qué</th><th class="num">≈ GPU</th></tr></thead>
+      <tbody>
+        <tr><td class="num">E1</td><td class="name">ResNet-50 · Kaggle split por grupo</td><td>6.328</td><td class="name">Baseline honesto exigido por el Avance</td><td class="num">18 s/ép</td></tr>
+        <tr><td class="num">E2</td><td class="name">ViT-B/16 · Kaggle split por grupo</td><td>6.328</td><td class="name">Baseline honesto exigido por el Avance</td><td class="num">51 s/ép</td></tr>
+        <tr><td class="num">E3</td><td class="name">E1+E2 con split ALEATORIO</td><td>6.328</td><td class="name">Demostración de la fuga por grupo. Fila «riesgos» del Avance</td><td class="num">69 s/ép</td></tr>
+        <tr><td class="num">E4</td><td class="name">ResNet-50 · Fishnet</td><td>72.885</td><td class="name">La comparación real</td><td class="num">3,5 min/ép</td></tr>
+        <tr><td class="num">E5</td><td class="name">ViT-B/16 · Fishnet</td><td>72.885</td><td class="name">La comparación real</td><td class="num">9,8 min/ép</td></tr>
+        <tr><td class="num">E6</td><td class="name">Evaluar E4/E5 en test purgado</td><td>7.159</td><td class="name">Demostración de la fuga por secuencia. Sin reentrenar</td><td class="num">&lt; 1 min</td></tr>
+        <tr><td class="num">E7</td><td class="name">Controles de fondo en Kaggle</td><td>6.328</td><td class="name">Solo-fondo y solo-pez con máscara GT</td><td class="num">2× E1</td></tr>
+        <tr><td class="num">E8</td><td class="name">ResNet-50 V2 vs V1 · Fishnet</td><td>72.885</td><td class="name">Aísla receta de preentrenamiento vs arquitectura</td><td class="num">3,5 min/ép</td></tr>
+        <tr><td class="num">E9</td><td class="name">ViT-B/32 · Fishnet (iso-FLOPs)</td><td>72.885</td><td class="name">Segundo punto de la comparación (§4)</td><td class="num">≈ E4</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col"><strong>E6 es la corrida de mejor relación evidencia/costo del proyecto:</strong> no requiere entrenar nada, solo evaluar dos modelos ya entrenados sobre un subconjunto del test, y produce el segundo resultado más vendible de la presentación.</p>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <h2><span class="n">04</span>La comparación justa</h2>
+  <div class="col">
+  <p class="h2big">Aquí es donde se gana o se pierde el 25 % de «modelos comparados». No es un problema de código.</p>
+  <p class="lead">«ResNet vs. ViT» solo mide arquitecturas si todo lo demás está emparejado. Casi nunca lo está, y el desemparejamiento más común está a un argumento de distancia.</p>
+
+  <h3>4.1 El error de los pesos preentrenados</h3>
+  <p>Los pesos que trae torchvision, con su top-1 en ImageNet-1k:</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Fuente: metadatos de <code>torchvision 0.21.0</code>. La brecha V1→V2 de ResNet-50 es de <strong>arquitectura idéntica</strong>: solo cambia la receta de entrenamiento.</caption>
+      <thead><tr><th>Pesos</th><th class="num">top-1</th><th class="num">params</th><th class="num">MACs @224</th><th>Receta</th></tr></thead>
+      <tbody>
+        <tr><td class="name">ResNet-50 <code>IMAGENET1K_V1</code></td><td class="num">76,13</td><td class="num">25,56 M</td><td class="num">4,09 G</td><td>original 2015</td></tr>
+        <tr class="hi"><td class="name">ResNet-50 <code>IMAGENET1K_V2</code></td><td class="num">80,86</td><td class="num">25,56 M</td><td class="num">4,09 G</td><td>moderna</td></tr>
+        <tr class="hi"><td class="name">ViT-B/16 <code>IMAGENET1K_V1</code></td><td class="num">81,07</td><td class="num">86,57 M</td><td class="num">16,85 G</td><td>moderna</td></tr>
+        <tr><td class="name">ViT-B/32 <code>IMAGENET1K_V1</code></td><td class="num">75,91</td><td class="num">88,22 M</td><td class="num">4,36 G</td><td>moderna</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+  <p>Comparar ResNet-50 <strong>V1</strong> (76,13) contra ViT-B/16 (81,07) y concluir «el ViT es mejor» es medir 4,7 puntos de receta de preentrenamiento y atribuírselos a la atención global. Es el error por defecto, porque <code>ResNet50_Weights.DEFAULT</code> en torchvision apunta a V1.</p>
+  </div>
+
+  <dl class="dec">
+    <dt>Decisión</dt><dd>Par primario: <strong>ResNet-50 <code>IMAGENET1K_V2</code> (80,86) vs. ViT-B/16 <code>IMAGENET1K_V1</code> (81,07)</strong>. Diferencia de partida: 0,21 pp.</dd>
+    <dt>Por qué</dt><dd>Ambos son ImageNet-1k puro, sin datos externos, con recetas de calidad equiparable. Es lo más cerca de «solo cambia la arquitectura» que se puede llegar con pesos públicos.</dd>
+    <dt>Error que evita</dt><dd class="err">Atribuir a la arquitectura una brecha que es de receta. E8 en la matriz lo cuantifica explícitamente entrenando también V1.</dd>
+  </dl>
+
+  <div class="col">
+  <p><strong>Prohibido:</strong> <code>IMAGENET1K_SWAG_E2E_V1</code> para el ViT. Llega a 85,3 % pero está preentrenado sobre datos externos (hashtags de Instagram) y a 384 px. Usarlo destruye la comparación y la data card tendría que declarar una fuente de datos que no controlamos.</p>
+
+  <h3>4.2 El desemparejamiento que no se puede eliminar</h3>
+  <p>ResNet-50 tiene 25,6 M de parámetros y 4,09 GMACs. ViT-B/16 tiene 86,6 M y 16,85 GMACs: <strong>3,4× los parámetros y 4,1× el cómputo</strong>. No existe una elección que empareje las dos cosas a la vez con pesos públicos de torchvision:</p>
+  <ul>
+    <li><strong>Emparejar cómputo</strong> → ViT-B/32 (4,36 G, casi idéntico a ResNet-50) pero con 88,2 M de parámetros y un preentrenamiento 5 puntos peor.</li>
+    <li><strong>Emparejar parámetros</strong> → ViT-S/16 (≈ 22 M), que no está en torchvision; requiere <code>timm</code> (<code>vit_small_patch16_224</code>), hoy no instalado.</li>
+  </ul>
+  <p>La respuesta correcta no es elegir uno y callar el otro, es <strong>reportar la curva</strong>: dos puntos de ViT (B/16 y B/32) contra ResNet-50, con parámetros, MACs y latencia en el eje. Así la conclusión pasa de «X gana» a «X gana <em>a este costo</em>», que es además lo que pide la fila «decisión velocidad vs. precisión» de la rúbrica final.</p>
+
+  <h3>4.3 Lo que se mantiene fijo, y lo que no puede mantenerse fijo</h3>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>El optimizador es la excepción deliberada: forzar SGD sobre un ViT o AdamW sin decaimiento por capa sobre un ResNet no es «justo», es sabotear una de las ramas.</caption>
+      <thead><tr><th>Elemento</th><th>Tratamiento</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Split, semilla del split</td><td>Idéntico · byte a byte</td></tr>
+        <tr><td class="name">Resolución, normalización</td><td>Idéntico · 224 px, media/desv. de ImageNet</td></tr>
+        <tr><td class="name">Pipeline de aumentación</td><td>Idéntico · misma clase, mismos parámetros</td></tr>
+        <tr><td class="name">Loss y manejo de desbalance</td><td>Idéntico · §6</td></tr>
+        <tr><td class="name">Batch efectivo</td><td>Idéntico · 64 (ViT: 32 físico × 2 acumulación)</td></tr>
+        <tr><td class="name">Presupuesto de pasos de gradiente</td><td>Idéntico · se fijan pasos, no épocas</td></tr>
+        <tr><td class="name">Presupuesto de búsqueda de hiperparámetros</td><td>Idéntico · 6 pruebas por arquitectura, registradas</td></tr>
+        <tr><td class="name">Semillas</td><td>Idéntico · {0, 1, 2}, se reporta media ± desv.</td></tr>
+        <tr class="hi"><td class="name">Optimizador y schedule</td><td><strong>Distinto a propósito</strong> · cada arquitectura con su familia de recetas establecida (§7)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col">El principio es <strong>presupuesto emparejado, no receta emparejada</strong>. Se declara en el informe en una frase: «cada arquitectura recibió el mismo presupuesto de búsqueda sobre su familia de recetas estándar; la tabla de las 6 pruebas de cada una está en el repositorio».</p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <h2><span class="n">05</span>Preprocesamiento y aumentación</h2>
+  <div class="col">
+  <h3>Extracción del recorte (Fishnet)</h3>
+  <p>Las cajas ya vienen saneadas en el CSV: coordenadas dentro de rango, lado corto mínimo 24 px, cero cajas degeneradas. Lo que falta decidir es el contexto.</p>
+  </div>
+  <dl class="dec">
+    <dt>Decisión</dt><dd>Recorte con <strong>margen del 10 %</strong> por lado, recortado a los bordes de la imagen; luego <em>resize</em> directo a 224×224 sin preservar la razón de aspecto.</dd>
+    <dt>Por qué</dt><dd>El margen da al modelo algo del entorno (cubierta, otro pez, mano del operario) que es justamente lo que la atención global del ViT debería poder explotar. El <em>resize</em> deformante conserva la silueta completa; el recorte cuadrado central cortaría colas y morros, que son diagnósticos. La razón de aspecto p1–p99 va de 0,32 a 3,89, así que recortar a cuadrado perdería mucho.</dd>
+    <dt>Error que evita</dt><dd class="err">Rellenar con <em>letterbox</em> negro introduce un borde artificial cuyo grosor correlaciona con la razón de aspecto, y por tanto con la especie: un atajo nuevo, del mismo tipo que el Hallazgo 2.</dd>
+  </dl>
+  <div class="col">
+  <p><strong>Sobre el I/O:</strong> decodificar un JPEG de Fishnet cuesta 7,1 ms; una época de train son 72.885 recortes → 517 s con un solo worker, 65 s con ocho. Con <code>num_workers=8</code> el I/O no es el cuello de botella (ResNet necesita 212 s de GPU por época). Cachear los recortes a disco con lado corto 256 ocuparía solo <strong>1,14 GB</strong> y daría un margen cómodo; es opcional, no urgente. En Windows usar <code>persistent_workers=True</code>, porque el arranque de workers es por <em>spawn</em> y se paga en cada época.</p>
+
+  <h3>Aumentación</h3>
+  <p>Idéntica para las dos arquitecturas. Conservadora, porque el objetivo es medir arquitecturas, no exprimir la última décima:</p>
+  <ul>
+    <li><code>RandomResizedCrop(224, scale=(0.7, 1.0))</code> — sobre el recorte ya extraído.</li>
+    <li><code>RandomHorizontalFlip(0.5)</code> — un pez mira a izquierda o derecha indistintamente.</li>
+    <li><code>ColorJitter(brightness=0.3, contrast=0.3, saturation=0.2, hue=0.02)</code> — <em>hue</em> muy bajo: el color es diagnóstico entre especies (mahi mahi, red mullet) y rotarlo destruye señal legítima.</li>
+    <li>Normalización ImageNet: <code>mean=[0.485,0.456,0.406]</code>, <code>std=[0.229,0.224,0.225]</code>.</li>
+    <li><strong>Sin</strong> <code>RandomVerticalFlip</code>: en Fishnet el pez está sobre una cubierta con orientación gravitatoria consistente. En Kaggle sería inocuo, pero se mantiene el pipeline idéntico entre datasets.</li>
+    <li><strong>Sin</strong> MixUp/CutMix en los baselines. Interactúan con el reponderado de clases y con la calibración, y meterlos ahora contamina dos análisis (§6, §10). Quedan como ablación posterior si sobra tiempo.</li>
+  </ul>
+  <p><strong>En validación y test:</strong> <code>Resize(224)</code> determinista y normalización. Nada más. Ninguna aumentación, ningún TTA en el número principal — si se usa TTA, va como fila aparte y aplicado por igual a ambas ramas.</p>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <h2><span class="n">06</span>Desbalance: la matemática</h2>
+  <div class="col">
+  <p class="h2big">Human es el 53,7 % del train. La clase más rara tiene 106 cajas. Razón 369:1.</p>
+
+  <h3>6.1 Por qué no sobremuestreo</h3>
+  <p>Repetir las 106 cajas de <em>Long snouted lancetfish</em> hasta igualar a Human significa mostrar cada una unas 370 veces por época. No añade información, sobreajusta esas cajas concretas, y desestabiliza las estadísticas de BatchNorm del ResNet porque los lotes dejan de reflejar la distribución real. Se descarta.</p>
+
+  <h3>6.2 Reponderado por número efectivo (Cui et al., 2019)</h3>
+  <p>La idea es que <em>n</em> muestras de una clase no aportan <em>n</em> unidades de información, porque se solapan. El número efectivo con un factor de solapamiento β ∈ [0,1):</p>
+  </div>
+  <div class="fx">E_c = (1 − β^n_c) / (1 − β)          <span class="c">// número efectivo de la clase c</span>
+w_c ∝ 1 / E_c ,  normalizado a  Σ_c w_c = C   <span class="c">// peso medio 1</span></div>
+  <div class="col">
+  <p>β es el mando que controla cuánta compresión se aplica al desbalance. Con nuestros conteos reales (n = 39.131 para Human, n = 106 para lancetfish):</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>β no es un hiperparámetro cosmético: elige el punto entre «ignorar el desbalance» y «invertir la frecuencia». Se sintoniza en val, nunca en test.</caption>
+      <thead><tr><th class="name">β</th><th class="num">E de Human</th><th class="num">E de lancetfish</th><th class="num">Razón de pesos</th><th>Interpretación</th></tr></thead>
+      <tbody>
+        <tr><td class="name mono">0,999</td><td class="num">1.000,0</td><td class="num">100,6</td><td class="num">9,9 : 1</td><td class="name">comprime 369:1 a ~10:1</td></tr>
+        <tr><td class="name mono">0,9999</td><td class="num">9.800</td><td class="num">105,4</td><td class="num">93,0 : 1</td><td class="name">compresión suave</td></tr>
+        <tr><td class="name mono">→ 1</td><td class="num">39.131</td><td class="num">106</td><td class="num">369,2 : 1</td><td class="name">frecuencia inversa pura</td></tr>
+        <tr><td class="name mono">0</td><td class="num">1</td><td class="num">1</td><td class="num">1 : 1</td><td class="name">sin reponderar</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+  <h3>6.3 Ajuste de logits (Menon et al., 2021) — la opción preferida</h3>
+  <p>El reponderado deforma la superficie de pérdida y, con razones grandes, arruina la calibración: el modelo aprende a estar seguro de clases raras. Existe una alternativa con garantía teórica.</p>
+  <p>Sea π<sub>c</sub> = n<sub>c</sub>/N la frecuencia de la clase en train. Se puede aplicar durante el entrenamiento o después:</p>
+  </div>
+  <div class="fx"><span class="c">// durante el entrenamiento — se suma el prior al logit antes de la CE</span>
+L = CrossEntropy( z + τ · log π , y )
+
+<span class="c">// post-hoc — se resta al predecir, sobre un modelo ya entrenado con CE simple</span>
+ŷ = argmax_c ( z_c − τ · log π_c )</div>
+  <div class="col">
+  <p>Con τ = 1 el clasificador resultante es el óptimo de Bayes para el <strong>error balanceado</strong>. Con nuestros números, el ajuste post-hoc sube el logit de lancetfish respecto al de Human en</p>
+  </div>
+  <div class="fx">log π_Human − log π_lancetfish
+  = ln(39131/72885) − ln(106/72885)
+  = ln(0,5369) − ln(0,001454)
+  = −0,6220 − (−6,5333)
+  = <strong>5,911 nats</strong></div>
+
+  <dl class="dec">
+    <dt>Decisión</dt><dd>Entrenar con <strong>cross-entropy simple</strong> y aplicar <strong>ajuste de logits post-hoc</strong>, con τ sintonizado en validación. El reponderado por número efectivo queda como ablación.</dd>
+    <dt>Por qué</dt><dd>Es gratis: no requiere reentrenar, se aplica sobre el modelo base, y τ se puede barrer en segundos sobre los logits de val ya guardados. Además desacopla dos preguntas —«¿qué representación aprendió?» y «¿dónde pone el umbral?»— que el reponderado mezcla.</dd>
+    <dt>Error que evita</dt><dd class="err">Reentrenar tres veces para probar tres valores de β, y confundir un cambio de umbral con un cambio de capacidad de la arquitectura.</dd>
+  </dl>
+
+  <div class="col">
+  <p><strong>Dos precisiones que se suelen pasar por alto:</strong></p>
+  <ul>
+    <li>τ = 1 es óptimo para el <em>error balanceado</em>, no para el macro-F1. Como se reporta macro-F1, hay que <strong>barrer τ en val sobre la métrica que efectivamente se reporta</strong> y decir en el informe que se hizo así.</li>
+    <li>El ajuste de logits <strong>descalibra</strong> por construcción. Si se aplica, el escalado de temperatura de §10 va <em>después</em>, sobre los logits ya ajustados, y se declara el orden.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <h2><span class="n">07</span>Optimización: dos recetas</h2>
+
+  <div class="col">
+  <h3>7.1 ResNet-50</h3>
+  </div>
+  <div class="fx">optimizador   AdamW, lr=3e-4 (cabeza) / 3e-5 (backbone), wd=0.05
+              <span class="c">— alternativa: SGD momentum 0.9, lr=0.01, wd=1e-4</span>
+schedule      warmup lineal 3 % de los pasos → coseno hasta 0
+batch         64 · AMP fp16 con GradScaler
+clip          norma global 1.0
+épocas        Kaggle 30 · Fishnet 15 (se fija el nº de PASOS, no de épocas)</div>
+  <div class="find warn">
+    <span class="tag">Trampa · BatchNorm</span>
+    <div class="col">
+    <p>Si se congela el backbone en la primera fase, <code>requires_grad=False</code> <strong>no</strong> congela las estadísticas móviles de BatchNorm: siguen actualizándose en cada <em>forward</em> mientras el módulo esté en modo <code>train()</code>. El modelo se degrada sin que ningún gradiente lo explique.</p>
+    <p>El arreglo correcto es poner explícitamente los módulos BN en <code>eval()</code> después de cada <code>model.train()</code>:</p>
+    </div>
+    <div class="fx">model.train()
+for m in model.modules():
+    if isinstance(m, torch.nn.modules.batchnorm._BatchNorm):
+        m.eval()</div>
+  </div>
+
+  <div class="col">
+  <h3>7.2 ViT-B/16</h3>
+  <p>Un ViT afinado con la receta de un ResNet diverge o se estanca. Tres diferencias son obligatorias:</p>
+  <ol>
+    <li><strong>AdamW, nunca SGD</strong>, y sin <em>weight decay</em> sobre <em>bias</em>, parámetros de LayerNorm, el token CLS ni el embedding de posición. Aplicarlo ahí encoge el embedding de posición hacia cero y borra la noción de posición.</li>
+    <li><strong>Decaimiento de LR por capa</strong> (<em>layer-wise LR decay</em>, γ ≈ 0,65–0,75). El bloque <em>i</em> de 12 recibe lr · γ^(12−i): las capas bajas apenas se mueven, la cabeza aprende rápido.</li>
+    <li><strong>Warmup largo</strong>, 5–10 % de los pasos. Los ViT son inestables en los primeros cientos de pasos con LR alto.</li>
+  </ol>
+  </div>
+  <div class="fx">optimizador   AdamW, lr_base=1e-4, wd=0.05
+              sin wd en: bias, LayerNorm.weight, class_token, encoder.pos_embedding
+llrd          γ=0.70 → bloque i de 12 usa lr_base · γ^(12−i)
+schedule      warmup lineal 8 % de los pasos → coseno hasta 0
+batch         32 físico × 2 acumulación = 64 efectivo   <span class="c">// Hallazgo 4</span>
+clip          norma global 1.0   <span class="c">// no opcional en ViT</span>
+label smooth  0.1 (idéntico en ambas ramas o en ninguna)</div>
+
+  <div class="col">
+  <h3>7.3 Presupuesto por pasos, no por épocas</h3>
+  <p>Con batch efectivo 64 y 72.885 recortes de train, una época son <span class="mono">⌈72885/64⌉ = 1.139</span> pasos. Fijar «15 épocas» para ambos equivale a fijar 17.085 pasos para ambos, que es lo que importa. Si en algún momento cambia el batch de una rama, hay que <strong>recalcular las épocas para conservar los pasos</strong>, no dejar el número de épocas fijo.</p>
+
+  <h3>7.4 Selección de modelo</h3>
+  <p>Punto de control por <strong>mejor macro-F1 en validación</strong>, no por menor pérdida y no por accuracy. Con este desbalance la pérdida de validación mejora mientras las clases raras empeoran. El test <strong>no se toca hasta el final</strong>, una sola vez, con el modelo ya elegido.</p>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <h2><span class="n">08</span>Métricas e inferencia estadística</h2>
+  <div class="col">
+  <p class="h2big">Aquí es donde un proyecto correcto se distingue de uno que solo parece correcto.</p>
+
+  <h3>8.1 Qué se reporta</h3>
+  <ul>
+    <li><strong>Métrica principal: macro-F1</strong> sobre las clases de especie (excluyendo <code>Human</code>, <code>No fish</code>, <code>Water</code>, <code>Oil</code> y <code>Unknown</code>). Con Human en el 53,7 % del train, la accuracy global es una métrica sin contenido.</li>
+    <li><strong>Balanced accuracy</strong> (media de los recalls) como segunda métrica agregada.</li>
+    <li><strong>Tabla por clase</strong> con precisión, recall, F1 y soporte. Es la que revela dónde difieren las arquitecturas.</li>
+    <li><strong><code>is_fish</code> binario aparte</strong>: F1 y AUROC. Es la compuerta operativa real —¿esto es un pez o un operario?— y merece su propio número.</li>
+    <li><strong>Accuracy global</strong> se reporta, pero explícitamente etiquetada como no informativa. Omitirla parece ocultamiento; reportarla sin contexto es un error.</li>
+    <li><strong>Matriz de confusión normalizada por fila</strong> (por recall). Sin normalizar, la fila de Human aplasta todo lo demás.</li>
+  </ul>
+
+  <h3>8.2 Intervalos de confianza: bootstrap de clúster</h3>
+  <p>La unidad independiente no es la imagen.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>El bootstrap remuestrea <em>clústeres completos con reemplazo</em>, no filas individuales, y recalcula la métrica en cada réplica. 2.000 réplicas, percentiles 2,5 y 97,5.</caption>
+      <thead><tr><th>Dataset</th><th>Unidad de clúster</th><th class="num">n de clústeres en test</th><th class="num">n de filas</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Kaggle</td><td class="name"><code>group_id</code> (foto original)</td><td class="num">62</td><td class="num">1.336</td></tr>
+        <tr><td class="name">Fishnet</td><td class="name"><code>seq_id</code> (secuencia de vídeo)</td><td class="num">5.292 oficial</td><td class="num">13.207</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+  <p>Para Fishnet, <code>seq_id</code> no está en <code>fishnet_crops.csv</code>; se recupera con un <em>merge</em> por <code>(img_id, bbox_id)</code> contra <code>foid_labels_v100.csv</code>. <strong>Conviene añadirlo como columna al CSV de splits</strong> para no repetir el <em>merge</em> en cada evaluación.</p>
+
+  <h3>8.3 Comparar dos modelos</h3>
+  <p>Publicar «ResNet 0,71 / ViT 0,74» sin una prueba no responde si la diferencia es real.</p>
+  </div>
+  <dl class="dec">
+    <dt>Decisión</dt><dd><strong>Bootstrap de clúster pareado</strong> sobre la diferencia. En cada réplica se remuestrean los mismos clústeres para ambos modelos y se calcula Δ = F1(ViT) − F1(ResNet). Se reporta el IC 95 % de Δ y la fracción de réplicas con Δ &gt; 0.</dd>
+    <dt>Por qué</dt><dd>Pareado, porque ambos modelos se evalúan sobre exactamente las mismas muestras y la correlación entre sus errores reduce mucho la varianza de la diferencia. De clúster, porque las filas no son independientes.</dd>
+    <dt>Error que evita</dt><dd class="err">La prueba de McNemar es la elección habitual para comparar dos clasificadores, pero <strong>supone muestras independientes</strong>. Con 44,5 % del test de Fishnet compartiendo secuencia con train, y con 21,5 rotaciones por foto en Kaggle, McNemar declara significativo casi cualquier cosa. Solo sería aplicable sobre el test purgado, y aun así de forma aproximada.</dd>
+  </dl>
+
+  <div class="col">
+  <p>Además de la prueba: <strong>3 semillas por configuración</strong>, reportando media ± desviación. Si la desviación entre semillas de una misma arquitectura es del mismo orden que la brecha entre arquitecturas, la conclusión honesta es «no se distinguen con este presupuesto», y decirlo puntúa mejor que inventar un ganador.</p>
+
+  <h3>8.4 La prueba de la hipótesis del enunciado</h3>
+  <p>El enunciado afirma que «ViT separa mejor peces amontonados y superpuestos». Eso es contrastable <em>hoy</em>, sin detector: para cada caja se calcula el solapamiento máximo con otra caja de la misma imagen, relativo al área propia, y se estratifica el test.</p>
+  </div>
+  <div class="fx">occ(b) = max_{b' ≠ b, misma imagen}  área(b ∩ b') / área(b)</div>
+  <div class="tw">
+    <table>
+      <caption>Recortes de pez (<code>is_fish=1</code>) por estrato de oclusión. Los cuatro estratos del test tienen ≥ 553 recortes, suficiente para un macro-F1 por estrato con IC utilizable. El 73,2 % de todas las cajas solapa con alguna otra.</caption>
+      <thead><tr><th>Estrato de oclusión</th><th class="num">train</th><th class="num">val</th><th class="num">test</th></tr></thead>
+      <tbody>
+        <tr><td class="name">0 · aislado</td><td class="num">6.465</td><td class="num">1.617</td><td class="num">1.171</td></tr>
+        <tr><td class="name">(0 , 0,10] · leve</td><td class="num">2.742</td><td class="num">584</td><td class="num">553</td></tr>
+        <tr><td class="name">(0,10 , 0,30] · moderada</td><td class="num">4.894</td><td class="num">989</td><td class="num">945</td></tr>
+        <tr><td class="name">&gt; 0,30 · fuerte</td><td class="num">18.110</td><td class="num">2.989</td><td class="num">2.191</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col"><strong>La afirmación del enunciado se sostiene si y solo si Δ = F1(ViT) − F1(ResNet) crece de forma monótona con el estrato de oclusión.</strong> Un gráfico de Δ con barras de error contra los cuatro estratos convierte la hipótesis del profesor en un resultado medido: exactamente el «comparación discutida con evidencia, no solo tabla» del nivel Excelente. Y si Δ resulta plano o negativo, eso también es un resultado publicable, y probablemente más interesante.</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="s9">
+  <h2><span class="n">09</span>Interpretabilidad, hecha bien</h2>
+  <div class="col">
+  <p class="lead">La rúbrica exige «Grad-CAM/attention rollout incluida y analizada». El error que la mayoría comete es comparar dos cosas que no son comparables.</p>
+
+  <h3>9.1 Grad-CAM en ResNet</h3>
+  </div>
+  <div class="fx">α_k^c = (1/Z) · Σ_i Σ_j  ∂y^c / ∂A_ij^k     <span class="c">// gradiente promediado espacialmente</span>
+L^c   = ReLU( Σ_k  α_k^c · A^k )            <span class="c">// mapa 7×7, se sube a 224×224</span></div>
+  <div class="col">
+  <ul>
+    <li><strong>Capa correcta:</strong> la salida de <code>layer4[-1]</code> (7×7×2048 con entrada de 224 px). Enganchar después del <em>avgpool</em> destruye la información espacial y produce un mapa constante.</li>
+    <li><strong>y<sup>c</sup> es el logit, no la probabilidad.</strong> Derivar la softmax mezcla los gradientes de las otras clases y el mapa deja de ser específico de <em>c</em>.</li>
+  </ul>
+
+  <h3>9.2 Attention rollout en ViT</h3>
+  <p>La atención cruda de la última capa <strong>no</strong> es un mapa de saliencia: ignora que cada bloque tiene una conexión residual que deja pasar información sin atender. La corrección de Abnar &amp; Zuidema (2020):</p>
+  </div>
+  <div class="fx">Ā_l = mean_heads( A_l )                     <span class="c">// promedio sobre cabezas</span>
+Â_l = Ā_l + I ,  luego normalizar filas      <span class="c">// la identidad = residual</span>
+R   = Â_L · Â_{L−1} · … · Â_1                <span class="c">// producto de matrices, no promedio</span>
+mapa = R[0, 1:] → reshape(14,14) → upsample(224)   <span class="c">// fila CLS, sin la columna CLS</span></div>
+
+  <div class="find">
+    <span class="tag">Error crítico de comparación</span>
+    <div class="col">
+    <p><strong>Grad-CAM es específico de clase; attention rollout no lo es.</strong> El rollout produce el mismo mapa para todas las clases porque no involucra ningún gradiente. Ponerlos lado a lado y concluir «el ViT mira peor» compara una explicación condicionada a la clase contra una que no lo está.</p>
+    <p>El contrapunto correcto de Grad-CAM en un ViT es la <strong>relevancia ponderada por gradiente</strong> de Chefer et al. (2021), que es rollout con los gradientes de la clase incorporados:</p>
+    </div>
+    <div class="fx">Ā_l = mean_heads( ( ∇A_l ⊙ A_l )⁺ )    <span class="c">// ⊙ Hadamard, ⁺ parte positiva</span>
+<span class="c">// el resto idéntico al rollout: sumar I, normalizar filas, multiplicar capas</span></div>
+    <p class="col">Se reportan <strong>los dos</strong>: rollout como la herramienta estándar del ViT, y Chefer como la contraparte específica de clase que sí es comparable con Grad-CAM.</p>
+  </div>
+
+  <div class="col">
+  <h4>Detalle de implementación · torchvision</h4>
+  <p><code>vit_b_16</code> usa <code>nn.MultiheadAttention</code> con <code>need_weights=False</code> dentro de <code>EncoderBlock</code>, así que <strong>no expone los pesos de atención</strong>. Hay que reemplazar el <em>forward</em> del bloque para pedirlos con <code>need_weights=True, average_attn_weights=False</code> (por cabeza). Consecuencia: se desactiva la ruta rápida fusionada y el <em>forward</em> se vuelve más lento — irrelevante, porque solo se hace en la fase de interpretabilidad, pero conviene no medir latencia con ese parche puesto.</p>
+
+  <h3>9.3 Interpretabilidad cuantitativa: el juego de apuntar</h3>
+  <p>Las figuras de Grad-CAM son subjetivas. Las máscaras GT de Kaggle permiten convertirlas en un número:</p>
+  </div>
+  <div class="fx">E_dentro = Σ_{p ∈ M} CAM(p)  /  Σ_p CAM(p)   <span class="c">// M = máscara GT del pez</span>
+                                             <span class="c">// CAM normalizado, parte positiva</span></div>
+  <div class="col">
+  <p>La línea base está medida: la máscara GT cubre en promedio el <strong>16,1 %</strong> de los píxeles (mediana 13,5 %, p10–p90 de 8,5 % a 26,8 %). Un mapa de saliencia uniforme deposita 16,1 % de su energía dentro del pez. Todo lo que exceda ese número es señal.</p>
+  <p>Con eso se responde con un número, no con una impresión: <em>¿ResNet o ViT deposita más energía sobre el pez?</em> Y cruzado con el Hallazgo 2, se cierra el argumento: si el modelo alcanza 99 % de accuracy pero su E<sub>dentro</sub> ronda 0,20, está clasificando el fondo.</p>
+
+  <h3>9.4 Controles causales (E7)</h3>
+  <p>Las máscaras permiten tres corridas que convierten una sospecha en una medición:</p>
+  <ul>
+    <li><strong>Imagen completa</strong> — cota superior.</li>
+    <li><strong>Solo fondo</strong> (pez borrado a gris) — cuánta señal es espuria. Con regresión logística sobre color ya da 45,9 %; con un ResNet-50 dará bastante más.</li>
+    <li><strong>Solo pez</strong> (fondo borrado a gris) — cuánta señal es morfología real.</li>
+  </ul>
+  <p>La diferencia entre «imagen completa» y «solo pez» es la dependencia del contexto, y sale directa a la sección de limitaciones del informe.</p>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <h2><span class="n">10</span>Calibración y fuera de distribución</h2>
+  <div class="col">
+  <h3>10.1 Escalado de temperatura</h3>
+  <p>Se ajusta un único escalar T &gt; 0 minimizando la NLL de <code>softmax(z/T)</code> <strong>sobre validación</strong> (LBFGS, un par de segundos sobre los logits ya guardados). Nunca sobre test. No cambia el argmax, así que la accuracy no se mueve: solo se corrige la confianza.</p>
+  <p>Se reportan tres números, no uno:</p>
+  <ul>
+    <li><strong>ECE</strong> con 15 bins — el estándar, pero sensible al número de bins; hay que declarar cuántos se usaron.</li>
+    <li><strong>Brier</strong> — regla de puntuación propia, sin bins, inmune a esa crítica.</li>
+    <li><strong>NLL</strong> — lo que se optimizó.</li>
+  </ul>
+  <p><strong>Orden obligatorio si se usa §6.3:</strong> ajuste de logits primero, escalado de temperatura después, sobre los logits ya ajustados. Al revés, la temperatura se ajusta a una distribución que después se modifica.</p>
+
+  <h3>10.2 OOD sin depender de OzFish</h3>
+  </div>
+  <div class="find good">
+    <span class="tag">Desbloqueo</span>
+    <div class="col">
+    <p>La bitácora deja el análisis OOD dependiendo de una descarga bloqueada (Pawsey/FDFML: SPA con API por token, 401/404 por URL directa). <strong>No hace falta.</strong> Los espacios de etiquetas de Kaggle y Fishnet son esencialmente disjuntos —lubina, trucha, camarón de mercado turco contra atún, pez espada y marlín de cubierta de barco—, así que:</p>
+    <ul>
+      <li>los recortes de Fishnet son un sondeo OOD válido para el modelo de Kaggle,</li>
+      <li>y las imágenes de Kaggle lo son para el modelo de Fishnet.</li>
+    </ul>
+    <p>Ambos conjuntos ya están en disco. OzFish pasa de bloqueante a mejora opcional: un tercer punto OOD, aún más lejano en dominio, si se resuelve la descarga a tiempo.</p>
+    </div>
+  </div>
+  <div class="col">
+  <p>Sin etiquetas compartidas no hay accuracy, pero sí hay una pregunta bien planteada: <em>¿el modelo sabe que no sabe?</em> Se trata como detección binaria ID vs OOD usando una puntuación de confianza, y se reporta <strong>AUROC</strong> y <strong>FPR@95TPR</strong>. Dos puntuaciones:</p>
+  </div>
+  <div class="fx">max-softmax   s(x) = max_c softmax(z)_c            <span class="c">// la línea base clásica</span>
+energía       s(x) = T · logsumexp( z / T )        <span class="c">// Liu et al. 2020, suele ser mejor</span></div>
+  <p class="col">Más el histograma de confianza ID vs OOD superpuesto, que es la figura que se entiende en dos segundos en la presentación. La pregunta comparativa: <strong>¿cuál de las dos arquitecturas dice «trucha» con 0,98 frente a un atún que nunca vio?</strong></p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="s11">
+  <h2><span class="n">11</span>Velocidad vs. precisión</h2>
+  <div class="col">
+  <p>Es una fila propia de la rúbrica final y se responde con mediciones, no con opiniones. Lo medido hasta ahora es <em>entrenamiento</em>; lo que importa para el muelle es <em>inferencia</em>.</p>
+  <h4>Protocolo de medición</h4>
+  <ul>
+    <li><code>model.eval()</code> + <code>torch.inference_mode()</code>. Sin el parche de <code>need_weights</code> de §9.2.</li>
+    <li>≥ 30 iteraciones de calentamiento; <code>torch.cuda.synchronize()</code> antes y después de cada medición. Sin sincronizar, se cronometra el encolado asíncrono y salen números absurdamente buenos.</li>
+    <li>≥ 200 repeticiones. Se reporta <strong>mediana y p95</strong>, no la media: la media la arrastran los valores atípicos del sistema operativo.</li>
+    <li>Tres escenarios: <strong>GPU batch 1</strong> (latencia interactiva de la demo), <strong>GPU batch 32</strong> (rendimiento en lote), <strong>CPU batch 1</strong> (el escenario realista de una caleta sin GPU).</li>
+    <li>Tamaño en disco del <em>checkpoint</em> en fp32 y fp16.</li>
+  </ul>
+  <p>El eje del gráfico final es macro-F1 contra latencia CPU batch 1, con un punto por modelo (ResNet-50, ViT-B/16, ViT-B/32) etiquetado con sus parámetros y MACs. Ese gráfico <em>es</em> la respuesta a la fila de la rúbrica.</p>
+  <p><strong>Fuera del baseline:</strong> <code>torch.compile</code>, <code>channels_last</code>, ONNX y cuantización int8 cambian el resultado y benefician de forma desigual a cada arquitectura. Si se usan, van como fila adicional aplicada por igual a ambas ramas, nunca dentro del número principal.</p>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="s12">
+  <h2><span class="n">12</span>Reproducibilidad</h2>
+  <div class="col">
+  <p>Vale el 20 % del Final y exige commits incrementales visibles. El proyecto todavía no es un repositorio git: <strong>inicializarlo antes de escribir <code>train.py</code></strong>, no después.</p>
+
+  <h4>Estructura</h4>
+  </div>
+  <div class="fx">configs/          un YAML por corrida (E1…E9). El YAML ES el experimento.
+src/
+  data.py         Dataset/DataLoader, lee los CSV de splits
+  models.py       fábrica: nombre → (modelo, pesos, transform)
+  train.py        entrenamiento, dirigido por --config
+  evaluate.py     métricas, bootstrap de clúster, tablas
+  interpret.py    Grad-CAM, rollout, Chefer, pointing game
+  calibrate.py    temperatura, ECE/Brier/NLL, OOD
+runs/&lt;exp&gt;/&lt;semilla&gt;/   config.yaml · metrics.json · logits.npy · checkpoint.pt
+docs/             este documento, data card, informe
+requirements.txt</div>
+
+  <div class="col">
+  <p><strong>Guardar los logits crudos de val y test en cada corrida</strong> es la decisión de mayor rendimiento del proyecto: el ajuste de τ, el escalado de temperatura, el bootstrap, la estratificación por oclusión, el AUROC de OOD y todas las tablas del informe se recalculan desde <code>logits.npy</code> en segundos, sin volver a tocar la GPU.</p>
+
+  <h4>Semillas y determinismo</h4>
+  <p>Sembrar <code>torch</code>, <code>numpy</code> y <code>random</code>; pasar <code>generator</code> y <code>worker_init_fn</code> al DataLoader (cada worker necesita su propia semilla derivada, o repiten la misma secuencia aleatoria de aumentación).</p>
+  <p><code>torch.use_deterministic_algorithms(True)</code> <strong>no</strong> se recomienda: exige la variable de entorno <code>CUBLAS_WORKSPACE_CONFIG=:4096:8</code>, cuesta velocidad, y algunas operaciones simplemente no tienen kernel determinista y lanzan excepción. La alternativa correcta y más informativa es <strong>3 semillas y media ± desviación</strong>, que además da la magnitud del ruido necesaria para §8.3.</p>
+
+  <h4>Entorno</h4>
+  <p><code>requirements.txt</code> con versiones fijadas y, en el README, la advertencia de la bitácora §2: torch debe instalarse desde <code>--index-url https://download.pytorch.org/whl/cu124</code> o se obtiene la variante CPU-only en silencio.</p>
+  </div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section id="s13">
+  <h2><span class="n">13</span>Riesgos</h2>
+  <p class="col">La fila «riesgos concretos, no genéricos» del Avance. Los cinco primeros ya no son hipótesis: están medidos en este documento, que es exactamente lo que la rúbrica premia.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Riesgo</th><th>Evidencia</th><th>Mitigación</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Fuga por aumentación en Kaggle</td><td class="name">21,5 imágenes por foto original</td><td class="name">Split por grupo ya construido; E3 cuantifica el sesgo</td></tr>
+        <tr><td class="name">Fuga por secuencia en Fishnet</td><td class="name">44,5 % del test oficial; corr. 0,87</td><td class="name">Test purgado (E6); se reportan ambos números</td></tr>
+        <tr><td class="name">Atajo de fondo en Kaggle</td><td class="name">45,9 % solo con el fondo</td><td class="name">Controles con máscara (E7) + pointing game</td></tr>
+        <tr><td class="name">Test de Kaggle sin potencia estadística</td><td class="name">n = 62, IC ± 5,4 pp</td><td class="name">Bootstrap de clúster; Fishnet como resultado principal</td></tr>
+        <tr><td class="name">ViT colapsa a batch 64</td><td class="name">1,5 img/s medidos</td><td class="name">Batch 32 + acumulación ×2, fijado en el config</td></tr>
+        <tr><td class="name">Clases raras sin test tras purgar</td><td class="name">Spearfish 7 · Skipjack 11 · Barracuda 12</td><td class="name">Marcarlas «sin potencia»; macro-F1 sobre clases con ≥ 30</td></tr>
+        <tr><td class="name">Anomalía del split oficial: Other_rare</td><td class="name">539 train / 756 val / 105 test</td><td class="name">Declarado en la data card; es del split oficial</td></tr>
+        <tr><td class="name">Ambigüedad de la etiqueta <code>Tuna</code></td><td class="name">388 cajas de test superpuestas con 4 especies</td><td class="name">Crédito jerárquico (§2)</td></tr>
+        <tr><td class="name">Brecha de dominio con especies chilenas</td><td class="name">Cero solapamiento en las tres fuentes</td><td class="name">Sondeo OOD cruzado Kaggle↔Fishnet (§10.2); fila propia del informe</td></tr>
+        <tr><td class="name">OzFish sigue sin descargarse</td><td class="name">Portal con API por token, 401/404</td><td class="name">Ya no bloquea: el OOD cruzado lo sustituye</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section id="s14">
+  <h2><span class="n">14</span>Ruta al Avance</h2>
+  <div class="col">
+  <p>Quedan cerca de cuatro semanas hasta el 28 de septiembre. El orden importa: cada paso desbloquea al siguiente y deja un commit visible.</p>
+  <ol>
+    <li><strong><code>git init</code> y primer commit</strong> con los datos, scripts y este documento. Antes de cualquier otra cosa: el historial vale 20 % y no se puede fabricar después.</li>
+    <li><strong>Añadir <code>seq_id</code> y <code>occ</code> como columnas</strong> a <code>fishnet_crops.csv</code> en <code>build_splits.py</code>. Ambas se necesitan en cada evaluación y regenerar el CSV es idempotente.</li>
+    <li><strong><code>src/data.py</code> + <code>models.py</code></strong> con la fábrica de pesos de §4.1 explícita — nunca <code>DEFAULT</code>.</li>
+    <li><strong>E1 y E2</strong> (Kaggle). Baselines exigidos por la rúbrica. Rápidos: minutos.</li>
+    <li><strong><code>evaluate.py</code> con bootstrap de clúster</strong>. Se escribe una vez y sirve para todo lo demás.</li>
+    <li><strong>E3</strong>, la demostración de la fuga. Es el resultado más vendible de la presentación.</li>
+    <li><strong>E4 y E5</strong> (Fishnet). Unas 3 h de GPU con 3 semillas.</li>
+    <li><strong>E6</strong>, evaluación en test purgado. Sin reentrenar, y es el segundo resultado más vendible.</li>
+    <li><strong>Estratificación por oclusión</strong> (§8.4) sobre los logits ya guardados. Es la prueba de la hipótesis del enunciado, y sale gratis.</li>
+    <li><strong>Diapositivas</strong>, con la fila de riesgos apoyada en números propios y no en advertencias genéricas.</li>
+  </ol>
+  <p>Interpretabilidad (E7), calibración, OOD, demo y data card van después del Avance, pero el diseño de todos ellos ya está fijado en este documento, y los logits guardados en el paso 5 hacen que la mayoría sea trabajo de análisis, no de GPU.</p>
+  </div>
+</section>
+
+<footer>
+  Caleta-Scan · G3 · Aprendizaje Automático II · PUCV<br>
+  Todas las cifras de este documento fueron medidas el 27-ago-2026 sobre los datos de <code>data/splits/</code> y esta máquina (RTX 3060 Ti, torch 2.6.0+cu124).<br>
+  Documento complementario de <code>BITACORA.md</code>; no reemplaza las decisiones cerradas de su §4.
+</footer>
+
+</main>
+</div>
+</div>
