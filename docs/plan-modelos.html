@@ -439,6 +439,41 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     </table>
   </div>
   <p class="col"><strong>E6 es la corrida de mejor relación evidencia/costo del proyecto:</strong> no requiere entrenar nada, solo evaluar dos modelos ya entrenados sobre un subconjunto del test, y produce el segundo resultado más vendible de la presentación.</p>
+
+  <h3>Resultados de E1 y E2 <span class="pill">28-ago</span></h3>
+  <div class="col">
+  <p>Ambos baselines corridos con 3 semillas, sobre el split por foto original. Presupuesto idéntico: 2.940 pasos de optimizador, batch efectivo 64.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Macro-F1 de test. El IC es de bootstrap de clústeres sobre las 62 fotos originales; la desviación es entre semillas.</caption>
+      <thead><tr><th>Corrida</th><th class="num">macro-F1</th><th class="num">± semillas</th><th class="num">IC95 clústeres</th><th class="num">aciertos</th></tr></thead>
+      <tbody>
+        <tr><td class="name">E1 · ResNet-50 V2</td><td class="num">0,9970</td><td class="num">0,0007</td><td class="num">—</td><td class="num">1332 / 1336</td></tr>
+        <tr><td class="name">E2 · ViT-B/16</td><td class="num">1,0000</td><td class="num">0,0000</td><td class="num">[1,0000 · 1,0000]</td><td class="num">1336 / 1336</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="find">
+    <span class="tag">Resultado · la comparación no distingue</span>
+    <h4>Δ = +0,0033 a favor del ViT, IC95 [+0,0000 · +0,0113], P(Δ&gt;0) = 0,646</h4>
+    <div class="col">
+    <p>El intervalo toca cero: <strong>con este test las dos arquitecturas no se distinguen.</strong> Y la razón es exactamente la que §8.2 anticipaba.</p>
+    <p>Los 4 errores del ResNet no son 4 observaciones. Son <strong>las 4 rotaciones de una única foto original</strong> — <code>Red Mullet__orig023</code>, confundida con <em>Striped Red Mullet</em>, dos especies genuinamente parecidas. Toda la ventaja del ViT descansa sobre <strong>un solo evento independiente de los 62</strong> del test.</p>
+    <p>El bootstrap lo cuantifica solo: la probabilidad de que ese grupo no salga sorteado en una réplica es (61/62)<sup>62</sup> = 0,3649, así que P(Δ&gt;0) debería ser 0,635. El bootstrap devolvió <strong>0,646</strong>, dentro del error de Monte Carlo. La prueba no está midiendo arquitecturas: está midiendo si una foto entra en la muestra.</p>
+    <p>Reportar «el ViT gana» aquí sería un error de lectura, y contarlo con un análisis por imagen —1336 muestras, ViT gana 4 a 0— lo habría hecho parecer sólido.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Consecuencia · E3 queda sin objeto</span>
+    <div class="col">
+    <p>El split honesto ya da 100 % con el ViT y 99,7 % con el ResNet. <strong>La fuga no puede inflar por encima del techo</strong>, así que entrenar con split aleatorio no va a mostrar ninguna brecha: E3 no puede demostrar lo que fue diseñada para demostrar.</p>
+    <p>La demostración de la fuga <strong>se traslada a E6</strong>, en FishNet, donde el test purgado sí tiene recorrido y donde la fuga es del split oficial publicado — un resultado más fuerte que el de un split aleatorio fabricado por nosotros.</p>
+    <p>Y refuerza lo que ya insinuaba el Hallazgo 2: <strong>Kaggle no es un benchmark, es el banco de pruebas de los modos de fallo.</strong> Un dataset donde una de las dos arquitecturas acierta 1336 de 1336 no tiene resolución para comparar nada. El 25 % de «modelos comparados» se juega entero en FishNet.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ============ 4 ============ -->
@@ -904,9 +939,9 @@ requirements.txt</div>
     <li><strong><code>git init</code> y primer commit</strong> con los datos, scripts y este documento. Antes de cualquier otra cosa: el historial vale 20 % y no se puede fabricar después.</li>
     <li><s>Añadir <code>seq_id</code> y <code>occ</code> como columnas a <code>fishnet_crops.csv</code>.</s> <span class="pill">hecho</span> El CSV trae ahora <code>seq_id</code>, <code>n_boxes</code>, <code>occ_max</code> y <code>occ_union</code>; los recuentos de split no cambiaron.</li>
     <li><s><code>src/data.py</code> + <code>models.py</code> con la fábrica de pesos de §4.1 explícita.</s> <span class="pill">hecho</span> Verificado: los grupos de parámetros cubren cada parámetro exactamente una vez, el decaimiento por capa da 0,0097× en el embedding (= 0,70¹³) y 1,0× en la cabeza, y ambos modelos parten la pérdida en ln(20) = 2,996 y bajan.</li>
-    <li><strong>E1 y E2</strong> (Kaggle). Baselines exigidos por la rúbrica. Rápidos: minutos.</li>
-    <li><strong><code>evaluate.py</code> con bootstrap de clúster</strong>. Se escribe una vez y sirve para todo lo demás.</li>
-    <li><strong>E3</strong>, la demostración de la fuga. Es el resultado más vendible de la presentación.</li>
+    <li><s>E1 y E2 (Kaggle). Baselines exigidos por la rúbrica.</s> <span class="pill">hecho</span> ResNet 0,9970 · ViT 1,0000; la diferencia no es distinguible.</li>
+    <li><s><code>evaluate.py</code> con bootstrap de clúster.</s> <span class="pill">hecho</span> 15/15 comprobaciones en <code>tests/test_stats.py</code>, incluido el factor de diseño.</li>
+    <li><s>E3, la demostración de la fuga.</s> <span class="pill s">sin objeto</span> El split honesto ya está en el techo; se traslada a E6.</li>
     <li><strong>E4 y E5</strong> (Fishnet). Unas 3 h de GPU con 3 semillas.</li>
     <li><strong>E6</strong>, evaluación en test purgado. Sin reentrenar, y es el segundo resultado más vendible.</li>
     <li><strong>Estratificación por oclusión</strong> (§8.4) sobre los logits ya guardados. Es la prueba de la hipótesis del enunciado, y sale gratis.</li>
