@@ -61,6 +61,14 @@ DEFAULTS = {
     "num_workers": 8,
     "seeds": [0, 1, 2],
     "amp": True,
+    # Selecciona el modelo con el macro-F1 de la parte LIMPIA de validacion (la
+    # que no comparte secuencia con train). Los logits guardados siguen
+    # cubriendo todas las filas, asi que el test oficial y el purgado se
+    # calculan despues como subconjuntos, sin volver a inferir. Solo fishnet.
+    "select_on_clean": True,
+    # Guarda estado reanudable al terminar cada epoca. Con E5 a ~2,5 h por
+    # semilla, una interrupcion sin esto cuesta la semilla entera.
+    "checkpoint_every_epoch": False,
 }
 
 
@@ -129,7 +137,8 @@ def macro_f1(logits: np.ndarray, y: np.ndarray, keep: np.ndarray | None) -> floa
 
 # ---------------------------------------------------------------------------
 
-def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
+def run_one(cfg: dict, seed: int, device: str = "cuda",
+            resume_path: str | None = None) -> dict:
     t0 = time.time()
     data.set_seed(seed)
 
@@ -137,6 +146,13 @@ def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
     tr, va, te = dss["train"], dss["val"], dss["test"]
     n_classes = len(tr.classes)
     keep = tr.species_mask() if cfg["dataset"] == "fishnet" else None
+
+    # Filas de validacion sobre las que se elige el modelo. En fishnet, solo las
+    # que no comparten secuencia con train: seleccionar sobre las contaminadas
+    # premiaria al modelo que mejor memoriza.
+    sel = (data.clean_mask(tr, va)
+           if cfg["dataset"] == "fishnet" and cfg["select_on_clean"]
+           else np.ones(len(va), dtype=bool))
 
     tl = data.make_loader(tr, cfg["batch_size"], True, cfg["num_workers"], seed)
     vl = data.make_loader(va, cfg["batch_size"], False, cfg["num_workers"], seed)
@@ -167,10 +183,27 @@ def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
           "(%d de warmup) | %d epocas"
           % (n_classes, cfg["batch_size"] * cfg["accum_steps"], per_epoch,
              total, warmup, epochs), flush=True)
+    if sel.sum() < len(va):
+        print("  seleccion sobre %d de %d filas de val (las limpias de fuga)"
+              % (sel.sum(), len(va)), flush=True)
 
     hist, best = [], {"f1": -1.0, "epoch": -1, "state": None}
-    step = 0
-    for ep in range(epochs):
+    step, ep0 = 0, 0
+
+    if resume_path and os.path.exists(resume_path):
+        ck = torch.load(resume_path, map_location=device, weights_only=False)
+        model.load_state_dict(ck["model"])
+        opt.load_state_dict(ck["opt"])
+        sched.load_state_dict(ck["sched"])
+        scaler.load_state_dict(ck["scaler"])
+        torch.set_rng_state(ck["rng_cpu"])
+        if ck["rng_cuda"] is not None:
+            torch.cuda.set_rng_state_all(ck["rng_cuda"])
+        hist, best, step, ep0 = ck["hist"], ck["best"], ck["step"], ck["epoch"] + 1
+        print("  reanudando desde la epoca %d (mejor hasta ahora: %.4f)"
+              % (ep0 + 1, best["f1"]), flush=True)
+
+    for ep in range(ep0, epochs):
         model.train()
         te0, run_loss, nb = time.time(), 0.0, 0
         opt.zero_grad(set_to_none=True)
@@ -194,7 +227,7 @@ def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
                 step += 1
 
         zv = infer(model, vl, len(va), n_classes, device)
-        f1 = macro_f1(zv, y_va, keep)
+        f1 = macro_f1(zv[sel], y_va[sel], keep)
         acc = float((zv.argmax(1) == y_va).mean())
         hist.append({"epoch": ep, "step": step, "loss": run_loss / max(1, nb),
                      "val_macro_f1": f1, "val_acc": acc,
@@ -211,6 +244,19 @@ def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
               % (ep + 1, epochs, hist[-1]["loss"], f1, acc, hist[-1]["sec"], flag),
               flush=True)
 
+        if resume_path:
+            # Se sobrescribe un unico archivo y se borra al terminar la semilla.
+            # Incluye el estado de los RNG para que reanudar de una corrida
+            # cortada de el mismo resultado que una corrida seguida.
+            tmp = resume_path + ".tmp"
+            torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
+                        "sched": sched.state_dict(), "scaler": scaler.state_dict(),
+                        "rng_cpu": torch.get_rng_state(),
+                        "rng_cuda": (torch.cuda.get_rng_state_all()
+                                     if torch.cuda.is_available() else None),
+                        "hist": hist, "best": best, "step": step, "epoch": ep}, tmp)
+            os.replace(tmp, resume_path)   # atomico: nunca queda medio escrito
+
     # El test se toca UNA sola vez, al final, con el modelo ya elegido en val.
     model.load_state_dict(best["state"])
     zv = infer(model, vl, len(va), n_classes, device)
@@ -220,6 +266,8 @@ def run_one(cfg: dict, seed: int, device: str = "cuda") -> dict:
         "hist": hist,
         "best_epoch": best["epoch"],
         "val": {"macro_f1": macro_f1(zv, y_va, keep),
+                "macro_f1_limpio": macro_f1(zv[sel], y_va[sel], keep),
+                "n_limpio": int(sel.sum()),
                 "acc": float((zv.argmax(1) == y_va).mean())},
         "test": {"macro_f1": macro_f1(zt, y_te, keep),
                  "acc": float((zt.argmax(1) == y_te).mean())},
@@ -261,10 +309,11 @@ def main():
         d = os.path.join(RUNS, name, "seed%d" % seed)
         hecho = os.path.join(d, "metrics.json")
 
-        # Reanudacion a nivel de SEMILLA. No hay checkpoint intermedio dentro de
-        # una semilla a proposito: guardarlo cada epoca costaria 94 MB por
-        # escritura y una semilla de Kaggle son 15 min. Para Fishnet, donde una
-        # semilla puede tardar 2,5 h, convendra reevaluarlo.
+        # Reanudacion en dos niveles: aqui, la semilla ya completada se omite;
+        # y dentro de run_one(), si checkpoint_every_epoch esta activo, se
+        # retoma en la epoca donde quedo. Para Kaggle basta el primer nivel
+        # (15 min por semilla); para Fishnet, con E5 a ~2,5 h, hace falta el
+        # segundo.
         if os.path.exists(hecho) and not args.force:
             with open(hecho, encoding="utf-8") as fh:
                 m = json.load(fh)
@@ -277,8 +326,14 @@ def main():
             continue
 
         print("\n  --- semilla %d ---" % seed, flush=True)
-        out = run_one(cfg, seed)
         os.makedirs(d, exist_ok=True)
+        resume = (os.path.join(d, "_resume.pt")
+                  if cfg["checkpoint_every_epoch"] else None)
+        if resume and args.force and os.path.exists(resume):
+            os.remove(resume)
+        out = run_one(cfg, seed, resume_path=resume)
+        if resume and os.path.exists(resume):
+            os.remove(resume)          # la semilla termino: ya no hace falta
 
         torch.save(out.pop("_state"), os.path.join(d, "checkpoint.pt"))
         np.save(os.path.join(d, "val_logits.npy"), out.pop("_zv"))

@@ -173,6 +173,21 @@ def purge_sequence_leak(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[~leaked].reset_index(drop=True)
 
 
+def clean_mask(ds_train, ds_part) -> np.ndarray:
+    """
+    True en las filas de `ds_part` cuya secuencia NO aparece en train.
+
+    Sirve para seleccionar el modelo sobre la parte limpia de validacion sin
+    tener que purgar el dataset entero: asi los logits guardados siguen
+    cubriendo TODAS las filas y el test purgado se calcula despues como un
+    subconjunto, sin volver a inferir.
+    """
+    if "seq_id" not in ds_part.df.columns:
+        return np.ones(len(ds_part), dtype=bool)
+    tr_seq = set(ds_train.df["seq_id"])
+    return ~ds_part.df["seq_id"].isin(tr_seq).to_numpy()
+
+
 def _datasets(df, label_col, crop, splits=("train", "val", "test")):
     # El espacio de clases se fija con TRAIN y se comparte: si val o test
     # trajeran una clase inedita, el indice se correria en silencio.

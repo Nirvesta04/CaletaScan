@@ -1,0 +1,39 @@
+# E4 - ResNet-50 sobre FishNet. La comparacion REAL del proyecto.
+#
+# Kaggle quedo saturado (ViT 1336/1336, diferencia no distinguible), asi que el
+# 25% de "modelos comparados" se juega entero aqui: 20 clases, desbalance 369:1,
+# oclusion real y camaras multiples.
+name: e4_resnet50_fishnet
+model: resnet50          # IMAGENET1K_V2 (80,86) - emparejado con vit_b_16 (81,07)
+dataset: fishnet
+label_col: label_model   # 19 clases + Other_rare
+purge: false             # se entrena con el split oficial completo; ver nota abajo
+
+# Presupuesto: 8 epocas x 1.138 pasos = 9.104 pasos de optimizador.
+# Son 3,1x los 2.940 que recibio Kaggle, y 23x los que al ResNet le bastaron
+# alli para converger. 15 epocas serian 10,6 h de GPU entre E4 y E5, y no hay
+# indicio de que hagan falta. Lo que importa es que E4 y E5 reciban LO MISMO.
+epochs: 8
+batch_size: 64
+accum_steps: 1           # batch efectivo 64
+
+lr: 3.0e-5
+head_lr_mult: 10.0
+weight_decay: 0.05
+warmup_frac: 0.03
+
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 8
+seeds: [0, 1, 2]
+
+# purge: false + select_on_clean: true es deliberado.
+# Se entrena y se infiere sobre el split oficial COMPLETO, de modo que los
+# logits guardados cubran todas las filas y el test purgado (E6) se calcule
+# despues como un subconjunto, sin volver a inferir. Pero la seleccion del mejor
+# epoch usa solo las filas de val que NO comparten secuencia con train: elegir
+# sobre las contaminadas premiaria al modelo que mejor memoriza.
+select_on_clean: true
+
+# ~41 min/semilla. A esa duracion el checkpoint por epoca ya se paga solo.
+checkpoint_every_epoch: true

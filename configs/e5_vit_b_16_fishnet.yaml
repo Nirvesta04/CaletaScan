@@ -1,0 +1,30 @@
+# E5 - ViT-B/16 sobre FishNet. Contraparte de E4.
+#
+# Identico a E4 en todo lo que puede mantenerse fijo: split, espacio de
+# etiquetas, resolucion, aumentacion, loss, batch EFECTIVO, pasos de gradiente,
+# criterio de seleccion y semillas. Lo unico distinto a proposito es el
+# optimizador.
+name: e5_vit_b_16_fishnet
+model: vit_b_16          # IMAGENET1K_V1 (81,07)
+dataset: fishnet
+label_col: label_model
+purge: false
+
+epochs: 8                # 9.104 pasos, los mismos que E4
+batch_size: 32           # medido: a 64 derrama a memoria del sistema (1,5 img/s)
+accum_steps: 2           # 32x2 = 64 efectivo, igual que E4
+
+lr: 1.0e-4
+llrd: 0.70               # bloque de profundidad d usa lr * 0.70^(13-d)
+weight_decay: 0.05
+warmup_frac: 0.08
+
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 8
+seeds: [0, 1, 2]
+
+select_on_clean: true
+
+# ~101 min/semilla: sin esto, una interrupcion cuesta la semilla entera.
+checkpoint_every_epoch: true
