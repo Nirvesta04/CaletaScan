@@ -21,8 +21,19 @@ comparar ResNet contra ViT**, con interpretabilidad (Grad-CAM / attention rollou
 |---|---|
 | Datos | descargados, saneados y spliteados |
 | Splits | construidos y verificados (0 fugas de grupo en Kaggle) |
-| Modelos | **sin empezar** — siguiente hito |
+| Código de entrenamiento | listo y verificado de punta a punta |
+| Baselines E1 / E2 | **pendientes de correr** — siguiente hito |
 | Próxima entrega | Avance, 28-sep-2026 (presentación de 15 min) |
+
+### Siguiente paso
+
+```bash
+python -m src.train --config configs/e1_resnet50_kaggle.yaml
+python -m src.train --config configs/e2_vit_b_16_kaggle.yaml
+```
+
+Unas 2 h 10 min de GPU en total (3 semillas cada uno). Conviene correrlo con la
+máquina libre: ocupa la GPU de forma continua.
 
 ---
 
