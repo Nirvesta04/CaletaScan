@@ -1,0 +1,31 @@
+# ---- Datos crudos: 7,6 GB, se reconstruyen con los scripts ----
+data/raw/
+archive.zip
+
+# Los manifiestos de split (data/splits/*.csv) SI se versionan a proposito:
+# son el contrato del experimento y pesan 17 MB en total.
+
+# ---- Salidas de entrenamiento ----
+# Se versionan las metricas y el config de cada corrida; no los pesos ni los tensores.
+runs/**/*.pt
+runs/**/*.pth
+runs/**/*.ckpt
+runs/**/*.npy
+runs/**/*.npz
+wandb/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# ---- Sistema / editor ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

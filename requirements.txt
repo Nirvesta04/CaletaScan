@@ -1,0 +1,23 @@
+# Caleta-Scan (G3) - Aprendizaje Automatico II, PUCV
+#
+# IMPORTANTE: torch debe venir del indice de CUDA 12.4. Sin la linea
+# --extra-index-url de abajo, pip instala en silencio la variante CPU-only
+# y el entrenamiento corre ~100x mas lento sin dar ningun error.
+#
+#   pip install -r requirements.txt
+#
+# Verificacion posterior obligatoria:
+#   python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+#   -> debe imprimir  2.6.0+cu124 True
+
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+
+numpy==2.5.2
+pandas==2.2.2
+pillow==12.3.0
+scikit-learn==1.7.2
+matplotlib==3.8.4
+pyyaml>=6.0
