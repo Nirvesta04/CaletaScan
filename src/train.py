@@ -239,6 +239,8 @@ def main():
                     help="sobrescribe las semillas del config")
     ap.add_argument("--epochs", type=int, default=None)
     ap.add_argument("--tag", default=None, help="sufijo para el directorio de salida")
+    ap.add_argument("--force", action="store_true",
+                    help="rehace las semillas que ya tengan metrics.json")
     args = ap.parse_args()
 
     with open(args.config, encoding="utf-8") as fh:
@@ -256,9 +258,26 @@ def main():
 
     resumen = []
     for seed in cfg["seeds"]:
+        d = os.path.join(RUNS, name, "seed%d" % seed)
+        hecho = os.path.join(d, "metrics.json")
+
+        # Reanudacion a nivel de SEMILLA. No hay checkpoint intermedio dentro de
+        # una semilla a proposito: guardarlo cada epoca costaria 94 MB por
+        # escritura y una semilla de Kaggle son 15 min. Para Fishnet, donde una
+        # semilla puede tardar 2,5 h, convendra reevaluarlo.
+        if os.path.exists(hecho) and not args.force:
+            with open(hecho, encoding="utf-8") as fh:
+                m = json.load(fh)
+            resumen.append((seed, m["val"]["macro_f1"], m["test"]["macro_f1"],
+                            m["test"]["acc"], m["sec"]))
+            print("\n  --- semilla %d: ya completada, se omite (--force para rehacerla) ---"
+                  % seed, flush=True)
+            print("    -> val_f1 %.4f | test_f1 %.4f | test_acc %.4f"
+                  % (resumen[-1][1], resumen[-1][2], resumen[-1][3]), flush=True)
+            continue
+
         print("\n  --- semilla %d ---" % seed, flush=True)
         out = run_one(cfg, seed)
-        d = os.path.join(RUNS, name, "seed%d" % seed)
         os.makedirs(d, exist_ok=True)
 
         torch.save(out.pop("_state"), os.path.join(d, "checkpoint.pt"))
