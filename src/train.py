@@ -193,14 +193,19 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
     step, ep0 = 0, 0
 
     if resume_path and os.path.exists(resume_path):
-        ck = torch.load(resume_path, map_location=device, weights_only=False)
+        # map_location="cpu", NO device: cargar directo a CUDA convertiria
+        # tambien los estados de los RNG, y set_rng_state exige un ByteTensor de
+        # CPU. load_state_dict del modelo y del optimizador ya colocan cada
+        # tensor en el device de su parametro, asi que no se pierde nada.
+        ck = torch.load(resume_path, map_location="cpu", weights_only=False)
         model.load_state_dict(ck["model"])
         opt.load_state_dict(ck["opt"])
         sched.load_state_dict(ck["sched"])
         scaler.load_state_dict(ck["scaler"])
-        torch.set_rng_state(ck["rng_cpu"])
+        torch.set_rng_state(ck["rng_cpu"].cpu().to(torch.uint8))
         if ck["rng_cuda"] is not None:
-            torch.cuda.set_rng_state_all(ck["rng_cuda"])
+            torch.cuda.set_rng_state_all([s.cpu().to(torch.uint8)
+                                          for s in ck["rng_cuda"]])
         hist, best, step, ep0 = ck["hist"], ck["best"], ck["step"], ck["epoch"] + 1
         print("  reanudando desde la epoca %d (mejor hasta ahora: %.4f)"
               % (ep0 + 1, best["f1"]), flush=True)
@@ -329,8 +334,11 @@ def main():
         if os.path.exists(hecho) and not args.force:
             with open(hecho, encoding="utf-8") as fh:
                 m = json.load(fh)
-            resumen.append((seed, m["val"].get("macro_f1_limpio", m["val"]["macro_f1"]),
-                            m["test"].get("macro_f1_limpio", m["test"]["macro_f1"]),
+            # NaN si la corrida es de una version anterior que no guardaba la
+            # cifra limpia. Sustituirla por la oficial la etiquetaria como
+            # limpia, que es exactamente el error que este cambio corrige.
+            resumen.append((seed, m["val"].get("macro_f1_limpio", float("nan")),
+                            m["test"].get("macro_f1_limpio", float("nan")),
                             m["test"]["macro_f1"], m["test"]["acc"], m["sec"]))
             print("\n  --- semilla %d: ya completada, se omite (--force para rehacerla) ---"
                   % seed, flush=True)

@@ -82,7 +82,9 @@
   },
   "test": {
     "macro_f1": 0.6010621968597136,
-    "acc": 0.8755962747028091
+    "acc": 0.8755962747028091,
+    "macro_f1_limpio": 0.34042706096429914,
+    "n_limpio": 7159
   },
   "classes": [
     "Albacore",
@@ -151,5 +153,6 @@
     "gpu": "NVIDIA GeForce RTX 3060 Ti",
     "commit": "7e5b871",
     "fecha": "2026-09-01 13:23:48"
-  }
+  },
+  "_migrado": "macro_f1_limpio recalculado desde los logits guardados (commit e6394f3)"
 }
