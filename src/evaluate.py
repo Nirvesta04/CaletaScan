@@ -230,6 +230,20 @@ class Run:
     def clusters(self, part):
         return self.ds[part].df[self.cluster_col].to_numpy()
 
+    def rows(self, part: str, solo_limpio: bool) -> np.ndarray:
+        """
+        Indices de fila sobre los que evaluar.
+
+        Con solo_limpio=True quedan las cajas cuya secuencia NO aparece en
+        train. Los logits guardados cubren la particion entera, asi que el test
+        purgado es un subconjunto y no hace falta reentrenar ni reinferir nada:
+        eso es E6.
+        """
+        n = len(self.y(part))
+        if not solo_limpio or self.cfg["dataset"] != "fishnet":
+            return np.arange(n)
+        return np.flatnonzero(data.clean_mask(self.ds["train"], self.ds[part]))
+
 
 # ---------------------------------------------------------------------------
 # Informe
@@ -244,18 +258,23 @@ def predictions(run: Run, seed: int, part: str, tau: float, jerarquico: bool):
 
 
 def report(run: Run, part: str = "test", ajustar: bool = True,
-           jerarquico: bool = True, n_boot: int = N_BOOT) -> dict:
-    y = run.y(part)
-    grupos = cluster_index(run.clusters(part))
+           jerarquico: bool = True, n_boot: int = N_BOOT,
+           solo_limpio: bool = False) -> dict:
+    idx = run.rows(part, solo_limpio)
+    y = run.y(part)[idx]
+    grupos = cluster_index(run.clusters(part)[idx])
 
-    # tau se elige en VALIDACION, sobre la metrica que se reporta
+    # tau se elige en VALIDACION, sobre la metrica que se reporta y sobre el
+    # mismo tipo de filas: sintonizarlo en la val contaminada y aplicarlo al
+    # test purgado seria elegir el umbral con datos que no representan al test.
     tau = 0.0
     if ajustar:
-        taus = [sweep_tau(run.z[s]["val"], run.y("val"), run.prior, run.keep, run.K)
-                for s in run.seeds]
+        iv = run.rows("val", solo_limpio)
+        taus = [sweep_tau(run.z[s]["val"][iv], run.y("val")[iv], run.prior,
+                          run.keep, run.K) for s in run.seeds]
         tau = float(np.mean([t for t, _ in taus]))
 
-    preds = {s: predictions(run, s, part, tau, jerarquico) for s in run.seeds}
+    preds = {s: predictions(run, s, part, tau, jerarquico)[idx] for s in run.seeds}
 
     f1s = np.array([macro_f1(confusion(y, preds[s], run.K), run.keep) for s in run.seeds])
     bas = np.array([balanced_acc(confusion(y, preds[s], run.K), run.keep) for s in run.seeds])
@@ -269,11 +288,15 @@ def report(run: Run, part: str = "test", ajustar: bool = True,
 
     ic = bootstrap(f_macro, grupos, n_boot)
 
-    cm = sum(confusion(y, preds[s], run.K) for s in run.seeds)
+    # Confusion agregada sobre las semillas, dividida por su numero: precision,
+    # recall y F1 no cambian al escalar, pero asi la columna de soporte muestra
+    # las cajas reales del test y no su triple.
+    cm = sum(confusion(y, preds[s], run.K) for s in run.seeds) / len(run.seeds)
     pc = per_class(cm)
 
     return {"run": run.name, "particion": part, "tau": tau,
-            "jerarquico": jerarquico, "semillas": run.seeds,
+            "jerarquico": jerarquico, "solo_limpio": solo_limpio,
+            "semillas": run.seeds,
             "n_filas": len(y), "n_clusteres": len(grupos),
             "macro_f1": {"media": float(f1s.mean()),
                          "std": float(f1s.std(ddof=1)) if len(f1s) > 1 else 0.0,
@@ -283,7 +306,7 @@ def report(run: Run, part: str = "test", ajustar: bool = True,
                          "nota": "no informativa con este desbalance; se reporta por completitud"},
             "por_clase": {c: {k: float(v[i]) for k, v in pc.items()}
                           for i, c in enumerate(run.classes)},
-            "_preds": preds, "_y": y, "_grupos": grupos}
+            "_preds": preds, "_y": y, "_grupos": grupos, "_idx": idx}
 
 
 def por_estrato(run: Run, rep: dict, col: str = "occ_union",
@@ -291,7 +314,7 @@ def por_estrato(run: Run, rep: dict, col: str = "occ_union",
     """Macro-F1 por estrato de oclusion. Es la prueba de la hipotesis del
     enunciado: si el ViT resiste mejor la oclusion, su ventaja sobre el ResNet
     tiene que CRECER de forma monotona con el estrato."""
-    df = run.ds[rep["particion"]].df
+    df = run.ds[rep["particion"]].df.iloc[rep["_idx"]].reset_index(drop=True)
     if col not in df.columns:
         return pd.DataFrame()
     nombres = ["0 aislado", "(0,0.10]", "(0.10,0.30]", ">0.30"]
@@ -313,8 +336,9 @@ def imprimir(rep: dict, run: Run):
     print("\n" + "=" * 74)
     print("%s  ·  %s  ·  semillas %s" % (rep["run"], rep["particion"], rep["semillas"]))
     print("=" * 74)
-    print("  filas %d  |  clusteres independientes %d  (%s)"
-          % (rep["n_filas"], rep["n_clusteres"], run.cluster_col))
+    print("  filas %d  |  clusteres independientes %d  (%s)  |  test %s"
+          % (rep["n_filas"], rep["n_clusteres"], run.cluster_col,
+             "PURGADO" if rep.get("solo_limpio") else "oficial (con fuga)"))
     if rep["tau"]:
         print("  ajuste de logits tau=%.2f (elegido en validacion)" % rep["tau"])
     if rep["jerarquico"] and "Tuna" in run.classes:
@@ -338,12 +362,14 @@ def imprimir(rep: dict, run: Run):
 
 
 def comparar(a: Run, b: Run, part="test", ajustar=True, jerarquico=True,
-             n_boot=N_BOOT) -> dict:
+             n_boot=N_BOOT, solo_limpio=False) -> dict:
     """Bootstrap de clusteres PAREADO sobre delta = macro-F1(a) - macro-F1(b)."""
     if a.classes != b.classes:
         raise ValueError("las dos corridas no comparten espacio de clases")
-    ra = report(a, part, ajustar, jerarquico, n_boot=1)
-    rb = report(b, part, ajustar, jerarquico, n_boot=1)
+    ra = report(a, part, ajustar, jerarquico, n_boot=1, solo_limpio=solo_limpio)
+    rb = report(b, part, ajustar, jerarquico, n_boot=1, solo_limpio=solo_limpio)
+    if not np.array_equal(ra["_idx"], rb["_idx"]):
+        raise ValueError("las dos corridas no evaluan las mismas filas")
     y, grupos = ra["_y"], ra["_grupos"]
 
     def mk(rep, run):
@@ -382,12 +408,16 @@ def main():
                     help="no aplicar ajuste de logits")
     ap.add_argument("--sin-jerarquia", action="store_true",
                     help="no dar credito jerarquico a Tuna")
+    ap.add_argument("--limpio", action="store_true",
+                    help="evaluar solo sobre las filas cuya secuencia no esta "
+                         "en train (test purgado). Es el numero honesto.")
     ap.add_argument("--boot", type=int, default=N_BOOT)
     ap.add_argument("--json", default=None, help="ruta donde guardar el informe")
     args = ap.parse_args()
 
     run = Run(args.run)
-    rep = report(run, args.part, not args.sin_ajuste, not args.sin_jerarquia, args.boot)
+    rep = report(run, args.part, not args.sin_ajuste, not args.sin_jerarquia,
+                 args.boot, solo_limpio=args.limpio)
     imprimir(rep, run)
 
     est = por_estrato(run, rep)
@@ -399,7 +429,8 @@ def main():
     if args.compare:
         salida["comparacion"] = comparar(run, Run(args.compare), args.part,
                                          not args.sin_ajuste,
-                                         not args.sin_jerarquia, args.boot)
+                                         not args.sin_jerarquia, args.boot,
+                                         solo_limpio=args.limpio)
     if args.json:
         os.makedirs(os.path.dirname(os.path.abspath(args.json)), exist_ok=True)
         with open(args.json, "w", encoding="utf-8") as fh:
