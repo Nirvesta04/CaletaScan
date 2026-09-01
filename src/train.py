@@ -150,9 +150,11 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
     # Filas de validacion sobre las que se elige el modelo. En fishnet, solo las
     # que no comparten secuencia con train: seleccionar sobre las contaminadas
     # premiaria al modelo que mejor memoriza.
+    es_fishnet = cfg["dataset"] == "fishnet"
     sel = (data.clean_mask(tr, va)
-           if cfg["dataset"] == "fishnet" and cfg["select_on_clean"]
+           if es_fishnet and cfg["select_on_clean"]
            else np.ones(len(va), dtype=bool))
+    sel_te = data.clean_mask(tr, te) if es_fishnet else np.ones(len(te), dtype=bool)
 
     tl = data.make_loader(tr, cfg["batch_size"], True, cfg["num_workers"], seed)
     vl = data.make_loader(va, cfg["batch_size"], False, cfg["num_workers"], seed)
@@ -269,7 +271,12 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
                 "macro_f1_limpio": macro_f1(zv[sel], y_va[sel], keep),
                 "n_limpio": int(sel.sum()),
                 "acc": float((zv.argmax(1) == y_va).mean())},
+        # macro_f1 es sobre el test OFICIAL, que incluye las cajas cuya secuencia
+        # esta en train. macro_f1_limpio es sobre el test purgado y es el numero
+        # honesto: es el que se reporta como resultado del proyecto.
         "test": {"macro_f1": macro_f1(zt, y_te, keep),
+                 "macro_f1_limpio": macro_f1(zt[sel_te], y_te[sel_te], keep),
+                 "n_limpio": int(sel_te.sum()),
                  "acc": float((zt.argmax(1) == y_te).mean())},
         "classes": tr.classes,
         "n": {"train": len(tr), "val": len(va), "test": len(te)},
@@ -317,11 +324,12 @@ def main():
         if os.path.exists(hecho) and not args.force:
             with open(hecho, encoding="utf-8") as fh:
                 m = json.load(fh)
-            resumen.append((seed, m["val"]["macro_f1"], m["test"]["macro_f1"],
-                            m["test"]["acc"], m["sec"]))
+            resumen.append((seed, m["val"].get("macro_f1_limpio", m["val"]["macro_f1"]),
+                            m["test"].get("macro_f1_limpio", m["test"]["macro_f1"]),
+                            m["test"]["macro_f1"], m["test"]["acc"], m["sec"]))
             print("\n  --- semilla %d: ya completada, se omite (--force para rehacerla) ---"
                   % seed, flush=True)
-            print("    -> val_f1 %.4f | test_f1 %.4f | test_acc %.4f"
+            print("    -> val_f1 %.4f | test_f1 %.4f (limpio) | %.4f (oficial)"
                   % (resumen[-1][1], resumen[-1][2], resumen[-1][3]), flush=True)
             continue
 
@@ -349,17 +357,27 @@ def main():
                 "fecha": time.strftime("%Y-%m-%d %H:%M:%S"),
             }}, fh, indent=2, ensure_ascii=False)
 
-        resumen.append((seed, out["val"]["macro_f1"], out["test"]["macro_f1"],
+        # Se resume con las cifras LIMPIAS: son las que representan al proyecto.
+        # El numero sobre el test oficial queda en metrics.json para poder
+        # compararlo con la literatura, pero no es el resultado.
+        resumen.append((seed, out["val"]["macro_f1_limpio"],
+                        out["test"]["macro_f1_limpio"], out["test"]["macro_f1"],
                         out["test"]["acc"], out["sec"]))
-        print("    -> val_f1 %.4f | test_f1 %.4f | test_acc %.4f | %.1f min"
-              % (resumen[-1][1], resumen[-1][2], resumen[-1][3], resumen[-1][4] / 60),
-              flush=True)
+        print("    -> val_f1 %.4f | test_f1 %.4f (limpio) | %.4f (oficial, con fuga)"
+              " | acc %.4f | %.1f min"
+              % (resumen[-1][1], resumen[-1][2], resumen[-1][3],
+                 resumen[-1][4], resumen[-1][5] / 60), flush=True)
 
-    f1s = np.array([r[2] for r in resumen])
-    accs = np.array([r[3] for r in resumen])
+    f1s = np.array([r[2] for r in resumen])       # test purgado
+    f1o = np.array([r[3] for r in resumen])       # test oficial
+    accs = np.array([r[4] for r in resumen])
+    sd = lambda a: a.std(ddof=1) if len(a) > 1 else 0.0
     print("\n[%s] %d semillas" % (name, len(resumen)))
-    print("  test macro-F1 : %.4f +- %.4f" % (f1s.mean(), f1s.std(ddof=1) if len(f1s) > 1 else 0.0))
-    print("  test accuracy : %.4f +- %.4f" % (accs.mean(), accs.std(ddof=1) if len(accs) > 1 else 0.0))
+    print("  test macro-F1 LIMPIO  : %.4f +- %.4f   <- el numero honesto"
+          % (f1s.mean(), sd(f1s)))
+    print("  test macro-F1 oficial : %.4f +- %.4f   (incluye cajas con fuga de secuencia)"
+          % (f1o.mean(), sd(f1o)))
+    print("  test accuracy         : %.4f +- %.4f" % (accs.mean(), sd(accs)))
     print("  resultados en runs/%s/" % name)
 
 

@@ -1,0 +1,155 @@
+{
+  "hist": [
+    {
+      "epoch": 0,
+      "step": 1138,
+      "loss": 1.11440646004174,
+      "val_macro_f1": 0.23015924803673776,
+      "val_acc": 0.7807689332405043,
+      "lr": 0.000292953982187183,
+      "sec": 311.87218046188354
+    },
+    {
+      "epoch": 1,
+      "step": 2276,
+      "loss": 0.7478459717833514,
+      "val_macro_f1": 0.27074932215842246,
+      "val_acc": 0.7866481008741394,
+      "lr": 0.0002635036855394609,
+      "sec": 221.87191772460938
+    },
+    {
+      "epoch": 2,
+      "step": 3414,
+      "loss": 0.6970124738601893,
+      "val_macro_f1": 0.25804157952766343,
+      "val_acc": 0.7981743637348186,
+      "lr": 0.00021570344250090758,
+      "sec": 212.30231595039368
+    },
+    {
+      "epoch": 3,
+      "step": 4552,
+      "loss": 0.6691404473697783,
+      "val_macro_f1": 0.2477592227053399,
+      "val_acc": 0.8002630153941364,
+      "lr": 0.00015728103647395014,
+      "sec": 211.69722080230713
+    },
+    {
+      "epoch": 4,
+      "step": 5690,
+      "loss": 0.6515728409135279,
+      "val_macro_f1": 0.22356365927366315,
+      "val_acc": 0.7935329156030014,
+      "lr": 9.76815177538527e-05,
+      "sec": 205.92148995399475
+    },
+    {
+      "epoch": 5,
+      "step": 6828,
+      "loss": 0.6393899933315539,
+      "val_macro_f1": 0.22577341462327694,
+      "val_acc": 0.7988705809545912,
+      "lr": 4.654023842839312e-05,
+      "sec": 211.39793348312378
+    },
+    {
+      "epoch": 6,
+      "step": 7966,
+      "loss": 0.6336153917446706,
+      "val_macro_f1": 0.22700244453055424,
+      "val_acc": 0.8033573141486811,
+      "lr": 1.21251215127625e-05,
+      "sec": 202.73375749588013
+    },
+    {
+      "epoch": 7,
+      "step": 9104,
+      "loss": 0.6306980110848934,
+      "val_macro_f1": 0.2521084383396787,
+      "val_acc": 0.8042856037750444,
+      "lr": 0.0,
+      "sec": 205.16983151435852
+    }
+  ],
+  "best_epoch": 1,
+  "val": {
+    "macro_f1": 0.5738310336081244,
+    "macro_f1_limpio": 0.27074932215842246,
+    "n_limpio": 6144,
+    "acc": 0.7866481008741394
+  },
+  "test": {
+    "macro_f1": 0.6010621968597136,
+    "acc": 0.8755962747028091
+  },
+  "classes": [
+    "Albacore",
+    "Bigeye tuna",
+    "Blue marlin",
+    "Escolar",
+    "Great barracuda",
+    "Human",
+    "Long snouted lancetfish",
+    "Mahi mahi",
+    "No fish",
+    "Opah",
+    "Other_rare",
+    "Shark",
+    "Shortbill spearfish",
+    "Skipjack tuna",
+    "Striped marlin",
+    "Swordfish",
+    "Tuna",
+    "Unknown",
+    "Wahoo",
+    "Yellowfin tuna"
+  ],
+  "n": {
+    "train": 72885,
+    "val": 12927,
+    "test": 13207
+  },
+  "steps": {
+    "total": 9104,
+    "per_epoch": 1138,
+    "warmup": 273
+  },
+  "params_m": 23.549012,
+  "sec": 1880.07386636734,
+  "seed": 0,
+  "config": {
+    "model": "resnet50",
+    "dataset": "fishnet",
+    "label_col": "label_model",
+    "purge": false,
+    "epochs": 8,
+    "total_steps": null,
+    "batch_size": 64,
+    "accum_steps": 1,
+    "lr": 3e-05,
+    "head_lr_mult": 10.0,
+    "llrd": 0.7,
+    "weight_decay": 0.05,
+    "warmup_frac": 0.03,
+    "label_smoothing": 0.1,
+    "grad_clip": 1.0,
+    "num_workers": 8,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "amp": true,
+    "select_on_clean": true,
+    "checkpoint_every_epoch": true,
+    "name": "e4_resnet50_fishnet"
+  },
+  "env": {
+    "torch": "2.6.0+cu124",
+    "gpu": "NVIDIA GeForce RTX 3060 Ti",
+    "commit": "7e5b871",
+    "fecha": "2026-09-01 13:23:48"
+  }
+}
