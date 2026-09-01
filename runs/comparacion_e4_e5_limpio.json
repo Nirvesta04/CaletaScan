@@ -1,0 +1,163 @@
+{
+  "run": "e5_vit_b_16_fishnet",
+  "particion": "test",
+  "tau": 0.05000000000000001,
+  "jerarquico": true,
+  "solo_limpio": true,
+  "semillas": [
+    0,
+    1,
+    2
+  ],
+  "n_filas": 7159,
+  "n_clusteres": 612,
+  "macro_f1": {
+    "media": 0.39325428228862375,
+    "std": 0.017413271628026472,
+    "ic95_bootstrap": [
+      0.3486212724189276,
+      0.42383325550914397
+    ]
+  },
+  "balanced_acc": {
+    "media": 0.3814687642386438
+  },
+  "accuracy": {
+    "media": 0.881873632257764,
+    "nota": "no informativa con este desbalance; se reporta por completitud"
+  },
+  "por_clase": {
+    "Albacore": {
+      "precision": 0.4737864077669902,
+      "recall": 0.6304909560723514,
+      "f1": 0.541019955654102,
+      "support": 129.0
+    },
+    "Bigeye tuna": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 22.0
+    },
+    "Blue marlin": {
+      "precision": 0.015094339622641508,
+      "recall": 0.04301075268817204,
+      "f1": 0.0223463687150838,
+      "support": 31.0
+    },
+    "Escolar": {
+      "precision": 0.33333333333333337,
+      "recall": 0.2248062015503876,
+      "f1": 0.26851851851851855,
+      "support": 42.99999999999999
+    },
+    "Great barracuda": {
+      "precision": 0.03370786516853933,
+      "recall": 0.08333333333333333,
+      "f1": 0.048,
+      "support": 12.0
+    },
+    "Human": {
+      "precision": 0.9635952966186143,
+      "recall": 0.9865333605386658,
+      "f1": 0.9749294259981183,
+      "support": 4900.999999999999
+    },
+    "Long snouted lancetfish": {
+      "precision": 0.6842105263157895,
+      "recall": 0.2113821138211382,
+      "f1": 0.32298136645962733,
+      "support": 41.0
+    },
+    "Mahi mahi": {
+      "precision": 0.8856400259909032,
+      "recall": 0.8604797979797979,
+      "f1": 0.8728786423310918,
+      "support": 528.0
+    },
+    "No fish": {
+      "precision": 0.978723404255319,
+      "recall": 0.9638095238095238,
+      "f1": 0.9712092130518234,
+      "support": 175.0
+    },
+    "Opah": {
+      "precision": 0.8417721518987341,
+      "recall": 0.9637681159420289,
+      "f1": 0.8986486486486486,
+      "support": 46.00000000000001
+    },
+    "Other_rare": {
+      "precision": 0.28169014084507044,
+      "recall": 0.2857142857142857,
+      "f1": 0.28368794326241137,
+      "support": 70.0
+    },
+    "Shark": {
+      "precision": 0.7499999999999999,
+      "recall": 0.4736842105263159,
+      "f1": 0.5806451612903226,
+      "support": 56.99999999999999
+    },
+    "Shortbill spearfish": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 7.0
+    },
+    "Skipjack tuna": {
+      "precision": 0.9677419354838709,
+      "recall": 0.9090909090909091,
+      "f1": 0.9374999999999999,
+      "support": 11.0
+    },
+    "Striped marlin": {
+      "precision": 0.6262626262626263,
+      "recall": 0.17971014492753623,
+      "f1": 0.27927927927927926,
+      "support": 230.0
+    },
+    "Swordfish": {
+      "precision": 0.44936708860759494,
+      "recall": 0.5035460992907801,
+      "f1": 0.4749163879598662,
+      "support": 141.0
+    },
+    "Tuna": {
+      "precision": 0.9735935706084959,
+      "recall": 0.805318138651472,
+      "f1": 0.8814968814968814,
+      "support": 351.00000000000006
+    },
+    "Unknown": {
+      "precision": 0.6927312775330398,
+      "recall": 0.9889937106918238,
+      "f1": 0.8147668393782384,
+      "support": 212.0
+    },
+    "Wahoo": {
+      "precision": 0.3346613545816733,
+      "recall": 0.4057971014492754,
+      "f1": 0.36681222707423583,
+      "support": 69.0
+    },
+    "Yellowfin tuna": {
+      "precision": 0.453125,
+      "recall": 0.2329317269076305,
+      "f1": 0.30769230769230765,
+      "support": 83.0
+    }
+  },
+  "comparacion": {
+    "delta_medio": 0.04180507752969101,
+    "ic95": [
+      0.0069508040880848915,
+      0.07655519004845827
+    ],
+    "p_delta_positivo": 0.9895,
+    "a": "e5_vit_b_16_fishnet",
+    "b": "e4_resnet50_fishnet",
+    "macro_f1_a": 0.39325428228862375,
+    "macro_f1_b": 0.3519948092086804
+  }
+}

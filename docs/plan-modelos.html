@@ -466,6 +466,63 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     </div>
   </div>
 
+  <h3>Resultados de E4, E5 y E6 <span class="pill">1-sep</span></h3>
+  <div class="col">
+  <p>FishNet, 3 semillas cada uno, presupuesto idéntico de 9.104 pasos. Las cifras llevan ajuste de logits (τ = 0,18 elegido en validación) y crédito jerárquico para <code>Tuna</code>; sin ellos son 0,3331 y 0,3704.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>El test purgado tiene 7.159 recortes y 612 secuencias independientes. El IC es de bootstrap de clústeres sobre secuencias; la desviación es entre semillas.</caption>
+      <thead><tr><th>Corrida</th><th class="num">test purgado</th><th class="num">IC95 clústeres</th><th class="num">test oficial</th><th class="num">accuracy</th></tr></thead>
+      <tbody>
+        <tr><td class="name">E4 · ResNet-50</td><td class="num">0,3520</td><td class="num">[0,3061 · 0,3844]</td><td class="num">0,6018</td><td class="num">0,8564</td></tr>
+        <tr><td class="name">E5 · ViT-B/16</td><td class="num"><strong>0,3933</strong></td><td class="num">—</td><td class="num">0,6412</td><td class="num">0,8819</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="find good">
+    <span class="tag">E6 · la fuga del split oficial</span>
+    <h4>El split publicado de FishNet infla el macro-F1 en ~80 %</h4>
+    <div class="col">
+    <p>ResNet pasa de 0,3331 a 0,6018 y ViT de 0,3704 a 0,6412 solo por incluir las cajas cuya secuencia está en train: <strong>+81 % y +73 % relativo</strong>. Las 11 clases con soporte limpio suficiente caen sin excepción; la mediana de la caída es −0,155 y <em>Yellowfin tuna</em> se desploma de 0,881 a 0,267.</p>
+    <p>No es una fuga que fabricamos nosotros para ilustrar: es el split oficial publicado. Y afecta a las dos arquitecturas casi por igual, así que no es un artefacto de ninguna.</p>
+    </div>
+  </div>
+
+  <div class="find good">
+    <span class="tag">La comparación · esta vez sí distingue</span>
+    <h4>Δ = +0,0418 a favor del ViT, IC95 [+0,0070 · +0,0766], P(Δ&gt;0) = 0,990</h4>
+    <div class="col">
+    <p>El intervalo <strong>no cruza cero</strong>. A diferencia de Kaggle, aquí la diferencia es distinguible: con 612 secuencias independientes y un bootstrap pareado, el ViT gana.</p>
+    <p>Y la ventaja es probablemente un <strong>límite inferior</strong>: el ResNet tocó techo en la época 2 de 8 y después se degradó, mientras el ViT seguía mejorando en la época 8. Con presupuesto emparejado —que es el criterio de justicia del protocolo— el ViT gana estando aún sin converger.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <span class="tag">Hipótesis del enunciado · NO se sostiene</span>
+    <h4>El ViT gana, pero no por la oclusión</h4>
+    <div class="col">
+    <p>El enunciado afirma que «ViT separa mejor peces amontonados y superpuestos gracias a la atención global». Eso predice que Δ crece con el estrato de oclusión. Medido:</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>Bootstrap pareado dentro de cada estrato, 1.500 réplicas. Correlación de Spearman entre estrato y Δ: <strong>−0,600</strong>.</caption>
+        <thead><tr><th>Estrato <code>occ_union</code></th><th class="num">n</th><th class="num">ViT</th><th class="num">ResNet</th><th class="num">Δ</th><th class="num">IC95 de Δ</th></tr></thead>
+        <tbody>
+          <tr><td class="name">0 · aislado</td><td class="num">2.277</td><td class="num">0,4052</td><td class="num">0,3533</td><td class="num">+0,0518</td><td class="num">[−0,008 · +0,110]</td></tr>
+          <tr><td class="name">(0 , 0,10]</td><td class="num">1.143</td><td class="num">0,3815</td><td class="num">0,3106</td><td class="num">+0,0709</td><td class="num">[−0,015 · +0,113]</td></tr>
+          <tr><td class="name">(0,10 , 0,30]</td><td class="num">1.657</td><td class="num">0,3106</td><td class="num">0,2940</td><td class="num">+0,0166</td><td class="num">[−0,037 · +0,074]</td></tr>
+          <tr><td class="name">&gt; 0,30 · fuerte</td><td class="num">2.082</td><td class="num">0,3543</td><td class="num">0,3100</td><td class="num">+0,0443</td><td class="num">[+0,004 · +0,087]</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+    <p>La secuencia es +0,052 → +0,071 → +0,017 → +0,044: <strong>no es monótona, y si algo la tendencia es negativa.</strong> La ventaja del ViT es aproximadamente constante y no se concentra en los casos amontonados; de hecho el mayor Δ aparece en los peces poco o nada ocluidos.</p>
+    <p><strong>El ViT es mejor, pero no por el motivo que el enunciado propone.</strong> El mecanismo tendrá que buscarse en otra parte —la fase de interpretabilidad, con Grad-CAM contra relevancia de Chefer, es el sitio natural—. Un resultado negativo bien medido sobre la hipótesis del profesor vale más que confirmarla con una tabla sin desglose.</p>
+    </div>
+  </div>
+
   <div class="find warn">
     <span class="tag">Consecuencia · E3 queda sin objeto</span>
     <div class="col">
@@ -942,9 +999,9 @@ requirements.txt</div>
     <li><s>E1 y E2 (Kaggle). Baselines exigidos por la rúbrica.</s> <span class="pill">hecho</span> ResNet 0,9970 · ViT 1,0000; la diferencia no es distinguible.</li>
     <li><s><code>evaluate.py</code> con bootstrap de clúster.</s> <span class="pill">hecho</span> 15/15 comprobaciones en <code>tests/test_stats.py</code>, incluido el factor de diseño.</li>
     <li><s>E3, la demostración de la fuga.</s> <span class="pill s">sin objeto</span> El split honesto ya está en el techo; se traslada a E6.</li>
-    <li><strong>E4 y E5</strong> (Fishnet). Unas 3 h de GPU con 3 semillas.</li>
-    <li><strong>E6</strong>, evaluación en test purgado. Sin reentrenar, y es el segundo resultado más vendible.</li>
-    <li><strong>Estratificación por oclusión</strong> (§8.4) sobre los logits ya guardados. Es la prueba de la hipótesis del enunciado, y sale gratis.</li>
+    <li><s>E4 y E5 (Fishnet).</s> <span class="pill">hecho</span> ResNet 0,3520 · ViT 0,3933 en test purgado; Δ = +0,042 con IC que no cruza cero.</li>
+    <li><s>E6, evaluación en test purgado.</s> <span class="pill">hecho</span> El split oficial infla el macro-F1 un 80 %.</li>
+    <li><s>Estratificación por oclusión.</s> <span class="pill s">hipótesis refutada</span> Δ no crece con la oclusión (Spearman −0,600).</li>
     <li><strong>Diapositivas</strong>, con la fila de riesgos apoyada en números propios y no en advertencias genéricas.</li>
   </ol>
   <p>Interpretabilidad (E7), calibración, OOD, demo y data card van después del Avance, pero el diseño de todos ellos ya está fijado en este documento, y los logits guardados en el paso 5 hacen que la mayoría sea trabajo de análisis, no de GPU.</p>
