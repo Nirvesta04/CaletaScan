@@ -21,7 +21,8 @@ warmup_frac: 0.08
 
 label_smoothing: 0.1
 grad_clip: 1.0
-num_workers: 8
+num_workers: 4        # 4 bastan: el I/O son ~130 s/epoca y la GPU necesita 212 s (E4) o 588 s (E5).
+                     # Con 8 se agoto el limite de commit de Windows (error 1455).
 seeds: [0, 1, 2]
 
 select_on_clean: true

@@ -264,6 +264,11 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
     zv = infer(model, vl, len(va), n_classes, device)
     zt = infer(model, el, len(te), n_classes, device)
 
+    # Cerrar los workers antes de devolver. Sin esto quedan vivos hasta que
+    # muera el proceso y, a ~340 MB cada uno, agotan el limite de commit de
+    # Windows a mitad de la tercera semilla.
+    data.shutdown_loaders(tl, vl, el)
+
     return {
         "hist": hist,
         "best_epoch": best["epoch"],

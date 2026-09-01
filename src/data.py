@@ -252,7 +252,8 @@ def _worker_init(worker_id):
 
 
 def make_loader(ds: FishDataset, batch_size: int, train: bool,
-                num_workers: int = 8, seed: int = 0) -> DataLoader:
+                num_workers: int = 8, seed: int = 0,
+                persistent: bool | None = None) -> DataLoader:
     """
     OJO EN WINDOWS: con num_workers > 0 los workers arrancan por `spawn`, que
     REIMPORTA el modulo principal en cada proceso hijo. Todo script que llame a
@@ -265,17 +266,43 @@ def make_loader(ds: FishDataset, batch_size: int, train: bool,
     procesos sin parar hasta colgar la maquina. Por la misma razon un script con
     workers no se puede pasar por stdin (`python - < script.py`): el hijo
     intenta reejecutar '<stdin>' y falla con OSError [Errno 22].
+
+    `persistent` solo por defecto en el loader de TRAIN. Mantener vivos tambien
+    los de val y test triplicaba el numero de workers por semilla (8 x 3 = 24) y
+    los dejaba ocupando memoria hasta el final del proceso: con tres semillas
+    eso agoto el limite de commit de Windows y reventó con
+    "Couldn't open shared file mapping ... error code 1455". Los de evaluacion
+    se recrean en cada epoca; el arranque se amortiza sobre una epoca entera.
     """
     g = torch.Generator()
     g.manual_seed(seed)
     return DataLoader(
         ds, batch_size=batch_size, shuffle=train, num_workers=num_workers,
         pin_memory=True, drop_last=train,
-        # en Windows los workers arrancan por spawn: sin persistent_workers se
-        # paga el arranque completo en cada epoca
-        persistent_workers=num_workers > 0,
+        persistent_workers=(train if persistent is None else persistent) and num_workers > 0,
         worker_init_fn=_worker_init, generator=g,
     )
+
+
+def shutdown_loaders(*loaders) -> None:
+    """
+    Cierra los workers de forma explicita.
+
+    Salir de la funcion no basta: con persistent_workers el DataLoader mantiene
+    vivo su iterador, y el recolector de basura de CPython no corre a tiempo. En
+    Windows cada worker huerfano retiene ~340 MB, asi que tres semillas dejaban
+    ~6 GB sin liberar.
+    """
+    import gc
+    for ld in loaders:
+        it = getattr(ld, "_iterator", None)
+        if it is not None:
+            try:
+                it._shutdown_workers()
+            except Exception:
+                pass
+            ld._iterator = None
+    gc.collect()
 
 
 def set_seed(seed: int):
