@@ -310,19 +310,26 @@ def make_loader(ds: FishDataset, batch_size: int, train: bool,
     workers no se puede pasar por stdin (`python - < script.py`): el hijo
     intenta reejecutar '<stdin>' y falla con OSError [Errno 22].
 
-    `persistent` solo por defecto en el loader de TRAIN. Mantener vivos tambien
-    los de val y test triplicaba el numero de workers por semilla (8 x 3 = 24) y
-    los dejaba ocupando memoria hasta el final del proceso: con tres semillas
-    eso agoto el limite de commit de Windows y reventó con
-    "Couldn't open shared file mapping ... error code 1455". Los de evaluacion
-    se recrean en cada epoca; el arranque se amortiza sobre una epoca entera.
+    `persistent` por defecto en TODOS los loaders, y es importante que asi sea.
+
+    Hubo un intento de arreglar la fuga de memoria haciendo no persistentes los
+    de val y test. Fue un error: la fuga la causaba no cerrarlos NUNCA, no la
+    persistencia. Sin ella, cada epoca vuelve a lanzar los workers por spawn, y
+    en Windows cada proceso reimporta torch. Medido sobre el loader de
+    validacion de Kaggle con 4 workers:
+
+        no persistente   26,9 s por pasada
+        persistente       6,4 s por pasada
+
+    Son +20 s por epoca sobre epocas de ~20 s. La contencion del consumo va por
+    otro lado: num_workers moderado y shutdown_loaders() al terminar la semilla.
     """
     g = torch.Generator()
     g.manual_seed(seed)
     return DataLoader(
         ds, batch_size=batch_size, shuffle=train, num_workers=num_workers,
         pin_memory=True, drop_last=train,
-        persistent_workers=(train if persistent is None else persistent) and num_workers > 0,
+        persistent_workers=(True if persistent is None else persistent) and num_workers > 0,
         worker_init_fn=_worker_init, generator=g,
     )
 
