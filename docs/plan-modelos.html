@@ -290,6 +290,17 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     </div>
   </div>
 
+  <div class="find">
+    <span class="tag">E7 · resultado preliminar, 1 semilla</span>
+    <h4>Un ResNet entrenado SIN VER EL PEZ acierta el 97,2 %</h4>
+    <div class="col">
+    <p>El control de solo-fondo —el pez borrado con la máscara GT, relleno de gris fijo— alcanza <strong>macro-F1 de test 0,9721 y accuracy 0,9746</strong>. La imagen completa da 0,9970.</p>
+    <p><strong>Borrar el pez entero cuesta 0,025 de macro-F1.</strong> El Hallazgo 2 medía 45,9 % con una regresión logística sobre color y ya parecía grave; con un ResNet el fondo resuelve el dataset casi por completo.</p>
+    <p>La consecuencia es dura y hay que decirla en el informe: <strong>los resultados de E1 y E2 no acreditan reconocimiento de peces.</strong> Explican por qué Kaggle satura, por qué E3 quedó sin objeto y por qué la comparación de arquitecturas tuvo que jugarse en FishNet.</p>
+    <p class="mono" style="font-size:13px;color:var(--ink-3)">Pendiente: semillas 1-2, el control de solo-pez, y las dos variantes del ViT.</p>
+    </div>
+  </div>
+
   <div class="find warn">
     <span class="tag">Hallazgo 2 · atajo espurio</span>
     <h4>En Kaggle, el fondo solo ya predice la especie</h4>
