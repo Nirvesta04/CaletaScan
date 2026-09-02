@@ -1,0 +1,29 @@
+# Control de E7: se BORRA EL PEZ con la mascara GT y queda solo el fondo.
+# Mide cuanta senal de clase hay en la superficie y la iluminacion, que no
+# tienen nada que ver con la especie. Una regresion logistica sobre el
+# histograma de color del fondo ya acierta el 45,9%% (azar 11,1%%).
+#
+# Hiperparametros IDENTICOS a e1_resnet50_kaggle: derivado de ese config para que
+# lo unico que cambie sea la mascara. Si no fueran identicos, la
+# diferencia de rendimiento no seria atribuible al enmascarado.
+# checkpoint_every_epoch permite cortar perdiendo <1 min.
+
+name: e7_resnet50_solo_fondo
+model: resnet50
+dataset: kaggle
+epochs: 30
+batch_size: 64
+accum_steps: 1
+lr: 3.0e-05
+head_lr_mult: 10.0
+weight_decay: 0.05
+warmup_frac: 0.03
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 4
+seeds:
+- 0
+- 1
+- 2
+mask_mode: fondo
+checkpoint_every_epoch: true

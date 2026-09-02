@@ -41,6 +41,7 @@ from torch import nn
 from torchvision import transforms as T
 
 from . import data, models
+from .data import gt_path   # unico lugar donde vive la regla de rutas GT
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, "runs")
@@ -49,13 +50,6 @@ RUNS = os.path.join(ROOT, "runs")
 # ---------------------------------------------------------------------------
 # Mascaras GT
 # ---------------------------------------------------------------------------
-
-def gt_path(path: str) -> str:
-    """`.../Trout/Trout/00001.png` -> `.../Trout/Trout GT/00001.png`"""
-    q = path.split("/")
-    cls = q[-3]
-    return "/".join(q[:-3] + [cls, cls + " GT", q[-1]])
-
 
 def load_mask(path: str, size: int = data.IMG_SIZE) -> np.ndarray:
     """Mascara binaria a la MISMA resolucion que ve el modelo.

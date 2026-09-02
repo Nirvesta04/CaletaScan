@@ -47,6 +47,7 @@ DEFAULTS = {
     "dataset": "kaggle",          # kaggle | kaggle_random | fishnet
     "label_col": None,            # None -> el propio del dataset
     "purge": False,               # solo fishnet
+    "mask_mode": None,            # solo kaggle: None | "fondo" | "pez" (E7)
     "epochs": 30,
     "total_steps": None,          # si se fija, manda sobre epochs
     "batch_size": 64,
@@ -85,7 +86,7 @@ def git_commit() -> str:
 def build_datasets(cfg):
     kind = cfg["dataset"]
     if kind == "kaggle":
-        return data.kaggle()
+        return data.kaggle(mask_mode=cfg["mask_mode"])
     if kind == "kaggle_random":
         return data.kaggle_random_split(seed=0)   # el split con fuga, para E3
     if kind == "fishnet":

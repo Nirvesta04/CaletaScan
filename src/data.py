@@ -93,6 +93,20 @@ def build_transform(train: bool):
 # Dataset
 # ---------------------------------------------------------------------------
 
+def gt_path(path: str) -> str:
+    """`.../Trout/Trout/00001.png` -> `.../Trout/Trout GT/00001.png`"""
+    q = path.split("/")
+    cls = q[-3]
+    return "/".join(q[:-3] + [cls, cls + " GT", q[-1]])
+
+
+# Valor con que se borra la region suprimida en los controles del experimento
+# E7. Gris fijo a proposito: cualquier relleno derivado de la imagen (su media,
+# su moda) reintroduciria informacion de la propia foto, que es justo lo que el
+# control trata de eliminar.
+FILL = (128, 128, 128)
+
+
 class FishDataset(Dataset):
     """
     Devuelve (imagen, etiqueta, indice).
@@ -103,15 +117,18 @@ class FishDataset(Dataset):
     """
 
     def __init__(self, df: pd.DataFrame, label_col: str, classes: list[str],
-                 train: bool, crop: bool):
+                 train: bool, crop: bool, mask_mode: str | None = None):
         missing = set(df[label_col]) - set(classes)
         if missing:
             raise ValueError("etiquetas fuera del espacio de clases: %s" % sorted(missing))
 
+        if mask_mode not in (None, "fondo", "pez"):
+            raise ValueError("mask_mode debe ser None, 'fondo' o 'pez'")
         self.df = df.reset_index(drop=True)
         self.classes = list(classes)
         self.class_to_idx = {c: i for i, c in enumerate(self.classes)}
         self.crop = crop
+        self.mask_mode = mask_mode
         self.transform = build_transform(train)
 
         # arrays planos: df.iloc[] por item es demasiado lento dentro del loader
@@ -127,7 +144,27 @@ class FishDataset(Dataset):
         img = Image.open(os.path.join(ROOT, self.paths[i])).convert("RGB")
         if self.crop:
             img = img.crop(self._margin_box(i, img.size))
+        if self.mask_mode:
+            img = self._apply_mask(i, img)
         return self.transform(img), int(self.labels[i]), i
+
+    def _apply_mask(self, i, img):
+        """
+        Controles causales de E7, sobre las mascaras GT de Kaggle.
+
+        'fondo' borra el PEZ y deja el fondo: mide cuanta senal de clase hay en
+        la superficie y la iluminacion, que no tienen nada que ver con la
+        especie. 'pez' borra el fondo y deja el pez: mide cuanta senal hay en la
+        morfologia real.
+
+        Se aplica sobre la imagen a resolucion nativa, ANTES del transform, para
+        que mascara e imagen esten alineadas pixel a pixel.
+        """
+        with Image.open(os.path.join(ROOT, gt_path(self.paths[i]))) as gm:
+            m = np.asarray(gm.convert("L").resize(img.size, Image.NEAREST)) > 127
+        a = np.asarray(img).copy()
+        a[m if self.mask_mode == "fondo" else ~m] = FILL
+        return Image.fromarray(a)
 
     def _margin_box(self, i, size):
         """Caja expandida por CROP_MARGIN y RECORTADA a los bordes de la imagen.
@@ -188,19 +225,25 @@ def clean_mask(ds_train, ds_part) -> np.ndarray:
     return ~ds_part.df["seq_id"].isin(tr_seq).to_numpy()
 
 
-def _datasets(df, label_col, crop, splits=("train", "val", "test")):
+def _datasets(df, label_col, crop, splits=("train", "val", "test"), mask_mode=None):
     # El espacio de clases se fija con TRAIN y se comparte: si val o test
     # trajeran una clase inedita, el indice se correria en silencio.
     classes = sorted(df.loc[df["split"] == "train", label_col].unique())
     return {s: FishDataset(df[df["split"] == s], label_col, classes,
-                           train=(s == "train"), crop=crop)
+                           train=(s == "train"), crop=crop, mask_mode=mask_mode)
             for s in splits}
 
 
-def kaggle(label_col: str = "clase") -> dict[str, FishDataset]:
-    """9 especies, imagen completa, split por foto original."""
+def kaggle(label_col: str = "clase", mask_mode: str | None = None
+           ) -> dict[str, FishDataset]:
+    """
+    9 especies, imagen completa, split por foto original.
+
+    mask_mode='fondo' borra el pez y mask_mode='pez' borra el fondo, usando las
+    mascaras GT: son los controles causales de E7.
+    """
     df = pd.read_csv(os.path.join(SPLITS, "kaggle_split.csv"))
-    return _datasets(df, label_col, crop=False)
+    return _datasets(df, label_col, crop=False, mask_mode=mask_mode)
 
 
 def kaggle_random_split(seed: int = 0) -> dict[str, FishDataset]:

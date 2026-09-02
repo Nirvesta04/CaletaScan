@@ -1,0 +1,28 @@
+# Control de E7: se BORRA EL FONDO y queda solo el pez.
+# Mide cuanta senal hay en la morfologia real. La diferencia contra la
+# imagen completa (E1/E2) es la dependencia del contexto.
+#
+# Hiperparametros IDENTICOS a e1_resnet50_kaggle: derivado de ese config para que
+# lo unico que cambie sea la mascara. Si no fueran identicos, la
+# diferencia de rendimiento no seria atribuible al enmascarado.
+# checkpoint_every_epoch permite cortar perdiendo <1 min.
+
+name: e7_resnet50_solo_pez
+model: resnet50
+dataset: kaggle
+epochs: 30
+batch_size: 64
+accum_steps: 1
+lr: 3.0e-05
+head_lr_mult: 10.0
+weight_decay: 0.05
+warmup_frac: 0.03
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 4
+seeds:
+- 0
+- 1
+- 2
+mask_mode: pez
+checkpoint_every_epoch: true
