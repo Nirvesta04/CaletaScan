@@ -1,0 +1,74 @@
+{
+  "e1_resnet50_kaggle__vs__e7_resnet50_solo_fondo": {
+    "delta_medio": 0.02731617741572365,
+    "ic95": [
+      -0.001886902310093677,
+      0.07672607478299497
+    ],
+    "p_delta_positivo": 0.9495,
+    "a": "e1_resnet50_kaggle",
+    "b": "e7_resnet50_solo_fondo",
+    "macro_f1_a": 0.9970287392768981,
+    "macro_f1_b": 0.9710401771313775
+  },
+  "e1_resnet50_kaggle__vs__e7_resnet50_solo_pez": {
+    "delta_medio": -0.00218008017115701,
+    "ic95": [
+      -0.007532089679939458,
+      0.0
+    ],
+    "p_delta_positivo": 0.0,
+    "a": "e1_resnet50_kaggle",
+    "b": "e7_resnet50_solo_pez",
+    "macro_f1_a": 0.9970287392768981,
+    "macro_f1_b": 0.9990095283373943
+  },
+  "e2_vit_b_16_kaggle__vs__e7_vit_b_16_solo_fondo": {
+    "delta_medio": 0.03285213645051685,
+    "ic95": [
+      0.009362825270694241,
+      0.06352332540920308
+    ],
+    "p_delta_positivo": 1.0,
+    "a": "e2_vit_b_16_kaggle",
+    "b": "e7_vit_b_16_solo_fondo",
+    "macro_f1_a": 1.0,
+    "macro_f1_b": 0.9697942671998989
+  },
+  "e2_vit_b_16_kaggle__vs__e7_vit_b_16_solo_pez": {
+    "delta_medio": 0.0013643275520120331,
+    "ic95": [
+      0.0,
+      0.0041676790350026974
+    ],
+    "p_delta_positivo": 0.876,
+    "a": "e2_vit_b_16_kaggle",
+    "b": "e7_vit_b_16_solo_pez",
+    "macro_f1_a": 1.0,
+    "macro_f1_b": 0.9987616203707477
+  },
+  "e7_resnet50_solo_fondo__vs__e7_vit_b_16_solo_fondo": {
+    "delta_medio": 0.0022653007561497717,
+    "ic95": [
+      -0.043399557213317105,
+      0.037868374258033556
+    ],
+    "p_delta_positivo": 0.5835,
+    "a": "e7_resnet50_solo_fondo",
+    "b": "e7_vit_b_16_solo_fondo",
+    "macro_f1_a": 0.9710401771313775,
+    "macro_f1_b": 0.9697942671998989
+  },
+  "e7_resnet50_solo_pez__vs__e7_vit_b_16_solo_pez": {
+    "delta_medio": 0.00027374944452561055,
+    "ic95": [
+      0.0,
+      0.0009359220938449653
+    ],
+    "p_delta_positivo": 0.636,
+    "a": "e7_resnet50_solo_pez",
+    "b": "e7_vit_b_16_solo_pez",
+    "macro_f1_a": 0.9990095283373943,
+    "macro_f1_b": 0.9987616203707477
+  }
+}

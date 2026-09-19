@@ -291,13 +291,25 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   </div>
 
   <div class="find">
-    <span class="tag">E7 · resultado preliminar, 1 semilla</span>
-    <h4>Un ResNet entrenado SIN VER EL PEZ acierta el 97,2 %</h4>
+    <span class="tag">E7 · completo, 3 semillas × 4 corridas</span>
+    <h4>Sin ver el pez, las dos arquitecturas aciertan el 97 %</h4>
     <div class="col">
-    <p>El control de solo-fondo —el pez borrado con la máscara GT, relleno de gris fijo— alcanza <strong>macro-F1 de test 0,9721 y accuracy 0,9746</strong>. La imagen completa da 0,9970.</p>
-    <p><strong>Borrar el pez entero cuesta 0,025 de macro-F1.</strong> El Hallazgo 2 medía 45,9 % con una regresión logística sobre color y ya parecía grave; con un ResNet el fondo resuelve el dataset casi por completo.</p>
-    <p>La consecuencia es dura y hay que decirla en el informe: <strong>los resultados de E1 y E2 no acreditan reconocimiento de peces.</strong> Explican por qué Kaggle satura, por qué E3 quedó sin objeto y por qué la comparación de arquitecturas tuvo que jugarse en FishNet.</p>
-    <p class="mono" style="font-size:13px;color:var(--ink-3)">Pendiente: semillas 1-2, el control de solo-pez, y las dos variantes del ViT.</p>
+    <p>Pez borrado con la máscara GT (solo fondo) o fondo borrado (solo pez), relleno de gris fijo, misma receta que E1/E2. Macro-F1 de test, media de 3 semillas e IC95 de bootstrap sobre las 62 fotos originales:</p>
+    </div>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Modelo</th><th class="num">Imagen completa</th><th class="num">Solo fondo</th><th class="num">Solo pez</th></tr></thead>
+      <tbody>
+        <tr><td class="name">ResNet-50</td><td class="num">0,9970</td><td class="num">0,9710 [0,920, 0,997]</td><td class="num">0,9990 [0,996, 1,000]</td></tr>
+        <tr><td class="name">ViT-B/16</td><td class="num">1,0000</td><td class="num">0,9698 [0,937, 0,991]</td><td class="num">0,9988 [0,996, 1,000]</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="col">
+    <p><strong>Borrar el pez entero cuesta solo 3 puntos.</strong> Δ pareado completa − solo fondo: ResNet +0,027, IC [−0,002, +0,077], P = 0,95; ViT +0,033, IC [+0,009, +0,064], distinguible. El Hallazgo 2 medía 45,9 % con una regresión logística sobre color; con una red profunda el fondo resuelve el dataset casi entero. La clase más dependiente del pez es Trout: recall 0,81 en el ViT solo-fondo.</p>
+    <p><strong>El pez solo también basta:</strong> solo pez no se distingue de la imagen completa en ninguna arquitectura. Las dos señales son redundantes, así que el accuracy de Kaggle no puede decir cuál de las dos usa el modelo; para eso está el pointing game (§9.3).</p>
+    <p><strong>La arquitectura no cambia nada aquí:</strong> ResNet vs ViT, Δ +0,002 IC [−0,043, +0,038] en solo fondo y Δ +0,0003 en solo pez. El atajo es del dataset, no de un modelo.</p>
+    <p>La consecuencia para el informe: <strong>E1 y E2 no acreditan reconocimiento de peces por sí solos.</strong> Explican por qué Kaggle satura, por qué E3 quedó sin objeto y por qué la comparación de arquitecturas tuvo que jugarse en FishNet. Datos en <code>runs/comparacion_e7.json</code>.</p>
     </div>
   </div>
 
@@ -872,7 +884,7 @@ mapa = R[0, 1:] → reshape(14,14) → upsample(224)   <span class="c">// fila C
   <p>Las máscaras permiten tres corridas que convierten una sospecha en una medición:</p>
   <ul>
     <li><strong>Imagen completa</strong> — cota superior.</li>
-    <li><strong>Solo fondo</strong> (pez borrado a gris) — cuánta señal es espuria. Con regresión logística sobre color ya da 45,9 %; con un ResNet-50 dará bastante más.</li>
+    <li><strong>Solo fondo</strong> (pez borrado a gris) — cuánta señal es espuria. Con regresión logística sobre color da 45,9 %; con ResNet-50 y ViT-B/16, medido, 0,97 de macro-F1.</li>
     <li><strong>Solo pez</strong> (fondo borrado a gris) — cuánta señal es morfología real.</li>
   </ul>
   <p>La diferencia entre «imagen completa» y «solo pez» es la dependencia del contexto, y sale directa a la sección de limitaciones del informe.</p>
