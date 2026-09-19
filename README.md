@@ -25,7 +25,8 @@ comparar ResNet contra ViT**, con interpretabilidad (Grad-CAM / attention rollou
 | E7 · controles de fondo | hechos; sin ver el pez, las dos redes aciertan ~97 % en Kaggle |
 | Interpretabilidad | Grad-CAM, attention rollout y Chefer, con pointing game contra máscaras GT |
 | Calibración y OOD | hechos; el ViT rechaza peces ajenos mucho mejor (AUROC +0,21) |
-| Pendiente | velocidad vs. precisión, demo, data card, informe |
+| Velocidad vs. precisión | hecha; ViT 2,7× más lento en CPU (119 vs 43 ms) sin cambiar qué es factible: se elige el ViT |
+| Pendiente | demo, data card, informe; E9 opcional |
 | Próxima entrega | Avance, 28-sep-2026 (presentación de 15 min) |
 
 Todos los resultados, con sus intervalos y su discusión, están en `docs/plan-modelos.html`.
@@ -71,6 +72,7 @@ python -m src.train --config configs/e4_resnet50_fishnet.yaml   # uno por YAML d
 python -m src.evaluate --run e5_vit_b_16_fishnet --compare e4_resnet50_fishnet --limpio
 python -m src.interpret                                         # pointing game
 python -m src.calibrate --inferir && python -m src.calibrate    # calibración y OOD
+python -m src.speed                                             # latencias (máquina libre)
 python -m tests.test_stats && python -m tests.test_calibrate    # validación estadística
 ```
 
@@ -102,6 +104,7 @@ src/
   evaluate.py   métricas, ajuste de logits, bootstrap de clúster y comparación pareada
   interpret.py  Grad-CAM, attention rollout, relevancia de Chefer y pointing game
   calibrate.py  temperatura, ECE/NLL/Brier y OOD cruzado Kaggle↔FishNet
+  speed.py      latencia GPU/CPU, MACs medidos y tamaño de los modelos
 tests/          validación de la maquinaria estadística contra sklearn
 BITACORA.md     documento de traspaso: estado, decisiones cerradas y hallazgos
 ```
