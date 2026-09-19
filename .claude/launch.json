@@ -1,6 +1,26 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {"name": "demo", "runtimeExecutable": "python", "runtimeArgs": ["-m", "src.demo"], "port": 8000}
+    {
+      "name": "docs",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "docs"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "demo",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "src.demo"
+      ],
+      "port": 8000
+    }
   ]
 }

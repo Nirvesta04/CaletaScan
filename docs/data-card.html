@@ -1,0 +1,493 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Card Caleta-Scan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+:root{
+  --paper:#eceff0; --surface:#f7f9f9; --surface-2:#e1e7e7; --rule:#c7d1d1; --rule-soft:#dae1e1;
+  --ink:#16232b; --ink-2:#42535b; --ink-3:#6e8085;
+  --accent:#0f6b63; --accent-2:#0b544e; --accent-soft:#d6e6e3;
+  --signal:#a8531b; --signal-soft:#f1e3d5;
+  --danger:#94292a; --danger-soft:#f0dcdc;
+  --ok:#2c6640;
+  --shadow:0 1px 2px rgba(22,35,43,.06), 0 6px 20px -12px rgba(22,35,43,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
+    --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
+    --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
+    --signal:#dd8f4e; --signal-soft:#37271a;
+    --danger:#e0797a; --danger-soft:#3a2020;
+    --ok:#74c288;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
+  --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
+  --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
+  --signal:#dd8f4e; --signal-soft:#37271a;
+  --danger:#e0797a; --danger-soft:#3a2020;
+  --ok:#74c288;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.62;
+     -webkit-font-smoothing:antialiased}
+.mono,code{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+h1,h2,h3,h4{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 110px}
+.grid{display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:1080px){.grid{grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start}}
+.grid>*{min-width:0}
+main{display:flex;flex-direction:column;gap:52px}
+.col{max-width:70ch}
+header.mast{border-bottom:2px solid var(--ink);margin-bottom:44px;padding:52px 0 22px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
+        text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:clamp(34px,5.2vw,52px);line-height:1.03;margin:14px 0 0;font-weight:700;letter-spacing:-.018em}
+.sub{font-size:19px;color:var(--ink-2);margin:16px 0 0;max-width:64ch;line-height:1.5}
+.mastmeta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
+          font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3)}
+.mastmeta b{color:var(--ink-2);font-weight:500}
+nav.idx{display:none}
+@media (min-width:1080px){
+  nav.idx{display:block;position:sticky;top:28px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.45}
+  nav.idx .lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+               padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid var(--rule);display:block}
+  nav.idx a{display:flex;gap:9px;padding:5px 0;color:var(--ink-2);text-decoration:none;
+            border-left:2px solid transparent;padding-left:9px;margin-left:-11px}
+  nav.idx a:hover{color:var(--accent);border-left-color:var(--accent)}
+  nav.idx a span{color:var(--ink-3);min-width:14px}
+}
+section{scroll-margin-top:24px}
+h2{font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:600;
+   margin:0 0 6px;font-family:"IBM Plex Mono",monospace}
+h2 .n{color:var(--ink-3);margin-right:10px}
+.h2big{font-size:clamp(24px,3.2vw,31px);line-height:1.15;font-weight:600;margin:0 0 18px;letter-spacing:-.012em}
+h3{font-size:19px;font-weight:600;margin:32px 0 10px;line-height:1.3}
+h4{font-size:13.5px;font-weight:600;margin:22px 0 7px;color:var(--ink-2);
+   font-family:"IBM Plex Mono",monospace;letter-spacing:.03em}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px;padding-left:22px}
+li{margin:0 0 7px}
+li::marker{color:var(--ink-3)}
+a{color:var(--accent);text-underline-offset:2px}
+code{background:var(--surface-2);padding:1.5px 5px;border-radius:2px;font-size:.86em;overflow-wrap:anywhere}
+.lead{font-size:18.5px;color:var(--ink-2);line-height:1.55;margin-bottom:22px}
+.find{border-left:3px solid var(--danger);background:var(--danger-soft);padding:18px 22px;margin:24px 0;
+      border-radius:0 3px 3px 0}
+.find.warn{border-left-color:var(--signal);background:var(--signal-soft)}
+.find.good{border-left-color:var(--accent);background:var(--accent-soft)}
+.find .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+           font-weight:600;color:var(--danger);display:block;margin-bottom:7px}
+.find.warn .tag{color:var(--signal)}
+.find.good .tag{color:var(--accent-2)}
+.find h4{margin-top:0;font-family:Archivo,sans-serif;font-size:17px;color:var(--ink);letter-spacing:0}
+.find>:last-child{margin-bottom:0}
+.dec{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;border:1px solid var(--rule);
+     border-top:3px solid var(--accent);border-radius:0 0 3px 3px;padding:18px 22px;margin:22px 0;background:var(--surface)}
+@media (max-width:560px){.dec{grid-template-columns:1fr}.dec dt{padding-top:8px}}
+.dec dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+        color:var(--ink-3);padding-top:5px;white-space:nowrap}
+.dec dd{margin:0 0 6px;font-size:16px}
+.dec dd:last-child{margin-bottom:0}
+.tw{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-family:"IBM Plex Mono",monospace;
+      font-variant-numeric:tabular-nums}
+th{text-align:left;padding:10px 14px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+   color:var(--ink-3);font-weight:600;border-bottom:1.5px solid var(--rule);white-space:nowrap;background:var(--surface-2)}
+td{padding:8px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+td.name{font-family:"Source Serif 4",serif;font-size:15px}
+tr.hi td{background:var(--danger-soft)}
+tr.tot td{border-top:1.5px solid var(--rule);font-weight:600}
+.dn{color:var(--danger);font-weight:600}
+caption{caption-side:bottom;text-align:left;padding:10px 14px;font-size:13px;color:var(--ink-3);
+        font-family:"Source Serif 4",serif;line-height:1.45;border-top:1px solid var(--rule-soft)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);
+       border:1px solid var(--rule);border-radius:3px;margin:22px 0}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .v{font-family:Archivo,sans-serif;font-size:25px;font-weight:600;letter-spacing:-.02em;
+         font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--ink-3);margin-top:5px;line-height:1.35}
+.fx{font-family:"IBM Plex Mono",monospace;font-size:13.5px;line-height:1.75;background:var(--surface-2);
+    border-left:3px solid var(--rule);padding:15px 18px;margin:18px 0;overflow-x:auto;white-space:pre}
+.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+      letter-spacing:.08em;text-transform:uppercase;padding:2.5px 8px;border-radius:2px;
+      background:var(--accent-soft);color:var(--accent-2);vertical-align:2px}
+.pill.s{background:var(--signal-soft);color:var(--signal)}
+.pill.d{background:var(--danger-soft);color:var(--danger)}
+footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
+       font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);line-height:1.7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II</div>
+  <h1>Data Card</h1>
+  <p class="sub">Qué contienen los datos con los que se entrenó, de dónde salieron, qué decisiones de curación tomamos nosotros, y qué no se puede concluir con ellos.</p>
+  <div class="mastmeta">
+    <span><b>Versión</b> · 1.0 · 19-sep-2026</span>
+    <span><b>Cubre</b> · data/splits/*.csv</span>
+    <span><b>Fuentes</b> · Kaggle Fish · FishNet Open Images</span>
+    <span><b>Licencias</b> · CC BY 4.0 · CC BY-SA 4.0</span>
+  </div>
+</header>
+
+<div class="grid">
+
+<nav class="idx">
+  <span class="lbl">Contenido</span>
+  <a href="#s1"><span>1</span>Resumen</a>
+  <a href="#s2"><span>2</span>Fuentes y licencias</a>
+  <a href="#s3"><span>3</span>Composición</a>
+  <a href="#s4"><span>4</span>Etiquetas</a>
+  <a href="#s5"><span>5</span>Splits</a>
+  <a href="#s6"><span>6</span>Curación</a>
+  <a href="#s7"><span>7</span>Fugas y atajos</a>
+  <a href="#s8"><span>8</span>Desbalance</a>
+  <a href="#s9"><span>9</span>Personas y privacidad</a>
+  <a href="#s10"><span>10</span>Usos</a>
+  <a href="#s11"><span>11</span>Distribución</a>
+</nav>
+
+<main>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <h2><span class="n">01</span>Resumen</h2>
+  <div class="col">
+  <p class="h2big">Dos conjuntos públicos, ninguno chileno, con roles distintos y con cuatro problemas medidos.</p>
+  <p class="lead">El proyecto clasifica especies de pescado para apoyar el monitoreo de Sernapesca en la Caleta Portales. Ningún dato de esa caleta existe todavía: se trabaja con dos conjuntos públicos que cumplen funciones distintas, y esta ficha explica exactamente qué representan y qué no.</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v">9.000</div><div class="k">imágenes · Kaggle</div></div>
+    <div class="stat"><div class="v">99.019</div><div class="k">recortes · FishNet</div></div>
+    <div class="stat"><div class="v">9 + 20</div><div class="k">clases modeladas</div></div>
+    <div class="stat"><div class="v">7,6 GB</div><div class="k">en disco, sin versionar</div></div>
+  </div>
+  <div class="col">
+  <ul>
+    <li><strong>Kaggle · A Large Scale Fish Dataset</strong> no es el banco de pruebas principal: es el entorno controlado donde se demuestran los modos de fallo. Trae máscaras de segmentación, que permiten medir cuánta señal está en el pez y cuánta en el fondo.</li>
+    <li><strong>FishNet Open Images</strong> es donde se compara de verdad: cubierta de barcos pesqueros, desbalance real, oclusión real, cámaras múltiples y cola larga.</li>
+    <li><strong>OzFish</strong> figuraba como sondeo fuera de distribución y <strong>no se descargó</strong>: su portal exige una API por token. Se sustituyó por un sondeo cruzado entre los dos conjuntos anteriores, que ya están en disco.</li>
+  </ul>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Lo primero que hay que saber</span>
+    <h4>Ninguna de las especies del caso de uso está en los datos</h4>
+    <div class="col">
+    <p>Reineta, merluza y congrio son el caso de uso del enunciado, no el espacio de etiquetas. El solapamiento de especies entre estos conjuntos y la pesca de la Caleta Portales es <strong>cero</strong>. Lo que el proyecto puede demostrar es la comparación entre arquitecturas y el comportamiento del sistema; lo que no puede es salir a terreno mañana sin recolectar datos locales.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <h2><span class="n">02</span>Fuentes, procedencia y licencias</h2>
+  <div class="tw">
+    <table>
+      <caption>Las tres licencias son distintas y se declaran por separado. <strong>CC BY-SA es vírica:</strong> un derivado combinado que se redistribuya arrastraría ShareAlike sobre el conjunto.</caption>
+      <thead><tr><th>Fuente</th><th>Qué es</th><th>Cómo se recolectó</th><th>Licencia</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Kaggle · A Large Scale Fish Dataset<br><span class="mono" style="font-size:12px">Ulucan, Karakaya &amp; Turkan, ASYU 2020</span></td>
+            <td class="name">9 especies de consumo, 1.000 imágenes y 1.000 máscaras por especie</td>
+            <td class="name">Pescado fotografiado en un supermercado de Esmirna (Turquía) con dos cámaras, sobre una superficie de estudio</td>
+            <td class="name">CC BY 4.0</td></tr>
+        <tr><td class="name">FishNet Open Images v1.0.0<br><span class="mono" style="font-size:12px">The Nature Conservancy, 2022</span></td>
+            <td class="name">143.818 imágenes y 549.209 cajas anotadas; usamos 20.002 imágenes</td>
+            <td class="name">Monitoreo electrónico a bordo: cámaras fijas en cubierta de barcos pesqueros, grabando la faena</td>
+            <td class="name">CC BY-SA 4.0</td></tr>
+        <tr><td class="name">OzFish</td>
+            <td class="name">No descargado</td>
+            <td class="name">Video submarino (BRUVS) en Australia; el portal exige API por token y devolvió 401/404</td>
+            <td class="name">CC BY 3.0 AU</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col">La diferencia de procedencia es la que explica casi todo lo demás: un pez de supermercado sobre fondo liso y un pez en una cubierta mojada de noche no son el mismo problema. Esa distancia es la que se usa como sondeo fuera de distribución.</p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <h2><span class="n">03</span>Composición</h2>
+
+  <h3>Kaggle · imagen completa</h3>
+  <div class="col">
+  <p>9.000 imágenes de 590×445 px, 1.000 por especie, cada una con su máscara de segmentación verificada (se comprobó una muestra de 200). Las 1.000 imágenes por clase <strong>no son 1.000 fotos</strong>: son rotaciones y espejados de 30 a 50 fotos originales.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Reparto por clase. El split es por foto original (§5), por eso las columnas no son múltiplos exactos.</caption>
+      <thead><tr><th>Especie</th><th class="num">train</th><th class="num">val</th><th class="num">test</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Black Sea Sprat</td><td class="num">680</td><td class="num">160</td><td class="num">160</td></tr>
+        <tr><td class="name">Gilt-Head Bream</td><td class="num">720</td><td class="num">140</td><td class="num">140</td></tr>
+        <tr><td class="name">Hourse Mackerel</td><td class="num">680</td><td class="num">160</td><td class="num">160</td></tr>
+        <tr><td class="name">Red Mullet</td><td class="num">680</td><td class="num">160</td><td class="num">160</td></tr>
+        <tr><td class="name">Red Sea Bream</td><td class="num">700</td><td class="num">140</td><td class="num">160</td></tr>
+        <tr><td class="name">Sea Bass</td><td class="num">680</td><td class="num">160</td><td class="num">160</td></tr>
+        <tr><td class="name">Shrimp</td><td class="num">720</td><td class="num">140</td><td class="num">140</td></tr>
+        <tr><td class="name">Striped Red Mullet</td><td class="num">720</td><td class="num">140</td><td class="num">140</td></tr>
+        <tr><td class="name">Trout</td><td class="num">748</td><td class="num">136</td><td class="num">116</td></tr>
+        <tr class="tot"><td class="name">Total · 411 fotos originales</td><td class="num">6.328</td><td class="num">1.336</td><td class="num">1.336</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col"><strong>Unidad independiente: la foto original, no la imagen.</strong> Hay 21,9 imágenes por foto (mínimo 14, máximo 60), y el test tiene 62 fotos originales detrás de sus 1.336 imágenes.</p>
+
+  <h3>FishNet · recortes de caja</h3>
+  <div class="tw">
+    <table>
+      <caption>Subconjunto descargado: 20.002 imágenes de las 143.818 disponibles (4,49 GB de 36,4 GB), con el split oficial del dataset respetado.</caption>
+      <thead><tr><th>Partición</th><th class="num">recortes</th><th class="num">imágenes</th><th class="num">cámaras</th><th class="num">secuencias</th></tr></thead>
+      <tbody>
+        <tr><td class="name">train</td><td class="num">72.885</td><td class="num">14.413</td><td class="num">38</td><td class="num">3.489</td></tr>
+        <tr><td class="name">val</td><td class="num">12.927</td><td class="num">2.724</td><td class="num">48</td><td class="num">1.040</td></tr>
+        <tr><td class="name">test</td><td class="num">13.207</td><td class="num">2.872</td><td class="num">53</td><td class="num">1.160</td></tr>
+        <tr class="tot"><td class="name">Total</td><td class="num">99.019</td><td class="num">20.002</td><td class="num">77</td><td class="num">4.624</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+  <ul>
+    <li><strong>43.250 recortes son peces</strong> y 55.769 no lo son (personas, cubierta vacía, agua).</li>
+    <li><strong>4,95 cajas por imagen</strong> de media (mediana 5, p95 10, máximo 33).</li>
+    <li>Tamaño de caja: lado corto p5 45 px, mediana 130 px, p95 322 px. Razón de aspecto p1 0,32 y p99 3,89 — de ahí que el preproceso deforme a 224×224 en vez de recortar a cuadrado.</li>
+    <li>Resolución de las imágenes: variable, entre 1.200×675 y 1.920×1.030 px; la más frecuente es 1.280×720.</li>
+    <li><strong>Oclusión:</strong> solo el 26,4 % de los recortes no solapa con ninguna otra caja; el 42,6 % tiene más del 30 % de su área tapada por otras.</li>
+    <li>De las 53 cámaras que aparecen en test, <strong>31 también están en train</strong>; 22 son cámaras que el modelo nunca vio.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <h2><span class="n">04</span>Espacio de etiquetas</h2>
+  <div class="col">
+  <p>FishNet trae dos niveles: <code>label_l1</code> con 34 categorías (31 taxones de pez más <code>Human</code>, <code>No fish</code> y afines) y <code>label_l2</code> con 15 agrupaciones. Nosotros añadimos una tercera columna, <code>label_model</code>, que es la que se entrena.</p>
+  </div>
+  <dl class="dec">
+    <dt>Regla</dt><dd><code>label_model</code> = el taxón de <code>label_l1</code> si tiene <strong>100 cajas o más en train</strong>; si no, <code>Other_rare</code>. Resultan 19 clases más <code>Other_rare</code>.</dd>
+    <dt>Por qué</dt><dd>Colapsar la cola en una clase en vez de borrarla preserva el análisis de cola larga y evita que el modelo tenga que predecir clases con 6 ejemplos. Bajar el umbral no compra nada: el techo no es el entrenamiento sino el soporte de test, y ninguna de esas clases llega a 30 cajas de test limpio.</dd>
+    <dt>Qué contiene <code>Other_rare</code></dt><dd>14 taxones: Oilfish (777 cajas), Indo Pacific sailfish (129), Black marlin (83), Sickle pomfret (83), Lancetfish (80), Marlin (57), Pomfret (54), Pelagic stingray (51), Mola mola (6), Roudie scolar (4), y cuatro con una sola caja (Thresher shark, Brama, Snake mackerel, Rainbow runner).</dd>
+  </dl>
+  <div class="col">
+  <p><strong>Tres clases no son especies y se tratan aparte:</strong></p>
+  <ul>
+    <li><code>Human</code> y <code>No fish</code> son la compuerta operativa —¿esto es un pez o un operario?— y se excluyen del macro-F1 de especies.</li>
+    <li><code>Unknown</code> significa «el anotador no pudo identificarlo»: se entrena, pero no promedia dentro del macro-F1 de especies.</li>
+    <li><code>Tuna</code> es una superclase ambigua: el recorte <em>es</em> algún atún específico, y el anotador no resolvió cuál. Al evaluar se le da crédito jerárquico.</li>
+  </ul>
+  <p>Para el informe hay que distinguir siempre entre <strong>clases que el modelo predice</strong> (20) y <strong>clases sobre las que se reporta F1 con respaldo</strong> (13: 11 especies más <code>Tuna</code> y <code>Other_rare</code>). Confundirlas promete una cobertura que el test no sostiene.</p>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <h2><span class="n">05</span>Cómo se construyeron los splits</h2>
+  <div class="col">
+  <p>Los tres CSV de <code>data/splits/</code> <strong>sí están versionados</strong>: son el contrato del experimento. Se regeneran de forma idempotente con <code>python scripts/build_splits.py</code>.</p>
+
+  <h3>Kaggle: split por foto original</h3>
+  <p>El nombre de archivo permite recuperar de qué foto original salió cada imagen. El split reparte <em>fotos</em>, no imágenes: 287 fotos a train, 62 a val y 62 a test, sin que ninguna foto cruce particiones. Un split aleatorio por imagen dejaría rotaciones de la misma foto a ambos lados y la accuracy subiría a ~100 % sin generalizar nada.</p>
+
+  <h3>FishNet: split oficial, más una purga nuestra</h3>
+  <p>Se respeta el split oficial publicado para que los números sean comparables con la literatura. Pero ese split <strong>no está agrupado por secuencia</strong>, y una secuencia son fotogramas consecutivos del mismo lance. Por eso se reportan siempre <em>dos</em> números: el del test oficial y el del test purgado, que saca toda caja cuya secuencia aparezca también en train.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>La purga no toca train: la redundancia dentro de train es ineficiencia, no error.</caption>
+      <thead><tr><th>Partición</th><th class="num">oficial</th><th class="num">purgada</th><th class="num">queda fuera</th><th class="num">unidades independientes</th></tr></thead>
+      <tbody>
+        <tr><td class="name">val</td><td class="num">12.927</td><td class="num">6.144</td><td class="num dn">52,5 %</td><td class="num">—</td></tr>
+        <tr><td class="name">test</td><td class="num">13.207</td><td class="num">7.159</td><td class="num dn">45,8 %</td><td class="num">612 secuencias</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <h2><span class="n">06</span>Curación: qué hicimos nosotros</h2>
+  <div class="col">
+  <p>Todo lo de esta sección es <strong>trabajo nuestro sobre los datos originales</strong>, no propiedades de las fuentes.</p>
+  <ul>
+    <li><strong>Descarga selectiva de FishNet.</strong> El ZIP remoto pesa 36,4 GB; se bajaron 4,49 GB por <em>range requests</em> sobre las 20.002 imágenes elegidas. El proceso es reanudable y valida cada JPEG.</li>
+    <li><strong>Saneo de cajas.</strong> De las 99.744 cajas del subconjunto se descartaron <strong>725</strong> con lado corto menor a 24 px, que a 224×224 serían interpolación pura. Quedan 99.019, todas con coordenadas dentro de rango y ninguna degenerada.</li>
+    <li><strong>Columnas añadidas:</strong> <code>seq_id</code> (verificado contra el CSV oficial en las 99.019 filas), <code>n_boxes</code>, y dos medidas de oclusión: <code>occ_max</code>, el mayor solapamiento con otra caja, y <code>occ_union</code>, el área total tapada. Se calculan sobre <em>todas</em> las cajas de la escena, incluidas las 725 descartadas: la oclusión es una propiedad de la escena, no del subconjunto que se modela.</li>
+    <li><strong>Columna <code>label_model</code></strong> según la regla de §4, y <code>is_fish</code>.</li>
+    <li><strong>Recorte en tiempo de entrenamiento:</strong> caja expandida un 10 % por lado y recortada a los bordes de la imagen, luego redimensionada a 224×224 deformando. No se rellena con bordes negros: su grosor correlacionaría con la razón de aspecto y por tanto con la especie, creando un atajo nuevo.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <h2><span class="n">07</span>Fugas y atajos, medidos</h2>
+  <div class="col">
+  <p class="lead">Cuatro problemas que no vienen documentados en las fuentes y que se midieron en este proyecto. Los cuatro cambian cómo hay que leer cualquier número que se reporte sobre estos datos.</p>
+  </div>
+
+  <div class="find">
+    <span class="tag">1 · fuga por aumentación · Kaggle</span>
+    <h4>Las 1.000 imágenes por clase son 30 a 50 fotos</h4>
+    <div class="col">
+    <p>Rotaciones y espejados de la misma foto. Con un split aleatorio por imagen, el test contiene rotaciones de fotos de train. <strong>Mitigado</strong> con el split por grupo, pero con una consecuencia que no desaparece: el test tiene <strong>n = 62</strong> unidades independientes, no 1.336, y los intervalos de confianza calculados por imagen están mal por un factor de 4,6.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <span class="tag">2 · fuga por secuencia · FishNet</span>
+    <h4>El split oficial publicado filtra: el 44,5 % del test comparte secuencia con train</h4>
+    <div class="col">
+    <p>3.743 de las 13.097 secuencias del CSV oficial cruzan particiones (28,6 %). En nuestro subconjunto son el 45,8 % de las cajas de test y el 52,5 % de las de val. Los fotogramas de una misma secuencia son casi duplicados: la correlación media entre miniaturas de pares que cruzan train/test es 0,87, contra 0,03 de la línea base.</p>
+    <p><strong>Efecto medido:</strong> evaluar en el test oficial infla el macro-F1 alrededor de un 80 % respecto del test purgado. No es una fuga que fabricamos para ilustrar; es la del split publicado.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">3 · atajo espurio · Kaggle</span>
+    <h4>Sin ver el pez se acierta el 97 %</h4>
+    <div class="col">
+    <p>Cada especie se fotografió en una sesión distinta, sobre una superficie y una iluminación levemente distintas, así que el fondo lleva información de clase que no tiene nada que ver con el pez. Borrando el pez con la máscara de segmentación, una regresión logística sobre color del fondo acierta el 45,9 % (azar 11,1 %), y <strong>una red profunda entrenada solo con el fondo llega a 0,971 de macro-F1</strong>, contra 0,997 con la imagen completa.</p>
+    <p>Consecuencia: los resultados sobre Kaggle <strong>no acreditan reconocimiento de peces</strong>. El split por grupo no arregla esto; son problemas independientes.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">4 · potencia estadística</span>
+    <h4>Las unidades independientes son 62 y 612, no 1.336 y 7.159</h4>
+    <div class="col">
+    <p>En Kaggle la unidad es la foto original; en FishNet, la secuencia. Cualquier intervalo o prueba tiene que remuestrear clústeres completos. Con el conteo por imagen, una diferencia de 2 puntos parece significativa cuando no lo es.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <h2><span class="n">08</span>Desbalance y soporte por clase</h2>
+  <div class="col">
+  <p><code>Human</code> es el <strong>53,7 % del train</strong> de FishNet. Entre la clase más frecuente y la más rara hay una razón de <strong>369 a 1</strong>. Por eso la métrica principal es macro-F1 sobre especies y la accuracy global se reporta explícitamente etiquetada como no informativa.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Cajas por clase. «Test purgado» es el soporte real para reportar. Las cuatro clases marcadas quedan por debajo de 30 cajas: se modelan, pero <strong>no se reporta F1 creíble</strong> sobre ellas.</caption>
+      <thead><tr><th>Clase (<code>label_model</code>)</th><th class="num">train</th><th class="num">val</th><th class="num">test oficial</th><th class="num">test purgado</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Human <span class="pill s">no es especie</span></td><td class="num">39.131</td><td class="num">6.452</td><td class="num">8.149</td><td class="num">4.901</td></tr>
+        <tr><td class="name">Yellowfin tuna</td><td class="num">8.267</td><td class="num">876</td><td class="num">898</td><td class="num">83</td></tr>
+        <tr><td class="name">Unknown <span class="pill s">no es especie</span></td><td class="num">4.975</td><td class="num">847</td><td class="num">514</td><td class="num">212</td></tr>
+        <tr><td class="name">Albacore</td><td class="num">4.831</td><td class="num">1.483</td><td class="num">523</td><td class="num">129</td></tr>
+        <tr><td class="name">Mahi mahi</td><td class="num">3.167</td><td class="num">364</td><td class="num">836</td><td class="num">528</td></tr>
+        <tr class="hi"><td class="name">Skipjack tuna</td><td class="num">2.503</td><td class="num">244</td><td class="num">196</td><td class="num dn">11</td></tr>
+        <tr class="hi"><td class="name">Shortbill spearfish</td><td class="num">1.794</td><td class="num">218</td><td class="num">181</td><td class="num dn">7</td></tr>
+        <tr><td class="name">No fish <span class="pill s">no es especie</span></td><td class="num">1.481</td><td class="num">290</td><td class="num">194</td><td class="num">175</td></tr>
+        <tr><td class="name">Opah</td><td class="num">1.276</td><td class="num">257</td><td class="num">147</td><td class="num">46</td></tr>
+        <tr><td class="name">Swordfish</td><td class="num">1.249</td><td class="num">154</td><td class="num">257</td><td class="num">141</td></tr>
+        <tr><td class="name">Striped marlin</td><td class="num">705</td><td class="num">176</td><td class="num">315</td><td class="num">230</td></tr>
+        <tr><td class="name">Shark</td><td class="num">554</td><td class="num">136</td><td class="num">110</td><td class="num">57</td></tr>
+        <tr><td class="name">Blue marlin</td><td class="num">552</td><td class="num">249</td><td class="num">85</td><td class="num">31</td></tr>
+        <tr><td class="name">Other_rare <span class="pill s">agregado</span></td><td class="num">539</td><td class="num">756</td><td class="num">105</td><td class="num">70</td></tr>
+        <tr><td class="name">Wahoo</td><td class="num">509</td><td class="num">56</td><td class="num">108</td><td class="num">69</td></tr>
+        <tr><td class="name">Escolar</td><td class="num">409</td><td class="num">179</td><td class="num">83</td><td class="num">43</td></tr>
+        <tr><td class="name">Tuna <span class="pill s">superclase</span></td><td class="num">393</td><td class="num">31</td><td class="num">388</td><td class="num">351</td></tr>
+        <tr class="hi"><td class="name">Bigeye tuna</td><td class="num">305</td><td class="num">134</td><td class="num">53</td><td class="num dn">22</td></tr>
+        <tr class="hi"><td class="name">Great barracuda</td><td class="num">139</td><td class="num">18</td><td class="num">22</td><td class="num dn">12</td></tr>
+        <tr><td class="name">Long snouted lancetfish</td><td class="num">106</td><td class="num">7</td><td class="num">43</td><td class="num">41</td></tr>
+        <tr class="tot"><td class="name">Total</td><td class="num">72.885</td><td class="num">12.927</td><td class="num">13.207</td><td class="num">7.159</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+  <p>Las cuatro filas marcadas en rojo no llegan a 30 cajas de test purgado, así que se modelan pero no se reporta F1 sobre ellas. <strong>Clases con soporte suficiente para reportar: 13</strong> — 11 especies (Albacore, Blue marlin, Escolar, Long snouted lancetfish, Mahi mahi, Opah, Shark, Striped marlin, Swordfish, Wahoo, Yellowfin tuna) más <code>Tuna</code> y <code>Other_rare</code>.</p>
+  </div>
+
+  <div class="find">
+    <span class="tag">Anomalía del split oficial</span>
+    <h4><code>Other_rare</code> tiene más cajas en val que en train</h4>
+    <div class="col">
+    <p>539 en train, 756 en val y 105 en test. Viene del split oficial publicado, no de nuestra curación: las especies raras están concentradas en unas pocas secuencias, y esas secuencias cayeron mayoritariamente en val. Se declara y se tiene en cuenta al leer cualquier métrica sobre esa clase.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="s9">
+  <h2><span class="n">09</span>Personas en las imágenes</h2>
+  <div class="find">
+    <span class="tag">Privacidad</span>
+    <h4>La mitad del conjunto son tripulantes trabajando</h4>
+    <div class="col">
+    <p>FishNet proviene de <strong>monitoreo electrónico a bordo</strong>: cámaras que graban la faena. Hay <strong>39.131 cajas anotadas como <code>Human</code> en train</strong> (53,7 %), con personas potencialmente identificables: sus caras, su ropa, sus movimientos, el barco concreto.</p>
+    <p>Implicaciones que el proyecto asume explícitamente:</p>
+    <ul>
+      <li><strong>No se redistribuyen las imágenes.</strong> El repositorio versiona los manifiestos de split, no los datos crudos. Quien quiera reproducir descarga desde la fuente original bajo su licencia.</li>
+      <li><strong>No se entrena ni se evalúa reconocimiento de personas.</strong> <code>Human</code> se usa solo como compuerta «esto no es un pez» y queda fuera del macro-F1 de especies.</li>
+      <li><strong>El uso es académico.</strong> Un sistema así, desplegado sobre trabajadores, es vigilancia laboral: en un despliegue real haría falta consentimiento de la tripulación, y esa conversación es previa a cualquier modelo.</li>
+      <li>Las imágenes de Kaggle no tienen personas: son pescado sobre una superficie.</li>
+    </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <h2><span class="n">10</span>Para qué sirven estos datos y para qué no</h2>
+  <div class="col">
+  <h3>Usos apropiados</h3>
+  <ul>
+    <li><strong>Comparar arquitecturas</strong> con presupuesto emparejado, que es el objeto del proyecto.</li>
+    <li><strong>Estudiar fugas y atajos:</strong> los dos conjuntos son un caso de estudio poco común, con la fuga medida y las máscaras que permiten cuantificar el atajo.</li>
+    <li><strong>Interpretabilidad cuantitativa:</strong> las máscaras de Kaggle permiten medir qué fracción de la energía de un mapa de saliencia cae dentro del pez.</li>
+    <li><strong>Detección fuera de distribución</strong> cruzando los dos conjuntos, cuyos espacios de etiquetas son disjuntos.</li>
+  </ul>
+
+  <h3>Usos inapropiados</h3>
+  <ul>
+    <li><strong>Desplegar en la Caleta Portales</strong> sin recolectar datos locales: cero solapamiento de especies y un dominio visual distinto.</li>
+    <li><strong>Prometer conteo</strong> a partir de una foto cruda: no hay detector entrenado, y el conteo que se reporta es «dadas las cajas».</li>
+    <li><strong>Leer la confianza como probabilidad:</strong> está mal calibrada en las dos direcciones a la vez, y una temperatura no lo arregla.</li>
+    <li><strong>Usar el test oficial de FishNet como benchmark</strong> sin purgar por secuencia, o compararse contra números publicados que sí lo usan sin decirlo.</li>
+    <li><strong>Concluir que un modelo entrenado en Kaggle reconoce peces:</strong> el control de solo-fondo dice que no hace falta verlos.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="s11">
+  <h2><span class="n">11</span>Distribución, mantenimiento y reproducción</h2>
+  <div class="col">
+  <ul>
+    <li><strong>Qué se versiona:</strong> los CSV de <code>data/splits/</code>, los scripts de descarga y construcción, y los <code>config.yaml</code> y <code>metrics.json</code> de cada corrida. <strong>Qué no:</strong> las imágenes (7,6 GB), los pesos y los logits.</li>
+    <li><strong>Mantenimiento:</strong> el grupo G3 durante el semestre 2026-2. Los splits se regeneran de forma idempotente; si cambiaran los datos crudos, los conteos de esta ficha se recalculan con el mismo comando.</li>
+    <li><strong>Errores conocidos:</strong> los de §7 y §8, todos medidos y declarados. No se conocen etiquetas corregidas por nosotros: no se tocó ninguna anotación original.</li>
+  </ul>
+  </div>
+  <div class="fx">python scripts/download_fishnet_subset.py   <span style="color:var(--ink-3)"># 4,49 GB, reanudable, valida cada JPEG</span>
+python scripts/build_splits.py             <span style="color:var(--ink-3)"># regenera data/splits/*.csv</span>
+python -m src.data                         <span style="color:var(--ink-3)"># imprime los conteos de esta ficha</span></div>
+  <p class="col">El protocolo completo de modelado, con todos los resultados y sus intervalos, está en <code>docs/plan-modelos.html</code>.</p>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · data card v1.0, 19-sep-2026<br>
+  Todas las cifras se calcularon sobre <code>data/splits/*.csv</code> y <code>data/raw/fishnet/foid_labels_v100.csv</code>.<br>
+  Fuentes bajo CC BY 4.0 (Kaggle) y CC BY-SA 4.0 (FishNet); las imágenes no se redistribuyen.
+</footer>
+
+</div>
