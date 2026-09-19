@@ -1,0 +1,298 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caleta-Scan · demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --paper:#eceff0; --surface:#f7f9f9; --surface-2:#e1e7e7; --rule:#c7d1d1; --rule-soft:#dae1e1;
+  --ink:#16232b; --ink-2:#42535b; --ink-3:#6e8085;
+  --accent:#0f6b63; --accent-2:#0b544e; --accent-soft:#d6e6e3;
+  --signal:#a8531b; --signal-soft:#f1e3d5;
+  --danger:#94292a; --danger-soft:#f0dcdc;
+  --shadow:0 1px 2px rgba(22,35,43,.06), 0 6px 20px -12px rgba(22,35,43,.22);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
+  --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
+  --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
+  --signal:#dd8f4e; --signal-soft:#37271a;
+  --danger:#e0797a; --danger-soft:#3a2020;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font-family:"Source Serif 4",Georgia,serif;font-size:16px;line-height:1.55}
+.mono,code,.k{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+h1,h2,h3{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+header{border-bottom:2px solid var(--ink);padding:34px 0 18px;margin-bottom:22px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+        text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:clamp(26px,4vw,38px);line-height:1.05;margin-top:10px;letter-spacing:-.015em}
+.sub{color:var(--ink-2);margin:12px 0 0;max-width:72ch}
+.grid{display:grid;grid-template-columns:1fr;gap:22px}
+.grid>div{min-width:0}
+@media(min-width:980px){.grid{grid-template-columns:minmax(0,1.15fr) minmax(320px,1fr);align-items:start}}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+         font-family:"IBM Plex Mono",monospace;font-weight:600;margin-bottom:10px}
+.barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+button,label.btn{font-family:"IBM Plex Mono",monospace;font-size:12.5px;cursor:pointer;
+  background:var(--surface-2);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:7px 12px}
+button:hover,label.btn:hover{border-color:var(--accent);color:var(--accent)}
+button[disabled]{opacity:.5;cursor:default}
+button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2)}
+#lienzo{position:relative;display:inline-block;max-width:100%;line-height:0;cursor:crosshair;
+        border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+/* sin esto el navegador inicia su propio arrastre de la imagen y se pierde el pointerup */
+#foto{max-width:100%;max-height:min(58vh,520px);width:auto;height:auto;display:block;
+      user-select:none;-webkit-user-drag:none}
+.caja{position:absolute;border:2px solid var(--accent);background:rgba(15,107,99,.10);cursor:pointer}
+.caja.gt{border-color:var(--signal);background:rgba(168,83,27,.08)}
+.caja.gt:hover{background:rgba(168,83,27,.22)}
+.caja b{position:absolute;top:-1px;left:-1px;transform:translateY(-100%);
+        font:600 10px/1.6 "IBM Plex Mono",monospace;background:var(--signal);color:#fff;padding:0 5px;white-space:nowrap}
+.tiras{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-top:12px}
+.tiras img{height:62px;width:auto;border:1px solid var(--rule);border-radius:2px;cursor:pointer;opacity:.75}
+.tiras img:hover,.tiras img.on{opacity:1;border-color:var(--accent)}
+.res{display:grid;gap:14px}
+.mod{border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:0 0 3px 3px;
+     padding:14px 16px;background:var(--surface)}
+.mod.rechaza{border-top-color:var(--signal)}
+.mod-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mod-cab h4{font-family:Archivo,sans-serif;font-size:17px;margin:0}
+.chip{font:600 10.5px/1.7 "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;
+      padding:2px 8px;border-radius:2px;background:var(--accent-soft);color:var(--accent-2)}
+.chip.no{background:var(--signal-soft);color:var(--signal)}
+.fila{display:grid;grid-template-columns:minmax(90px,auto) 1fr 52px;gap:10px;align-items:center;margin-top:9px}
+.fila .k{font-size:12.5px;color:var(--ink-2)}
+.fila .p{font-family:"IBM Plex Mono",monospace;font-size:12.5px;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pista{height:7px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.pista i{display:block;height:100%;background:var(--accent)}
+.mod.rechaza .pista i{background:var(--ink-3)}
+.meta{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.7}
+.nota{font-size:14px;color:var(--ink-3);line-height:1.5}
+.nota b{color:var(--ink-2)}
+.aviso{border-left:3px solid var(--signal);background:var(--signal-soft);padding:12px 14px;border-radius:0 3px 3px 0;
+       font-size:14px;color:var(--ink-2);margin-top:20px}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--rule);
+       font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);line-height:1.8}
+.cargando{color:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II</div>
+  <h1>ResNet contra ViT, sobre la misma caja</h1>
+  <p class="sub">Marca un pez arrastrando sobre la foto, o toca una de las cajas anotadas. Las dos
+  arquitecturas clasifican el mismo recorte, con la regla de decisión que se reportó, y cada una
+  puede contestar <b>no sé</b> cuando la imagen no se parece a lo que vio.</p>
+</header>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h3>Imagen</h3>
+      <div class="barra">
+        <label class="btn">Subir una foto<input type="file" id="archivo" accept="image/*" hidden></label>
+        <button id="completa">Clasificar la imagen completa</button>
+        <button id="limpiar">Quitar la caja</button>
+      </div>
+      <div id="lienzo"><img id="foto" alt="foto de trabajo" draggable="false"></div>
+      <div class="tiras" id="tiras"></div>
+      <p class="nota" style="margin-top:10px">Las miniaturas son fotos del <b>test purgado</b> de FishNet,
+      una por especie: ninguna se usó para entrenar. Las cajas naranjas son las anotadas por el dataset.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Predicción</h3>
+      <div id="res" class="res"><p class="cargando">Elige una caja para clasificar.</p></div>
+      <div class="meta" id="meta"></div>
+      <p class="nota" style="margin-top:8px">Los milisegundos son los de <b>esta llamada</b>, con la GPU
+      despertando entre peticiones: sirven para comparar las dos arquitecturas en el mismo momento, no
+      como medición de latencia. El benchmark controlado está en §11.</p>
+    </div>
+
+    <div class="aviso">
+      <b>Lo que esta demo no promete.</b> No hay detector: las cajas las pones tú o vienen anotadas (§2).
+      Los porcentajes <b>no son probabilidades calibradas</b>: en FishNet el modelo es subconfiado con las
+      personas y sobreconfiado con los peces, y una temperatura no lo arregla (§10.3). El «no sé» usa la
+      puntuación de energía con el umbral que deja pasar el 95 % del test limpio.
+    </div>
+  </div>
+</div>
+
+<footer>
+  ViT-B/16 y ResNet-50 entrenados sobre FishNet con presupuesto emparejado · semilla 0 de 3 ·
+  ajuste de logits τ por modelo, elegido en validación<br>
+  Protocolo y resultados completos en <code>docs/plan-modelos.html</code>
+</footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let muestras = [], actual = null, caja = null, natural = [0, 0];
+
+function fmt(x, d = 1) { return x.toFixed(d).replace('.', ','); }
+
+async function init() {
+  const d = await (await fetch('/api/muestras')).json();
+  muestras = d.muestras;
+  $('#meta').textContent = 'dispositivo: ' + d.dispositivo;
+  const tiras = $('#tiras');
+  muestras.forEach((m, i) => {
+    const im = new Image();
+    im.src = '/api/imagen?i=' + i;
+    im.title = m.etiqueta;
+    im.onclick = () => elegir(i);
+    tiras.appendChild(im);
+  });
+  if (muestras.length) elegir(0);
+}
+
+function elegir(i) {
+  actual = { tipo: 'muestra', i };
+  caja = null;
+  [...$('#tiras').children].forEach((n, k) => n.classList.toggle('on', k === i));
+  const f = $('#foto');
+  f.onload = () => { natural = [f.naturalWidth, f.naturalHeight]; pintarCajas(muestras[i].cajas); };
+  f.src = '/api/imagen?i=' + i;
+  $('#res').innerHTML = '<p class="cargando">Toca una caja naranja, o arrastra para marcar la tuya.</p>';
+}
+
+function escala() { return $('#foto').clientWidth / (natural[0] || 1); }
+
+function pintarCajas(cajas) {
+  [...document.querySelectorAll('.caja')].forEach(n => n.remove());
+  const k = escala();
+  (cajas || []).forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'caja gt';
+    d.style.left = (c.x0 * k) + 'px'; d.style.top = (c.y0 * k) + 'px';
+    d.style.width = ((c.x1 - c.x0) * k) + 'px'; d.style.height = ((c.y1 - c.y0) * k) + 'px';
+    const b = document.createElement('b'); b.textContent = c.gt; d.appendChild(b);
+    d.onclick = e => { e.stopPropagation(); predecir({ x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1 }); };
+    $('#lienzo').appendChild(d);
+  });
+}
+
+// --- dibujar una caja arrastrando ---
+let ini = null, temp = null;
+const lienzo = $('#lienzo');
+lienzo.addEventListener('dragstart', e => e.preventDefault());
+lienzo.addEventListener('pointerdown', e => {
+  if (e.target.classList.contains('caja')) return;
+  const r = lienzo.getBoundingClientRect();
+  ini = [e.clientX - r.left, e.clientY - r.top];
+  temp = document.createElement('div');
+  temp.className = 'caja';
+  lienzo.appendChild(temp);
+  lienzo.setPointerCapture(e.pointerId);
+});
+lienzo.addEventListener('pointermove', e => {
+  if (!ini) return;
+  const r = lienzo.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  temp.style.left = Math.min(ini[0], x) + 'px'; temp.style.top = Math.min(ini[1], y) + 'px';
+  temp.style.width = Math.abs(x - ini[0]) + 'px'; temp.style.height = Math.abs(y - ini[1]) + 'px';
+});
+function soltar(e) {
+  if (!ini) return;
+  const r = lienzo.getBoundingClientRect(), k = escala();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const c = { x0: Math.min(ini[0], x) / k, y0: Math.min(ini[1], y) / k,
+              x1: Math.max(ini[0], x) / k, y1: Math.max(ini[1], y) / k };
+  ini = null;
+  if ((c.x1 - c.x0) * k < 12 || (c.y1 - c.y0) * k < 12) { temp.remove(); return; }
+  caja = c; predecir(c);
+}
+// tambien en window: si el puntero se suelta fuera del lienzo, o el navegador
+// pierde la captura, el arrastre tiene que cerrarse igual
+lienzo.addEventListener('pointerup', soltar);
+window.addEventListener('pointerup', soltar);
+window.addEventListener('pointercancel', () => { if (ini) { ini = null; temp.remove(); } });
+
+$('#limpiar').onclick = () => {
+  caja = null;
+  [...document.querySelectorAll('.caja:not(.gt)')].forEach(n => n.remove());
+};
+$('#completa').onclick = () => predecir(null);
+
+$('#archivo').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    actual = { tipo: 'subida', datos: r.result };
+    caja = null;
+    [...document.querySelectorAll('.caja')].forEach(n => n.remove());
+    [...$('#tiras').children].forEach(n => n.classList.remove('on'));
+    const im = $('#foto');
+    im.onload = () => { natural = [im.naturalWidth, im.naturalHeight]; };
+    im.src = r.result;
+    $('#res').innerHTML = '<p class="cargando">Arrastra sobre el pez, o clasifica la imagen completa.</p>';
+  };
+  r.readAsDataURL(f);
+};
+
+async function predecir(c) {
+  if (!actual) return;
+  $('#res').innerHTML = '<p class="cargando">clasificando…</p>';
+  const cuerpo = c ? { caja: c } : {};
+  if (actual.tipo === 'muestra') cuerpo.muestra = actual.i; else cuerpo.imagen = actual.datos;
+  let d;
+  try {
+    d = await (await fetch('/api/predecir', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo)
+    })).json();
+  } catch (err) { d = { error: String(err) }; }
+  if (d.error) { $('#res').innerHTML = '<p class="cargando">error: ' + d.error + '</p>'; return; }
+  pintar(d, c);
+}
+
+function pintar(d, c) {
+  const res = $('#res');
+  res.textContent = '';
+  d.pred.forEach(p => {
+    const box = document.createElement('div');
+    box.className = 'mod' + (p.acepta ? '' : ' rechaza');
+    const cab = document.createElement('div');
+    cab.className = 'mod-cab';
+    const h = document.createElement('h4'); h.textContent = p.modelo;
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (p.acepta ? '' : ' no');
+    chip.textContent = p.acepta ? 'dentro de dominio' : 'no sé · fuera de dominio';
+    cab.appendChild(h); cab.appendChild(chip); box.appendChild(cab);
+
+    p.top.forEach((t, i) => {
+      const f = document.createElement('div'); f.className = 'fila';
+      const n = document.createElement('span'); n.className = 'k'; n.textContent = t.clase;
+      const pista = document.createElement('div'); pista.className = 'pista';
+      const barra = document.createElement('i'); barra.style.width = (100 * t.p) + '%';
+      if (i > 0) barra.style.opacity = .45;
+      pista.appendChild(barra);
+      const v = document.createElement('span'); v.className = 'p'; v.textContent = fmt(100 * t.p) + ' %';
+      f.appendChild(n); f.appendChild(pista); f.appendChild(v); box.appendChild(f);
+    });
+
+    const m = document.createElement('div'); m.className = 'meta';
+    m.textContent = 'energía ' + fmt(p.energia) + ' · umbral ' + fmt(p.umbral)
+      + ' · τ ' + fmt(p.tau, 2) + ' · ' + fmt(p.ms) + ' ms';
+    box.appendChild(m);
+    res.appendChild(box);
+  });
+  const nota = document.createElement('p');
+  nota.className = 'nota';
+  nota.textContent = c ? 'Recorte con el margen del 10 % que usa el entrenamiento.'
+                       : 'Imagen completa, sin recortar: el modelo se entrenó con recortes de un pez.';
+  res.appendChild(nota);
+  $('#meta').textContent = 'dispositivo: ' + d.dispositivo + ' · imagen ' + d.tam.join('×') + ' px';
+}
+
+init();
+</script>

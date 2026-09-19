@@ -26,7 +26,8 @@ comparar ResNet contra ViT**, con interpretabilidad (Grad-CAM / attention rollou
 | Interpretabilidad | Grad-CAM, attention rollout y Chefer, con pointing game contra máscaras GT |
 | Calibración y OOD | hechos; el ViT rechaza peces ajenos mucho mejor (AUROC +0,21) |
 | Velocidad vs. precisión | hecha; ViT 2,7× más lento en CPU (119 vs 43 ms) sin cambiar qué es factible: se elige el ViT |
-| Pendiente | demo, data card, informe; E9 opcional |
+| Demo | funcional: `python -m src.demo` levanta la comparación en vivo con rechazo de «no sé» |
+| Pendiente | data card, informe; E9 opcional |
 | Próxima entrega | Avance, 28-sep-2026 (presentación de 15 min) |
 
 Todos los resultados, con sus intervalos y su discusión, están en `docs/plan-modelos.html`.
@@ -73,6 +74,7 @@ python -m src.evaluate --run e5_vit_b_16_fishnet --compare e4_resnet50_fishnet -
 python -m src.interpret                                         # pointing game
 python -m src.calibrate --inferir && python -m src.calibrate    # calibración y OOD
 python -m src.speed                                             # latencias (máquina libre)
+python -m src.demo                                              # demo en http://127.0.0.1:8000
 python -m tests.test_stats && python -m tests.test_calibrate    # validación estadística
 ```
 
@@ -105,6 +107,7 @@ src/
   interpret.py  Grad-CAM, attention rollout, relevancia de Chefer y pointing game
   calibrate.py  temperatura, ECE/NLL/Brier y OOD cruzado Kaggle↔FishNet
   speed.py      latencia GPU/CPU, MACs medidos y tamaño de los modelos
+  demo.py       demo local (sin dependencias nuevas) + demo.html, su interfaz
 tests/          validación de la maquinaria estadística contra sklearn
 BITACORA.md     documento de traspaso: estado, decisiones cerradas y hallazgos
 ```
