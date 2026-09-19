@@ -19,21 +19,16 @@ comparar ResNet contra ViT**, con interpretabilidad (Grad-CAM / attention rollou
 
 | | |
 |---|---|
-| Datos | descargados, saneados y spliteados |
-| Splits | construidos y verificados (0 fugas de grupo en Kaggle) |
-| Código de entrenamiento | listo y verificado de punta a punta |
-| Baselines E1 / E2 | **pendientes de correr** — siguiente hito |
+| Datos y splits | construidos y verificados (0 fugas de grupo en Kaggle; test de FishNet purgado por secuencia) |
+| E1–E2 · Kaggle | hechos; ResNet y ViT no se distinguen (el test tiene 62 fotos independientes) |
+| E4–E6 · FishNet | hechos; ViT > ResNet en macro-F1, Δ +0,042 con IC que no cruza cero |
+| E7 · controles de fondo | hechos; sin ver el pez, las dos redes aciertan ~97 % en Kaggle |
+| Interpretabilidad | Grad-CAM, attention rollout y Chefer, con pointing game contra máscaras GT |
+| Calibración y OOD | hechos; el ViT rechaza peces ajenos mucho mejor (AUROC +0,21) |
+| Pendiente | velocidad vs. precisión, demo, data card, informe |
 | Próxima entrega | Avance, 28-sep-2026 (presentación de 15 min) |
 
-### Siguiente paso
-
-```bash
-python -m src.train --config configs/e1_resnet50_kaggle.yaml
-python -m src.train --config configs/e2_vit_b_16_kaggle.yaml
-```
-
-Unas 2 h 10 min de GPU en total (3 semillas cada uno). Conviene correrlo con la
-máquina libre: ocupa la GPU de forma continua.
+Todos los resultados, con sus intervalos y su discusión, están en `docs/plan-modelos.html`.
 
 ---
 
@@ -69,20 +64,45 @@ python scripts/build_splits.py
 Idempotente. Regenera los tres CSV de `data/splits/`, que **sí están versionados**
 porque son el contrato del experimento.
 
+### 4. Experimentos y análisis
+
+```bash
+python -m src.train --config configs/e4_resnet50_fishnet.yaml   # uno por YAML de configs/
+python -m src.evaluate --run e5_vit_b_16_fishnet --compare e4_resnet50_fishnet --limpio
+python -m src.interpret                                         # pointing game
+python -m src.calibrate --inferir && python -m src.calibrate    # calibración y OOD
+python -m tests.test_stats && python -m tests.test_calibrate    # validación estadística
+```
+
+`train.py` reanuda por época lo que quedó a medias y salta las semillas completas, así
+que una corrida se puede cortar y relanzar con el mismo comando. Todo lo posterior al
+entrenamiento trabaja sobre los logits guardados en `runs/` y no necesita GPU, salvo la
+inferencia OOD cruzada (5 min).
+
 ---
 
 ## Estructura
 
 ```
+configs/        un YAML por corrida (E1…E7): el YAML es el experimento
 data/
   raw/          datos crudos (ignorado por git, 7,6 GB)
   splits/       manifiestos de split (versionados)
 docs/
-  plan-modelos.html   protocolo de modelado: qué se entrena, con qué receta,
-                      contra qué métrica y con qué prueba estadística
+  plan-modelos.html   protocolo de modelado y resultados: qué se entrena, con qué
+                      receta, contra qué métrica y con qué prueba estadística
+runs/<exp>/seed<n>/   config.yaml y metrics.json versionados; logits y pesos no
 scripts/
   download_fishnet_subset.py
   build_splits.py
+src/
+  data.py       datasets, transforms y loaders
+  models.py     fábrica de modelos con pesos fijados y grupos de parámetros
+  train.py      entrenamiento reanudable, dirigido por --config
+  evaluate.py   métricas, ajuste de logits, bootstrap de clúster y comparación pareada
+  interpret.py  Grad-CAM, attention rollout, relevancia de Chefer y pointing game
+  calibrate.py  temperatura, ECE/NLL/Brier y OOD cruzado Kaggle↔FishNet
+tests/          validación de la maquinaria estadística contra sklearn
 BITACORA.md     documento de traspaso: estado, decisiones cerradas y hallazgos
 ```
 

@@ -12,6 +12,7 @@
   --danger:#94292a; --danger-soft:#f0dcdc;
   --ok:#2c6640;
   --shadow:0 1px 2px rgba(22,35,43,.06), 0 6px 20px -12px rgba(22,35,43,.22);
+  --viz-id:#00897b; --viz-ood:#c2570f;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -22,6 +23,7 @@
     --danger:#e0797a; --danger-soft:#3a2020;
     --ok:#74c288;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+    --viz-id:#1f9e8c; --viz-ood:#d9772e;
   }
 }
 :root[data-theme="dark"]{
@@ -32,6 +34,7 @@
   --danger:#e0797a; --danger-soft:#3a2020;
   --ok:#74c288;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+  --viz-id:#1f9e8c; --viz-ood:#d9772e;
 }
 
 *{box-sizing:border-box}
@@ -143,6 +146,8 @@ hr.soft{border:0;border-top:1px solid var(--rule-soft);margin:34px 0}
 .dec dd{margin:0 0 6px;font-size:16px}
 .dec dd:last-child{margin-bottom:0}
 .dec dd.err{color:var(--signal)}
+@media (max-width:560px){.dec{grid-template-columns:1fr}.dec dt{padding-top:8px}}
+code{overflow-wrap:anywhere}
 
 /* ---------- formula ---------- */
 .fx{
@@ -188,6 +193,41 @@ caption{
          text-transform:uppercase;color:var(--ink-3);margin-top:5px;line-height:1.35}
 .stat.alert .v{color:var(--danger)}
 
+
+/* ---------- figure ---------- */
+.viz{margin:24px 0;background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+     padding:16px 18px 14px;position:relative}
+.viz-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 20px;margin-bottom:8px}
+.viz-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15.5px;color:var(--ink);line-height:1.3}
+.viz-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2)}
+.viz-key{display:inline-block;width:14px;height:2px;border-radius:1px;vertical-align:middle;margin-right:7px}
+.k-id{background:var(--viz-id)} .k-ood{background:var(--viz-ood)}
+.viz-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px 24px}
+.viz-ptitle{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--ink-2);font-weight:600;margin:6px 0 0 10%}
+.viz svg{display:block;width:100%;height:auto;overflow:visible}
+.viz svg:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.viz .vg{stroke:var(--rule-soft);stroke-width:1}
+.viz .vb{stroke:var(--rule);stroke-width:1}
+.viz .vt{fill:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:10px}
+.viz .vl{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:10px}
+.viz .vd{fill:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600}
+.viz .s-id-l,.viz .s-ood-l{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.viz .s-id-l{stroke:var(--viz-id)} .viz .s-ood-l{stroke:var(--viz-ood)}
+.viz .s-id-a{fill:var(--viz-id);fill-opacity:.10} .viz .s-ood-a{fill:var(--viz-ood);fill-opacity:.10}
+.viz .vthr{stroke:var(--ink-3);stroke-width:1}
+.viz .vhit{fill:var(--ink);fill-opacity:0;cursor:crosshair}
+.viz .vhit.on{fill-opacity:.06}
+.viz-axis{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);text-align:center;margin-top:2px}
+.viz figcaption{font-size:13.5px;color:var(--ink-3);line-height:1.45;margin-top:10px;max-width:84ch}
+.viz-tip{position:absolute;pointer-events:none;z-index:3;background:var(--surface);border:1px solid var(--rule);
+         border-radius:3px;box-shadow:var(--shadow);padding:7px 10px;font-family:"IBM Plex Mono",monospace;
+         font-size:12px;line-height:1.55;color:var(--ink-2);white-space:nowrap}
+.viz-tip b{color:var(--ink);font-weight:600;margin-right:6px}
+.viz-tip .tk{display:inline-block;width:12px;height:2px;border-radius:1px;vertical-align:middle;margin-right:7px}
+.viz-table summary{cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);margin-top:10px}
+.viz-table .tw{margin:10px 0 0}
+
 /* ---------- misc ---------- */
 .pill{
   display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
@@ -209,10 +249,10 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   <h1>Protocolo de Modelado</h1>
   <p class="sub">Cómo implementar la comparación ResNet vs. ViT sin errores de diseño experimental: qué se entrena, con qué receta, contra qué métrica y con qué prueba estadística.</p>
   <div class="mastmeta">
-    <span><b>Estado</b> · datos listos, modelos sin empezar</span>
+    <span><b>Estado</b> · E1–E7, calibración y OOD hechos</span>
     <span><b>Bloquea</b> · Avance 28-sep</span>
     <span><b>Base</b> · BITACORA.md §4 (decisiones cerradas)</span>
-    <span><b>Fecha</b> · 27-ago-2026</span>
+    <span><b>Fecha</b> · 27-ago-2026 · act. 19-sep</span>
   </div>
 </header>
 
@@ -491,7 +531,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
 
   <h3>Resultados de E4, E5 y E6 <span class="pill">1-sep</span></h3>
   <div class="col">
-  <p>FishNet, 3 semillas cada uno, presupuesto idéntico de 9.104 pasos. Las cifras llevan ajuste de logits (τ = 0,18 elegido en validación) y crédito jerárquico para <code>Tuna</code>; sin ellos son 0,3331 y 0,3704.</p>
+  <p>FishNet, 3 semillas cada uno, presupuesto idéntico de 9.104 pasos. Las cifras llevan ajuste de logits (τ elegido en validación para cada modelo: 0,18 el ResNet, 0,05 el ViT) y crédito jerárquico para <code>Tuna</code>; sin ellos son 0,3331 y 0,3704.</p>
   </div>
   <div class="tw">
     <table>
@@ -924,6 +964,113 @@ mapa = R[0, 1:] → reshape(14,14) → upsample(224)   <span class="c">// fila C
   <div class="fx">max-softmax   s(x) = max_c softmax(z)_c            <span class="c">// la línea base clásica</span>
 energía       s(x) = T · logsumexp( z / T )        <span class="c">// Liu et al. 2020, suele ser mejor</span></div>
   <p class="col">Más el histograma de confianza ID vs OOD superpuesto, que es la figura que se entiende en dos segundos en la presentación. La pregunta comparativa: <strong>¿cuál de las dos arquitecturas dice «trucha» con 0,98 frente a un atún que nunca vio?</strong></p>
+
+  <div class="col">
+  <h3>10.3 Resultados <span class="pill">19-sep</span></h3>
+  <p>Todo sale de <code>src/calibrate.py</code> sobre los logits guardados, más una inferencia cruzada de 5 minutos: cada modelo de Kaggle sobre el test de FishNet y cada modelo de FishNet sobre el test de Kaggle. Tres semillas por modelo; IC de bootstrap de clústeres (en OOD, ID y OOD se remuestrean por separado) y comparaciones pareadas. La maquinaria está validada en <code>tests/test_calibrate.py</code> (14/14, contra sklearn y contra una T conocida).</p>
+  </div>
+
+  <div class="find good">
+    <span class="tag">OOD · la diferencia más grande entre las arquitecturas</span>
+    <h4>El ViT reconoce que un pez no es de su dominio; el ResNet casi no</h4>
+    <div class="col">
+    <p>Modelos de FishNet frente a las 1.336 imágenes de Kaggle, que ninguno vio. El ID principal es el test limpio <em>sin personas</em>: Human es el 68 % del test y el modelo lo reconoce con confianza alta, así que con él dentro el AUROC mide en buena parte «persona contra pez de estudio». Sin personas, la pregunta es la del muelle: distinguir un pez de su dominio de uno que no lo es.</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>AUROC con ID como clase positiva; FPR@95 = fracción de Kaggle aceptada con el umbral que conserva el 95 % del ID. Media de 3 semillas; IC95 de bootstrap de clústeres (612 secuencias ID, 62 fotos OOD). Δ pareado ViT − ResNet.</caption>
+        <thead><tr><th>ID</th><th>Modelo</th><th class="num">AUROC max-softmax</th><th class="num">FPR@95</th><th class="num">AUROC energía</th><th class="num">FPR@95</th></tr></thead>
+        <tbody>
+          <tr><td class="name" rowspan="3">Sin personas<br>2.258 filas</td><td class="name">ResNet-50</td><td class="num">0,683 [0,640 · 0,724]</td><td class="num">0,94</td><td class="num">0,766 [0,726 · 0,804]</td><td class="num">0,84</td></tr>
+          <tr><td class="name">ViT-B/16</td><td class="num">0,893 [0,870 · 0,912]</td><td class="num">0,49</td><td class="num">0,926 [0,908 · 0,942]</td><td class="num">0,27</td></tr>
+          <tr class="tot"><td class="name">Δ</td><td class="num up">+0,209 [+0,171 · +0,249]</td><td class="num">−0,45</td><td class="num up">+0,160 [+0,124 · +0,198]</td><td class="num">−0,58</td></tr>
+          <tr><td class="name" rowspan="3">Completo<br>7.159 filas</td><td class="name">ResNet-50</td><td class="num">0,881 [0,863 · 0,898]</td><td class="num">0,77</td><td class="num">0,914 [0,897 · 0,928]</td><td class="num">0,64</td></tr>
+          <tr><td class="name">ViT-B/16</td><td class="num">0,950 [0,938 · 0,961]</td><td class="num">0,23</td><td class="num">0,957 [0,945 · 0,969]</td><td class="num">0,12</td></tr>
+          <tr class="tot"><td class="name">Δ</td><td class="num up">+0,069 [+0,052 · +0,088]</td><td class="num">−0,54</td><td class="num up">+0,044 [+0,028 · +0,061]</td><td class="num">−0,52</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+    <p><strong>Con el umbral que conserva el 95 % de sus peces, el ResNet deja pasar el 94 % de los peces de Kaggle; el ViT, el 49 %, y el 27 % con la puntuación de energía.</strong> P(Δ&gt;0) = 1,000 en las cuatro comparaciones, y ningún IC se acerca a cero: es el resultado más nítido de toda la comparación entre arquitecturas.</p>
+    <p>En las dos arquitecturas la energía da mejor AUROC y FPR que la max-softmax, coherente con Liu et al. (2020): es la puntuación que debería usar un rechazo de «no sé» en la demo.</p>
+    </div>
+  </div>
+
+  <figure class="viz" id="fig-ood">
+  <div class="viz-head">
+    <div class="viz-title">¿Cuánta confianza pone el modelo de FishNet en un pez que nunca vio?</div>
+    <div class="viz-legend"><span><i class="viz-key k-id"></i>FishNet · test limpio sin personas (ID)</span><span><i class="viz-key k-ood"></i>Kaggle · test (OOD)</span></div>
+  </div>
+  <div class="viz-panels"><div class="viz-panel"><div class="viz-ptitle">ResNet-50</div><svg viewBox="0 0 340 214" role="img" tabindex="0" aria-label="ResNet-50: distribucion de la max-softmax, FishNet sin personas contra Kaggle"><line class="vg" x1="36" x2="330" y1="182.0" y2="182.0"/><text class="vt" x="30" y="186.0" text-anchor="end">0</text><line class="vg" x1="36" x2="330" y1="126.7" y2="126.7"/><text class="vt" x="30" y="130.7" text-anchor="end">10</text><line class="vg" x1="36" x2="330" y1="71.3" y2="71.3"/><text class="vt" x="30" y="75.3" text-anchor="end">20</text><line class="vg" x1="36" x2="330" y1="16.0" y2="16.0"/><text class="vt" x="30" y="20.0" text-anchor="end">30</text><text class="vt" x="36.0" y="198" text-anchor="middle">0</text><text class="vt" x="109.5" y="198" text-anchor="middle">0,25</text><text class="vt" x="183.0" y="198" text-anchor="middle">0,5</text><text class="vt" x="256.5" y="198" text-anchor="middle">0,75</text><text class="vt" x="330.0" y="198" text-anchor="middle">1</text><line class="vb" x1="36" x2="330" y1="182.0" y2="182.0"/><path class="s-ood-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.9 L80.1,181.9 L80.1,175.1 L94.8,175.1 L94.8,154.0 L109.5,154.0 L109.5,132.4 L124.2,132.4 L124.2,118.2 L138.9,118.2 L138.9,123.5 L153.6,123.5 L153.6,122.2 L168.3,122.2 L168.3,128.8 L183.0,128.8 L183.0,133.3 L197.7,133.3 L197.7,138.4 L212.4,138.4 L212.4,148.2 L227.1,148.2 L227.1,156.6 L241.8,156.6 L241.8,157.7 L256.5,157.7 L256.5,156.7 L271.2,156.7 L271.2,163.2 L285.9,163.2 L285.9,172.6 L300.6,172.6 L300.6,177.8 L315.3,177.8 L315.3,182.0 L330.0,182.0 L330.0,182.0 Z"/><path class="s-ood-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.9 L80.1,181.9 L80.1,175.1 L94.8,175.1 L94.8,154.0 L109.5,154.0 L109.5,132.4 L124.2,132.4 L124.2,118.2 L138.9,118.2 L138.9,123.5 L153.6,123.5 L153.6,122.2 L168.3,122.2 L168.3,128.8 L183.0,128.8 L183.0,133.3 L197.7,133.3 L197.7,138.4 L212.4,138.4 L212.4,148.2 L227.1,148.2 L227.1,156.6 L241.8,156.6 L241.8,157.7 L256.5,157.7 L256.5,156.7 L271.2,156.7 L271.2,163.2 L285.9,163.2 L285.9,172.6 L300.6,172.6 L300.6,177.8 L315.3,177.8 L315.3,182.0 L330.0,182.0 L330.0,182.0"/><path class="s-id-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.5 L80.1,181.5 L80.1,174.8 L94.8,174.8 L94.8,160.9 L109.5,160.9 L109.5,153.0 L124.2,153.0 L124.2,147.2 L138.9,147.2 L138.9,146.9 L153.6,146.9 L153.6,148.0 L168.3,148.0 L168.3,149.1 L183.0,149.1 L183.0,155.3 L197.7,155.3 L197.7,155.6 L212.4,155.6 L212.4,155.9 L227.1,155.9 L227.1,156.8 L241.8,156.8 L241.8,158.0 L256.5,158.0 L256.5,155.1 L271.2,155.1 L271.2,146.0 L285.9,146.0 L285.9,110.8 L300.6,110.8 L300.6,101.5 L315.3,101.5 L315.3,166.1 L330.0,166.1 L330.0,182.0 Z"/><path class="s-id-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.5 L80.1,181.5 L80.1,174.8 L94.8,174.8 L94.8,160.9 L109.5,160.9 L109.5,153.0 L124.2,153.0 L124.2,147.2 L138.9,147.2 L138.9,146.9 L153.6,146.9 L153.6,148.0 L168.3,148.0 L168.3,149.1 L183.0,149.1 L183.0,155.3 L197.7,155.3 L197.7,155.6 L212.4,155.6 L212.4,155.9 L227.1,155.9 L227.1,156.8 L241.8,156.8 L241.8,158.0 L256.5,158.0 L256.5,155.1 L271.2,155.1 L271.2,146.0 L285.9,146.0 L285.9,110.8 L300.6,110.8 L300.6,101.5 L315.3,101.5 L315.3,166.1 L330.0,166.1 L330.0,182.0"/><line class="vthr" x1="109.0" x2="109.0" y1="16" y2="182.0"/><text class="vl" x="114.0" y="25">umbral 95 % ID<tspan x="114.0" dy="12">acepta 93,9 % de Kaggle</tspan></text><text class="vd" x="307.9" y="94.5" text-anchor="middle">FishNet</text><text class="vd" x="114.9" y="111.2" text-anchor="start">Kaggle</text><rect class="vhit" x="36.0" y="16" width="14.7" height="166.0" data-bin="0,00–0,05" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="50.7" y="16" width="14.7" height="166.0" data-bin="0,05–0,10" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="65.4" y="16" width="14.7" height="166.0" data-bin="0,10–0,15" data-id="0,1" data-ood="0,0"/><rect class="vhit" x="80.1" y="16" width="14.7" height="166.0" data-bin="0,15–0,20" data-id="1,3" data-ood="1,2"/><rect class="vhit" x="94.8" y="16" width="14.7" height="166.0" data-bin="0,20–0,25" data-id="3,8" data-ood="5,1"/><rect class="vhit" x="109.5" y="16" width="14.7" height="166.0" data-bin="0,25–0,30" data-id="5,2" data-ood="9,0"/><rect class="vhit" x="124.2" y="16" width="14.7" height="166.0" data-bin="0,30–0,35" data-id="6,3" data-ood="11,5"/><rect class="vhit" x="138.9" y="16" width="14.7" height="166.0" data-bin="0,35–0,40" data-id="6,3" data-ood="10,6"/><rect class="vhit" x="153.6" y="16" width="14.7" height="166.0" data-bin="0,40–0,45" data-id="6,1" data-ood="10,8"/><rect class="vhit" x="168.3" y="16" width="14.7" height="166.0" data-bin="0,45–0,50" data-id="6,0" data-ood="9,6"/><rect class="vhit" x="183.0" y="16" width="14.7" height="166.0" data-bin="0,50–0,55" data-id="4,8" data-ood="8,8"/><rect class="vhit" x="197.7" y="16" width="14.7" height="166.0" data-bin="0,55–0,60" data-id="4,8" data-ood="7,9"/><rect class="vhit" x="212.4" y="16" width="14.7" height="166.0" data-bin="0,60–0,65" data-id="4,7" data-ood="6,1"/><rect class="vhit" x="227.1" y="16" width="14.7" height="166.0" data-bin="0,65–0,70" data-id="4,5" data-ood="4,6"/><rect class="vhit" x="241.8" y="16" width="14.7" height="166.0" data-bin="0,70–0,75" data-id="4,3" data-ood="4,4"/><rect class="vhit" x="256.5" y="16" width="14.7" height="166.0" data-bin="0,75–0,80" data-id="4,9" data-ood="4,6"/><rect class="vhit" x="271.2" y="16" width="14.7" height="166.0" data-bin="0,80–0,85" data-id="6,5" data-ood="3,4"/><rect class="vhit" x="285.9" y="16" width="14.7" height="166.0" data-bin="0,85–0,90" data-id="12,9" data-ood="1,7"/><rect class="vhit" x="300.6" y="16" width="14.7" height="166.0" data-bin="0,90–0,95" data-id="14,5" data-ood="0,8"/><rect class="vhit" x="315.3" y="16" width="14.7" height="166.0" data-bin="0,95–1,00" data-id="2,9" data-ood="0,0"/></svg></div><div class="viz-panel"><div class="viz-ptitle">ViT-B/16</div><svg viewBox="0 0 340 214" role="img" tabindex="0" aria-label="ViT-B/16: distribucion de la max-softmax, FishNet sin personas contra Kaggle"><line class="vg" x1="36" x2="330" y1="182.0" y2="182.0"/><text class="vt" x="30" y="186.0" text-anchor="end">0</text><line class="vg" x1="36" x2="330" y1="126.7" y2="126.7"/><text class="vt" x="30" y="130.7" text-anchor="end">10</text><line class="vg" x1="36" x2="330" y1="71.3" y2="71.3"/><text class="vt" x="30" y="75.3" text-anchor="end">20</text><line class="vg" x1="36" x2="330" y1="16.0" y2="16.0"/><text class="vt" x="30" y="20.0" text-anchor="end">30</text><text class="vt" x="36.0" y="198" text-anchor="middle">0</text><text class="vt" x="109.5" y="198" text-anchor="middle">0,25</text><text class="vt" x="183.0" y="198" text-anchor="middle">0,5</text><text class="vt" x="256.5" y="198" text-anchor="middle">0,75</text><text class="vt" x="330.0" y="198" text-anchor="middle">1</text><line class="vb" x1="36" x2="330" y1="182.0" y2="182.0"/><path class="s-ood-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,181.6 L65.4,181.6 L65.4,143.0 L80.1,143.0 L80.1,83.8 L94.8,83.8 L94.8,77.5 L109.5,77.5 L109.5,101.7 L124.2,101.7 L124.2,120.4 L138.9,120.4 L138.9,144.0 L153.6,144.0 L153.6,154.5 L168.3,154.5 L168.3,161.3 L183.0,161.3 L183.0,165.3 L197.7,165.3 L197.7,171.7 L212.4,171.7 L212.4,173.9 L227.1,173.9 L227.1,173.7 L241.8,173.7 L241.8,174.8 L256.5,174.8 L256.5,175.1 L271.2,175.1 L271.2,176.7 L285.9,176.7 L285.9,173.6 L300.6,173.6 L300.6,170.0 L315.3,170.0 L315.3,182.0 L330.0,182.0 L330.0,182.0 Z"/><path class="s-ood-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,181.6 L65.4,181.6 L65.4,143.0 L80.1,143.0 L80.1,83.8 L94.8,83.8 L94.8,77.5 L109.5,77.5 L109.5,101.7 L124.2,101.7 L124.2,120.4 L138.9,120.4 L138.9,144.0 L153.6,144.0 L153.6,154.5 L168.3,154.5 L168.3,161.3 L183.0,161.3 L183.0,165.3 L197.7,165.3 L197.7,171.7 L212.4,171.7 L212.4,173.9 L227.1,173.9 L227.1,173.7 L241.8,173.7 L241.8,174.8 L256.5,174.8 L256.5,175.1 L271.2,175.1 L271.2,176.7 L285.9,176.7 L285.9,173.6 L300.6,173.6 L300.6,170.0 L315.3,170.0 L315.3,182.0 L330.0,182.0 L330.0,182.0"/><path class="s-id-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.3 L80.1,181.3 L80.1,176.3 L94.8,176.3 L94.8,169.3 L109.5,169.3 L109.5,163.5 L124.2,163.5 L124.2,161.6 L138.9,161.6 L138.9,161.5 L153.6,161.5 L153.6,160.0 L168.3,160.0 L168.3,163.1 L183.0,163.1 L183.0,164.5 L197.7,164.5 L197.7,164.3 L212.4,164.3 L212.4,164.5 L227.1,164.5 L227.1,162.6 L241.8,162.6 L241.8,163.1 L256.5,163.1 L256.5,154.9 L271.2,154.9 L271.2,147.3 L285.9,147.3 L285.9,53.4 L300.6,53.4 L300.6,30.9 L315.3,30.9 L315.3,180.5 L330.0,180.5 L330.0,182.0 Z"/><path class="s-id-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.3 L80.1,181.3 L80.1,176.3 L94.8,176.3 L94.8,169.3 L109.5,169.3 L109.5,163.5 L124.2,163.5 L124.2,161.6 L138.9,161.6 L138.9,161.5 L153.6,161.5 L153.6,160.0 L168.3,160.0 L168.3,163.1 L183.0,163.1 L183.0,164.5 L197.7,164.5 L197.7,164.3 L212.4,164.3 L212.4,164.5 L227.1,164.5 L227.1,162.6 L241.8,162.6 L241.8,163.1 L256.5,163.1 L256.5,154.9 L271.2,154.9 L271.2,147.3 L285.9,147.3 L285.9,53.4 L300.6,53.4 L300.6,30.9 L315.3,30.9 L315.3,180.5 L330.0,180.5 L330.0,182.0"/><line class="vthr" x1="116.9" x2="116.9" y1="16" y2="182.0"/><text class="vl" x="121.9" y="25">umbral 95 % ID<tspan x="121.9" dy="12">acepta 48,6 % de Kaggle</tspan></text><text class="vd" x="307.9" y="23.9" text-anchor="middle">FishNet</text><text class="vd" x="111.0" y="70.5" text-anchor="end">Kaggle</text><rect class="vhit" x="36.0" y="16" width="14.7" height="166.0" data-bin="0,00–0,05" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="50.7" y="16" width="14.7" height="166.0" data-bin="0,05–0,10" data-id="0,0" data-ood="0,1"/><rect class="vhit" x="65.4" y="16" width="14.7" height="166.0" data-bin="0,10–0,15" data-id="0,1" data-ood="7,0"/><rect class="vhit" x="80.1" y="16" width="14.7" height="166.0" data-bin="0,15–0,20" data-id="1,0" data-ood="17,7"/><rect class="vhit" x="94.8" y="16" width="14.7" height="166.0" data-bin="0,20–0,25" data-id="2,3" data-ood="18,9"/><rect class="vhit" x="109.5" y="16" width="14.7" height="166.0" data-bin="0,25–0,30" data-id="3,3" data-ood="14,5"/><rect class="vhit" x="124.2" y="16" width="14.7" height="166.0" data-bin="0,30–0,35" data-id="3,7" data-ood="11,1"/><rect class="vhit" x="138.9" y="16" width="14.7" height="166.0" data-bin="0,35–0,40" data-id="3,7" data-ood="6,9"/><rect class="vhit" x="153.6" y="16" width="14.7" height="166.0" data-bin="0,40–0,45" data-id="4,0" data-ood="5,0"/><rect class="vhit" x="168.3" y="16" width="14.7" height="166.0" data-bin="0,45–0,50" data-id="3,4" data-ood="3,7"/><rect class="vhit" x="183.0" y="16" width="14.7" height="166.0" data-bin="0,50–0,55" data-id="3,2" data-ood="3,0"/><rect class="vhit" x="197.7" y="16" width="14.7" height="166.0" data-bin="0,55–0,60" data-id="3,2" data-ood="1,9"/><rect class="vhit" x="212.4" y="16" width="14.7" height="166.0" data-bin="0,60–0,65" data-id="3,2" data-ood="1,5"/><rect class="vhit" x="227.1" y="16" width="14.7" height="166.0" data-bin="0,65–0,70" data-id="3,5" data-ood="1,5"/><rect class="vhit" x="241.8" y="16" width="14.7" height="166.0" data-bin="0,70–0,75" data-id="3,4" data-ood="1,3"/><rect class="vhit" x="256.5" y="16" width="14.7" height="166.0" data-bin="0,75–0,80" data-id="4,9" data-ood="1,2"/><rect class="vhit" x="271.2" y="16" width="14.7" height="166.0" data-bin="0,80–0,85" data-id="6,3" data-ood="0,9"/><rect class="vhit" x="285.9" y="16" width="14.7" height="166.0" data-bin="0,85–0,90" data-id="23,2" data-ood="1,5"/><rect class="vhit" x="300.6" y="16" width="14.7" height="166.0" data-bin="0,90–0,95" data-id="27,3" data-ood="2,2"/><rect class="vhit" x="315.3" y="16" width="14.7" height="166.0" data-bin="0,95–1,00" data-id="0,3" data-ood="0,0"/></svg></div></div>
+  <div class="viz-axis">max-softmax · eje vertical: % de las filas de cada conjunto, bins de 0,05</div>
+  <div class="viz-tip" role="status" aria-live="polite" hidden></div>
+  <figcaption>Las 3 semillas agregadas: 2.258 filas ID y 1.336 OOD por semilla. El umbral es el que conserva el 95 % de los peces de FishNet; la fracción de Kaggle que lo supera es el FPR@95. El ResNet reparte a los peces de Kaggle casi como a los suyos; el ViT los empuja hacia confianza baja.</figcaption>
+  <details class="viz-table"><summary>Ver como tabla</summary>
+    <div class="tw"><table>
+      <thead><tr><th>max-softmax</th><th class="num">ResNet · ID</th><th class="num">ResNet · OOD</th><th class="num">ViT · ID</th><th class="num">ViT · OOD</th></tr></thead>
+      <tbody><tr><td>0,00–0,05</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td></tr><tr><td>0,05–0,10</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,1</td></tr><tr><td>0,10–0,15</td><td class="num">0,1</td><td class="num">0,0</td><td class="num">0,1</td><td class="num">7,0</td></tr><tr><td>0,15–0,20</td><td class="num">1,3</td><td class="num">1,2</td><td class="num">1,0</td><td class="num">17,7</td></tr><tr><td>0,20–0,25</td><td class="num">3,8</td><td class="num">5,1</td><td class="num">2,3</td><td class="num">18,9</td></tr><tr><td>0,25–0,30</td><td class="num">5,2</td><td class="num">9,0</td><td class="num">3,3</td><td class="num">14,5</td></tr><tr><td>0,30–0,35</td><td class="num">6,3</td><td class="num">11,5</td><td class="num">3,7</td><td class="num">11,1</td></tr><tr><td>0,35–0,40</td><td class="num">6,3</td><td class="num">10,6</td><td class="num">3,7</td><td class="num">6,9</td></tr><tr><td>0,40–0,45</td><td class="num">6,1</td><td class="num">10,8</td><td class="num">4,0</td><td class="num">5,0</td></tr><tr><td>0,45–0,50</td><td class="num">6,0</td><td class="num">9,6</td><td class="num">3,4</td><td class="num">3,7</td></tr><tr><td>0,50–0,55</td><td class="num">4,8</td><td class="num">8,8</td><td class="num">3,2</td><td class="num">3,0</td></tr><tr><td>0,55–0,60</td><td class="num">4,8</td><td class="num">7,9</td><td class="num">3,2</td><td class="num">1,9</td></tr><tr><td>0,60–0,65</td><td class="num">4,7</td><td class="num">6,1</td><td class="num">3,2</td><td class="num">1,5</td></tr><tr><td>0,65–0,70</td><td class="num">4,5</td><td class="num">4,6</td><td class="num">3,5</td><td class="num">1,5</td></tr><tr><td>0,70–0,75</td><td class="num">4,3</td><td class="num">4,4</td><td class="num">3,4</td><td class="num">1,3</td></tr><tr><td>0,75–0,80</td><td class="num">4,9</td><td class="num">4,6</td><td class="num">4,9</td><td class="num">1,2</td></tr><tr><td>0,80–0,85</td><td class="num">6,5</td><td class="num">3,4</td><td class="num">6,3</td><td class="num">0,9</td></tr><tr><td>0,85–0,90</td><td class="num">12,9</td><td class="num">1,7</td><td class="num">23,2</td><td class="num">1,5</td></tr><tr><td>0,90–0,95</td><td class="num">14,5</td><td class="num">0,8</td><td class="num">27,3</td><td class="num">2,2</td></tr><tr><td>0,95–1,00</td><td class="num">2,9</td><td class="num">0,0</td><td class="num">0,3</td><td class="num">0,0</td></tr></tbody>
+    </table></div>
+  </details>
+</figure>
+
+  <div class="col">
+  <p><strong>La otra dirección está en el techo y no compara nada.</strong> Los modelos de Kaggle frente a los 4.860 recortes de pez de FishNet dan AUROC 1,000 las dos arquitecturas, con FPR@95 = 0. A la pregunta de §10.2 la respuesta es «ninguna»: la confianza media sobre FishNet es 0,24 y ningún recorte supera 0,9. Pero un pez de estudio sobre fondo liso y un pez en la cubierta de un barco están tan lejos que cualquier modelo los separa; el sondeo útil es el de FishNet → Kaggle.</p>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Calibración · una temperatura no alcanza</span>
+    <h4>La red se equivoca de confianza en sentidos opuestos: poca en las personas, demasiada en los peces</h4>
+    <div class="col">
+    <p>En el agregado del test limpio de FishNet confianza y accuracy casi coinciden (ResNet 0,80 contra 0,82; ViT 0,84 contra 0,84), y eso esconde dos errores de signo contrario:</p>
+    </div>
+    <div class="tw">
+      <table>
+        <caption>Logits crudos, test limpio de FishNet, media de 3 semillas. El tope de confianza que el label smoothing (ε = 0,1, K = 20) pone como objetivo es 1 − ε + ε/K = 0,905.</caption>
+        <thead><tr><th>Modelo</th><th>Filas</th><th class="num">n</th><th class="num">confianza</th><th class="num">accuracy</th><th class="num">conf − acc</th><th class="num">ECE</th></tr></thead>
+        <tbody>
+          <tr><td class="name" rowspan="2">ResNet-50</td><td class="name">Human</td><td class="num">4.901</td><td class="num">0,883</td><td class="num">0,987</td><td class="num">−0,104</td><td class="num">0,104</td></tr>
+          <tr><td class="name">sin Human</td><td class="num">2.258</td><td class="num">0,635</td><td class="num">0,470</td><td class="num dn">+0,165</td><td class="num">0,166</td></tr>
+          <tr><td class="name" rowspan="2">ViT-B/16</td><td class="name">Human</td><td class="num">4.901</td><td class="num">0,897</td><td class="num">0,987</td><td class="num">−0,090</td><td class="num">0,094</td></tr>
+          <tr><td class="name">sin Human</td><td class="num">2.258</td><td class="num">0,725</td><td class="num">0,531</td><td class="num dn">+0,194</td><td class="num">0,195</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+    <p>Las personas son fáciles (98,7 % de acierto) pero el <strong>label smoothing topa su confianza</strong> cerca de 0,9: subconfianza. En los peces pasa lo contrario: <strong>sobreconfianza de 16 a 19 puntos</strong>. Una temperatura escalar mueve todo en la misma dirección, así que no puede arreglar los dos a la vez.</p>
+    </div>
+  </div>
+
+  <div class="tw">
+    <table>
+      <caption>ECE (15 bins) en el test limpio de FishNet, con IC95 de bootstrap de clústeres. «T de val» es el procedimiento de §10.1; «T cruzada en test» es un control, no un modelo reportable: la mitad de las secuencias del test ajusta T y la otra mitad se evalúa con ella, y al revés.</caption>
+      <thead><tr><th>Variante</th><th class="num">ResNet-50</th><th class="num">ViT-B/16</th><th class="num">Δ ViT − ResNet</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Logits crudos</td><td class="num">0,079 [0,070 · 0,089]</td><td class="num">0,080 [0,068 · 0,091]</td><td class="num">+0,001 [−0,011 · +0,012]</td></tr>
+        <tr class="hi"><td class="name">+ T de val</td><td class="num">0,116 [0,106 · 0,127]</td><td class="num">0,132 [0,122 · 0,144]</td><td class="num">—</td></tr>
+        <tr><td class="name">+ T cruzada en test (control)</td><td class="num">0,068 [0,058 · 0,077]</td><td class="num">0,061 [0,052 · 0,072]</td><td class="num">−0,007 [−0,016 · +0,005]</td></tr>
+        <tr><td class="name">Con ajuste de logits τ</td><td class="num">0,113 [0,103 · 0,125]</td><td class="num">0,094 [0,082 · 0,106]</td><td class="num">−0,019 [−0,031 · −0,009]</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+  <p><strong>La temperatura de validación empeora el test</strong> en las dos arquitecturas (0,079 → 0,116 y 0,080 → 0,132), y también su NLL, que es lo que la temperatura minimiza. No es un error del método: la val limpia y el test limpio son <strong>poblaciones distintas</strong>. La val tiene 44 % de personas y 91 % de filas de cámaras que train no vio; el test, 68 % y 69 %. En la val el modelo acierta menos (0,66 ResNet, 0,71 ViT) y es sobreconfiado, T óptima 1,14–1,15; en el test acierta más (0,82 y 0,84) y es levemente subconfiado, T óptima 0,93–0,97. La temperatura se ajusta a una mezcla de cámaras que no es la de despliegue.</p>
+  <p>El control lo separa: con T ajustada dentro del propio test la ECE baja, pero poco (0,079 → 0,068; 0,080 → 0,061). <strong>Aunque la validación se pareciera al despliegue, una temperatura no alcanzaría</strong>, por los signos opuestos de la tabla anterior.</p>
+
+  <h4>La comparación entre arquitecturas</h4>
+  <ul>
+    <li><strong>Logits crudos: no se distinguen.</strong> ECE Δ +0,001 [−0,011 · +0,012]; NLL Δ −0,025 [−0,072 · +0,012]; Brier Δ −0,012 [−0,032 · +0,003]. Es la comparación limpia de las dos redes.</li>
+    <li><strong>Sobre los peces, el ViT es más sobreconfiado</strong>: ECE sin Human Δ +0,029 [+0,006 · +0,054], distinguible. Acierta más peces (0,53 contra 0,47) pero su confianza sube más de lo que sube su acierto. No contradice el resultado OOD: el AUROC mide si ordena bien lo propio sobre lo ajeno, la ECE si el nivel de confianza es el correcto.</li>
+    <li><strong>Con el ajuste de logits el ViT queda mejor calibrado</strong> (ECE Δ −0,019, distinguible), pero la diferencia la crea τ y no la red: el ResNet usa τ = 0,18 y el ViT τ = 0,05, y el ajuste descalibra por construcción (§6.3). Se reporta, pero no se atribuye a la arquitectura.</li>
+  </ul>
+  <p><strong>Kaggle no informa sobre calibración.</strong> Las dos redes aciertan 99,7–100 % con confianza media 0,90: es el tope del label smoothing, y la ECE ≈ 0,095 es casi exactamente esa brecha. La T de val la corrige en el ResNet (T ≈ 0,44, ECE 0,094 → 0,002). En el ViT la val es perfecta y la NLL baja sin límite al subir la confianza: <strong>T no está identificada</strong> y <code>fit_temperature</code> lo marca en vez de reportar la cota como una estimación.</p>
+
+  <h4>Qué cambia para el sistema</h4>
+  <ul>
+    <li>Para rechazar lo desconocido en la caleta —una especie o una cámara que el modelo no vio—, <strong>ViT con puntuación de energía</strong>: FPR@95 de 0,27 contra 0,84 del ResNet sobre peces.</li>
+    <li>La confianza que muestre la demo <strong>no es una probabilidad</strong>. Para que lo sea hace falta calibrar con datos de la cámara de despliegue, y con algo más flexible que una temperatura escalar (escalado por clase, o entrenar sin label smoothing).</li>
+  </ul>
+  </div>
 </section>
 
 <!-- ============ 11 ============ -->
@@ -1004,6 +1151,7 @@ requirements.txt</div>
         <tr><td class="name">Anomalía del split oficial: Other_rare</td><td class="name">539 train / 756 val / 105 test</td><td class="name">Declarado en la data card; es del split oficial</td></tr>
         <tr><td class="name">Ambigüedad de la etiqueta <code>Tuna</code></td><td class="name">388 cajas de test superpuestas con 4 especies</td><td class="name">Crédito jerárquico (§2)</td></tr>
         <tr><td class="name">Brecha de dominio con especies chilenas</td><td class="name">Cero solapamiento en las tres fuentes</td><td class="name">Sondeo OOD cruzado Kaggle↔Fishnet (§10.2); fila propia del informe</td></tr>
+        <tr><td class="name">La confianza no transfiere entre cámaras</td><td class="name">T óptima 1,14 en val y 0,93 en test</td><td class="name">No leer la confianza como probabilidad; recalibrar con datos del sitio (§10.3)</td></tr>
         <tr><td class="name">OzFish sigue sin descargarse</td><td class="name">Portal con API por token, 401/404</td><td class="name">Ya no bloquea: el OOD cruzado lo sustituye</td></tr>
       </tbody>
     </table>
@@ -1025,9 +1173,10 @@ requirements.txt</div>
     <li><s>E4 y E5 (Fishnet).</s> <span class="pill">hecho</span> ResNet 0,3520 · ViT 0,3933 en test purgado; Δ = +0,042 con IC que no cruza cero.</li>
     <li><s>E6, evaluación en test purgado.</s> <span class="pill">hecho</span> El split oficial infla el macro-F1 un 80 %.</li>
     <li><s>Estratificación por oclusión.</s> <span class="pill s">hipótesis refutada</span> Δ no crece con la oclusión (Spearman −0,600).</li>
+    <li><s>Calibración y OOD cruzado (§10.3).</s> <span class="pill">hecho</span> El ViT rechaza peces ajenos mucho mejor (AUROC +0,21); una temperatura no calibra ninguna de las dos redes.</li>
     <li><strong>Diapositivas</strong>, con la fila de riesgos apoyada en números propios y no en advertencias genéricas.</li>
   </ol>
-  <p>Interpretabilidad (E7), calibración, OOD, demo y data card van después del Avance, pero el diseño de todos ellos ya está fijado en este documento, y los logits guardados en el paso 5 hacen que la mayoría sea trabajo de análisis, no de GPU.</p>
+  <p>Quedan velocidad contra precisión (§11), demo y data card; E8 y E9 son opcionales. El diseño de todos ya está fijado en este documento.</p>
   </div>
 </section>
 
@@ -1040,3 +1189,35 @@ requirements.txt</div>
 </main>
 </div>
 </div>
+
+<script>
+(function(){
+  var fig=document.getElementById('fig-ood'); if(!fig) return;
+  var tip=fig.querySelector('.viz-tip');
+  function row(cls,val,lab){var d=document.createElement('div');var k=document.createElement('i');k.className='tk '+cls;
+    var b=document.createElement('b');b.textContent=val+' %';d.appendChild(k);d.appendChild(b);d.appendChild(document.createTextNode(lab));return d;}
+  function show(r){
+    fig.querySelectorAll('.vhit.on').forEach(function(e){e.classList.remove('on');}); r.classList.add('on');
+    tip.textContent='';
+    var h=document.createElement('div');h.textContent=r.closest('.viz-panel').querySelector('.viz-ptitle').textContent+' · max-softmax '+r.dataset.bin;
+    tip.appendChild(h); tip.appendChild(row('k-id',r.dataset.id,'FishNet (ID)')); tip.appendChild(row('k-ood',r.dataset.ood,'Kaggle (OOD)'));
+    tip.hidden=false;
+    var fb=fig.getBoundingClientRect(), rb=r.getBoundingClientRect(), tw=tip.offsetWidth;
+    var x=rb.left-fb.left+rb.width/2+12; if(x+tw>fb.width-8) x=rb.left-fb.left+rb.width/2-tw-12;
+    tip.style.left=Math.max(8,x)+'px'; tip.style.top=(rb.top-fb.top+8)+'px';
+  }
+  function hide(){tip.hidden=true; fig.querySelectorAll('.vhit.on').forEach(function(e){e.classList.remove('on');});}
+  fig.querySelectorAll('svg').forEach(function(svg){
+    var hits=[].slice.call(svg.querySelectorAll('.vhit')), cur=-1;
+    hits.forEach(function(r,i){r.addEventListener('pointerenter',function(){cur=i;show(r);});});
+    svg.addEventListener('pointerleave',hide);
+    svg.addEventListener('focus',function(){cur=cur<0?0:cur;show(hits[cur]);});
+    svg.addEventListener('blur',hide);
+    svg.addEventListener('keydown',function(e){
+      if(e.key==='ArrowRight'){cur=Math.min(hits.length-1,cur+1);show(hits[cur]);e.preventDefault();}
+      else if(e.key==='ArrowLeft'){cur=Math.max(0,cur-1);show(hits[cur]);e.preventDefault();}
+      else if(e.key==='Escape'){hide();}
+    });
+  });
+})();
+</script>
