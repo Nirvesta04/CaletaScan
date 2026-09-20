@@ -28,7 +28,8 @@ comparar ResNet contra ViT**, con interpretabilidad (Grad-CAM / attention rollou
 | Velocidad vs. precisión | hecha; ViT 2,7× más lento en CPU (119 vs 43 ms) sin cambiar qué es factible: se elige el ViT |
 | Demo | funcional: `python -m src.demo` levanta la comparación en vivo con rechazo de «no sé» |
 | Data card | `docs/data-card.html`: fuentes, composición, curación, fugas medidas y usos apropiados |
-| Pendiente | informe; E9 opcional |
+| Informe técnico | `docs/informe.html`: el proceso completo en lenguaje llano, con las dos figuras clave |
+| Pendiente | diapositivas del Avance; E9 opcional |
 | Próxima entrega | Avance, 28-sep-2026 (presentación de 15 min) |
 
 Todos los resultados, con sus intervalos y su discusión, están en `docs/plan-modelos.html`.
@@ -98,6 +99,7 @@ docs/
                       receta, contra qué métrica y con qué prueba estadística
   data-card.html      qué contienen los datos, de dónde salieron, qué curamos
                       nosotros y qué no se puede concluir con ellos
+  informe.html        informe técnico: problema, método, resultados y límites
 runs/<exp>/seed<n>/   config.yaml y metrics.json versionados; logits y pesos no
 scripts/
   download_fishnet_subset.py
