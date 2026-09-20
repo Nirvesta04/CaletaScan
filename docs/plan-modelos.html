@@ -880,6 +880,55 @@ occ_union(b) = área( b ∩ ⋃_{b' ≠ b} b' ) / área(b)      <span class="c">
     </table>
   </div>
   <p class="col"><strong>La afirmación del enunciado se sostiene si y solo si Δ = F1(ViT) − F1(ResNet) crece de forma monótona con el estrato de oclusión.</strong> Un gráfico de Δ con barras de error contra los cuatro estratos convierte la hipótesis del profesor en un resultado medido: exactamente el «comparación discutida con evidencia, no solo tabla» del nivel Excelente. Y si Δ resulta plano o negativo, eso también es un resultado publicable, y probablemente más interesante.</p>
+
+  <div class="col">
+  <h3>8.5 Auditoría de fuga, sobreajuste y veracidad <span class="pill">20-sep</span></h3>
+  <p>Con Kaggle en 0,997 y 1,000 hay que descartar que los números vengan de una fuga antes de defenderlos. <code>scripts/auditoria.py</code> vuelve a mirar los datos sin confiar en el código que armó los splits, y guarda todo en <code>runs/auditoria.json</code>.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Cuatro pruebas independientes. La segunda no usa ninguna clave de agrupamiento: compara píxeles de cada imagen de test contra todas las de train, y en Kaggle también contra sus 8 rotaciones y espejos, porque una rotación de 90° destruiría la correlación.</caption>
+      <thead><tr><th>Prueba</th><th>Qué busca</th><th>Resultado</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Integridad de los splits</td><td class="name">Grupos, imágenes o secuencias que crucen particiones</td><td class="name">Kaggle limpio. El split oficial de FishNet tiene 6.048 cajas con secuencia en train y 7 imágenes enteras en ambos lados; <strong>tras purgar, cero de las dos cosas</strong></td></tr>
+        <tr><td class="name">Casi duplicados por píxeles</td><td class="name">Repeticiones que la clave de agrupamiento no capture</td><td class="name">Las cajas que purgamos tienen un casi gemelo en train el <strong>38,1 %</strong> de las veces; las que conservamos, el <strong>2,6 %</strong>. La purga hace lo que promete</td></tr>
+        <tr><td class="name">Sensibilidad al residuo</td><td class="name">Si ese 2,6 % sostiene la conclusión</td><td class="name">Quitándolo: ResNet 0,3494 y ViT 0,3906; <strong>Δ +0,0415 IC95 [+0,005 · +0,081]</strong>. No cambia nada</td></tr>
+        <tr><td class="name">Vecino más cercano trivial</td><td class="name">Si el dataset se resuelve sin aprender</td><td class="name">Miniaturas de 32×32 en gris: <strong>0,829 en Kaggle</strong> y solo 0,559 en FishNet</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">Auditoría · lo que explica el 100 % de Kaggle</span>
+    <h4>No hay fuga de muestras: el dataset se resuelve sin mirar el pez y casi sin aprender</h4>
+    <div class="col">
+    <p>El split por foto original está verificado limpio, así que el 0,997 no viene de ver el test en train. Viene de dos cosas ya medidas y ahora cuantificadas desde otro ángulo: el fondo basta (§9.4, 0,971 sin ver el pez) y <strong>un vecino más cercano sobre miniaturas de 32×32 píxeles ya acierta el 82,9 %</strong>. La correlación media de una imagen de test con la más parecida de train es 0,915 — más alta que la que tiene con sus propias rotaciones (0,850)—, porque todas las fotos comparten el montaje de estudio.</p>
+    <p>En FishNet ese mismo vecino trivial solo llega a 0,559 de accuracy, frente a 0,824 y 0,850 de las redes. Ahí las redes sí aportan, y por eso la comparación se juega ahí.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <span class="tag">Auditoría · sobreajuste</span>
+    <h4>En FishNet las dos memorizan mucho; el ViT más, y aun así generaliza mejor</h4>
+    <div class="col">
+    <p>Midiendo sobre el propio train con transformada de evaluación: el ResNet pasa de 0,783 en train a 0,340 en test limpio (brecha 0,443) y el ViT de 0,925 a 0,370 (brecha 0,555). En accuracy la brecha es 0,13 en los dos. En Kaggle no hay brecha, porque el problema está saturado.</p>
+    <p>Las curvas de validación lo confirman: el ResNet llega a su máximo en la época 2 de 8 y después baja (0,230 → 0,271 → 0,258 → 0,248 → 0,224…), mientras el ViT sube hasta el final (0,240 → … → 0,363). La selección por validación protege al ResNet de su propia caída, pero el ViT termina el presupuesto sin converger: su ventaja sigue siendo un límite inferior.</p>
+    </div>
+  </div>
+
+  <div class="find good">
+    <span class="tag">Auditoría · veracidad de la comparación</span>
+    <h4>El montaje no inclina la balanza</h4>
+    <div class="col">
+    <ul>
+      <li><strong>Presupuesto idéntico verificado desde los artefactos</strong>, no desde la intención: 2.940 pasos en Kaggle y 9.104 en FishNet, batch efectivo 64, semillas {0,1,2} y label smoothing 0,1 en ambas ramas.</li>
+      <li><strong>El test nunca participó en la selección:</strong> en las 12 corridas la época elegida coincide con el máximo de la curva de validación.</li>
+      <li><strong>Sin errores de reporte:</strong> las métricas recalculadas desde los logits guardados coinciden con <code>metrics.json</code> hasta 1e-16.</li>
+      <li><strong>Separación por semilla:</strong> la peor del ViT (0,3787) supera a la mejor del ResNet (0,3626); las 9 comparaciones cruzadas favorecen al ViT.</li>
+      <li><strong>Bootstrap estable:</strong> con tres semillas distintas de remuestreo, Δ = +0,0417 / +0,0419 / +0,0419 y P(Δ&gt;0) entre 0,992 y 0,994.</li>
+    </ul>
+    </div>
+  </div>
 </section>
 
 <!-- ============ 9 ============ -->

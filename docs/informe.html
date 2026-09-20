@@ -444,6 +444,16 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <li><strong>Privacidad.</strong> FishNet son cámaras de vigilancia a bordo: más de la mitad del entrenamiento son tripulantes identificables. No redistribuimos imágenes y no entrenamos nada sobre personas más allá de distinguir «esto no es un pez». Un despliegue real sobre trabajadores exigiría su consentimiento antes que cualquier modelo.</li>
     <li><strong>Lo que falta:</strong> el experimento ViT-B/32 (sección 8) y, si hubiera tiempo, un ResNet con preentrenamiento antiguo para separar cuánto de la brecha es arquitectura y cuánto es receta.</li>
   </ul>
+
+  <h3>Lo que comprobamos para creerle a estos números</h3>
+  <p>Un resultado cercano al 100 % obliga a descartar que venga de una fuga. Corrimos una auditoría aparte (<code>scripts/auditoria.py</code>) que no confía en el código que hizo los splits, sino que vuelve a mirar los datos:</p>
+  <ul>
+    <li><strong>Ningún grupo, imagen ni secuencia cruza particiones</strong> en lo que reportamos. En el split oficial de FishNet sí: 6.048 cajas de prueba comparten secuencia con entrenamiento y 7 imágenes aparecen enteras en ambos lados. Nuestra purga elimina las dos cosas.</li>
+    <li><strong>Comparamos píxeles, no etiquetas.</strong> Cada imagen de prueba contra todas las de entrenamiento, incluidas sus 8 rotaciones y espejos. En FishNet, el 38 % de las cajas que purgamos tiene un casi gemelo en entrenamiento, contra el 2,6 % de las que conservamos: la purga funciona. Quitar ese 2,6 % residual cambia el resultado en 0,003 y la ventaja del ViT sigue en +0,042.</li>
+    <li><strong>El 100 % de Kaggle no es mérito del modelo.</strong> Un clasificador trivial —mirar la miniatura de 32×32 píxeles más parecida del entrenamiento y copiar su clase— ya acierta el 83 %. En FishNet ese mismo truco solo llega al 56 %, frente al 82-85 % de las redes: ahí sí aportan.</li>
+    <li><strong>Sobreajuste medido.</strong> En Kaggle no hay brecha entre entrenamiento y prueba porque el problema está saturado. En FishNet la brecha es grande: el ResNet baja de 0,78 a 0,34 de macro-F1 y el ViT de 0,93 a 0,37. Las dos memorizan, el ViT más, y aun así generaliza mejor.</li>
+    <li><strong>La comparación no está inclinada.</strong> Los dos modelos recibieron exactamente los mismos pasos de entrenamiento (9.104), el mismo tamaño de lote y las mismas semillas; la época elegida fue siempre la mejor en validación, nunca en prueba; las métricas recalculadas desde las salidas guardadas coinciden con las reportadas; y la peor semilla del ViT (0,379) sigue por encima de la mejor del ResNet (0,363).</li>
+  </ul>
   </div>
 </section>
 

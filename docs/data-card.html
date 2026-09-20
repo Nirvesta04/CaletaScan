@@ -354,6 +354,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <div class="col">
     <p>3.743 de las 13.097 secuencias del CSV oficial cruzan particiones (28,6 %). En nuestro subconjunto son el 45,8 % de las cajas de test y el 52,5 % de las de val. Los fotogramas de una misma secuencia son casi duplicados: la correlación media entre miniaturas de pares que cruzan train/test es 0,87, contra 0,03 de la línea base.</p>
     <p><strong>Efecto medido:</strong> evaluar en el test oficial infla el macro-F1 alrededor de un 80 % respecto del test purgado. No es una fuga que fabricamos para ilustrar; es la del split publicado.</p>
+    <p>Hay además <strong>7 imágenes que aparecen enteras en train y en test</strong>, porque el split oficial se armó caja por caja y no por imagen. La purga por secuencia las elimina también: en el test purgado no queda ninguna caja cuya imagen esté en train.</p>
     </div>
   </div>
 
@@ -362,6 +363,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <h4>Sin ver el pez se acierta el 97 %</h4>
     <div class="col">
     <p>Cada especie se fotografió en una sesión distinta, sobre una superficie y una iluminación levemente distintas, así que el fondo lleva información de clase que no tiene nada que ver con el pez. Borrando el pez con la máscara de segmentación, una regresión logística sobre color del fondo acierta el 45,9 % (azar 11,1 %), y <strong>una red profunda entrenada solo con el fondo llega a 0,971 de macro-F1</strong>, contra 0,997 con la imagen completa.</p>
+    <p>Otra medición en la misma dirección: un <strong>clasificador de vecino más cercano sobre miniaturas de 32×32 píxeles en escala de grises</strong>, sin ningún entrenamiento, acierta el <strong>82,9 %</strong> del test. En FishNet el mismo truco llega solo al 55,9 %.</p>
     <p>Consecuencia: los resultados sobre Kaggle <strong>no acreditan reconocimiento de peces</strong>. El split por grupo no arregla esto; son problemas independientes.</p>
     </div>
   </div>
