@@ -21,3 +21,7 @@ pillow==12.3.0
 scikit-learn==1.7.2
 matplotlib==3.8.4
 pyyaml>=6.0
+
+# Solo para regenerar las diapositivas con scripts/build_pptx.py. No hace falta
+# para entrenar, evaluar ni reproducir ningun resultado.
+python-pptx==1.0.2

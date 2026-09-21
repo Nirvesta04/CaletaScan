@@ -78,6 +78,8 @@ python -m src.calibrate --inferir && python -m src.calibrate    # calibración y
 python -m src.speed                                             # latencias (máquina libre)
 python -m src.demo                                              # demo en http://127.0.0.1:8000
 python -m tests.test_stats && python -m tests.test_calibrate    # validación estadística
+python scripts/auditoria.py                                     # fuga, duplicados y sobreajuste
+python scripts/build_pptx.py docs/Caleta-Scan-Avance-G3.pptx    # regenera las diapositivas
 ```
 
 `train.py` reanuda por época lo que quedó a medias y salta las semillas completas, así
@@ -100,10 +102,15 @@ docs/
   data-card.html      qué contienen los datos, de dónde salieron, qué curamos
                       nosotros y qué no se puede concluir con ellos
   informe.html        informe técnico: problema, método, resultados y límites
+  contexto-para-ia.md archivo de contexto para que el equipo estudie el proyecto
+                      con un asistente de IA, con las cifras verificadas
+  Caleta-Scan-Avance-G3.pptx  la presentación del Avance
 runs/<exp>/seed<n>/   config.yaml y metrics.json versionados; logits y pesos no
 scripts/
   download_fishnet_subset.py
   build_splits.py
+  auditoria.py    las cuatro pruebas de fuga, duplicados por píxeles y sobreajuste
+  build_pptx.py   genera la presentación del Avance a partir del contenido verificado
 src/
   data.py       datasets, transforms y loaders
   models.py     fábrica de modelos con pesos fijados y grupos de parámetros
