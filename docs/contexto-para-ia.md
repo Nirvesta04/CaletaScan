@@ -78,16 +78,32 @@ Un **recorte** es un pez o una persona marcada con un recuadro. Una foto puede t
 
 ## 3. Espacio de etiquetas
 
-El modelo de FishNet predice **20 clases**:
-- **17 clases de especie**, incluida `Other_rare`, que agrupa 14 especies con muy pocos ejemplos.
-- **3 que no son especies:** `Human` (tripulante), `No fish` (no hay pez), `Unknown` (el
-  anotador no supo).
+El modelo de FishNet predice **20 clases**. Ese 20 sale de: las **19 etiquetas** que tienen al
+menos 100 ejemplos de entrenamiento, más **`Other_rare`**, que agrupa las 14 que no llegan.
 
-**La métrica principal (macro-F1) se calcula SOLO sobre las 17 clases de especie.** Human,
-No fish y Unknown se aprenden porque hay que distinguirlos, pero no entran en la nota.
+> **Cuidado:** esas 19 NO son 19 especies. Entre ellas están `Human`, `No fish` y `Unknown`.
+> Son 19 *etiquetas*. Algunas láminas del proyecto dicen "19 especies" y eso es incorrecto.
 
-**Se reportan por clase solo las 13 especies con 30 o más ejemplos de prueba limpios.** Con
-menos, el número sería ruido.
+**La métrica principal (macro-F1) se calcula sobre 15 clases**, porque se excluyen **cinco**
+de las 20 (definido en `src/data.py`, constante `NON_SPECIES`):
+
+| Excluida | Por qué |
+|---|---|
+| `Human` | No es un pez |
+| `No fish` | No es un pez |
+| `Unknown` | Es un pez, pero el anotador no resolvió la especie |
+| `Tuna` | Es un pez, pero "atún" a secas tampoco resuelve la especie |
+| `Other_rare` | Es un agregado de 14 especies distintas, no una especie |
+
+20 − 5 = **15 clases de especie en el macro-F1**. Las cinco excluidas sí se aprenden, porque
+hay que saber distinguirlas, pero no entran en la nota.
+
+**Se reportan con su número individual 13 clases**: las que tienen 30 o más ejemplos de prueba
+limpios. Dos de ellas (`Tuna` y `Other_rare`) se muestran **marcadas con asterisco**, porque
+aparecen en la tabla pero no cuentan para el macro-F1.
+
+**Resumen de los cuatro números:** 20 predichas · 19 + 1 es de dónde sale ese 20 · 15 cuentan
+para el macro-F1 · 13 se reportan por separado.
 
 **Caso especial — atunes:** la etiqueta `Tuna` a secas es ambigua (el anotador no resolvió
 cuál era). Si el modelo dice `Yellowfin tuna` sobre un `Tuna`, se cuenta como acierto: el
@@ -280,14 +296,14 @@ diferencia ser real.
 |---|---|---|
 | Human* | 0,975 | 4.901 |
 | Mahi mahi | 0,873 | 528 |
-| Tuna | 0,881 | 351 |
+| Tuna* | 0,881 | 351 |
 | Striped marlin | 0,279 | 230 |
 | Unknown* | 0,815 | 212 |
 | No fish* | 0,971 | 175 |
 | Swordfish | 0,475 | 141 |
 | Albacore | 0,541 | 129 |
 | Yellowfin tuna | 0,308 | 83 |
-| Other_rare | 0,284 | 70 |
+| Other_rare* | 0,284 | 70 |
 | Wahoo | 0,367 | 69 |
 | Shark | 0,581 | 57 |
 | Opah | 0,899 | 46 |
@@ -299,11 +315,14 @@ diferencia ser real.
 | Skipjack tuna | 0,937 | 11 |
 | Shortbill spearfish | 0,000 | 7 |
 
-`*` = no entra en el macro-F1 de especies.
+`*` = no entra en el macro-F1 de especies. Son cinco: Human, No fish, Unknown, Tuna y
+Other_rare. Las otras 15 son las que promedia el macro-F1.
 
-**Por qué el macro-F1 parece bajo (0,393):** porque promedia dando el mismo peso a todas las
-especies, y varias raras están cerca de cero. Para referencia, **responder al azar entre 20
-clases daría ~0,05**, así que 0,393 es casi ocho veces el azar.
+**Por qué el macro-F1 parece bajo (0,393):** porque promedia dando el mismo peso a las 15
+especies, y varias raras están cerca de cero (Bigeye tuna 0,000, Shortbill spearfish 0,000,
+Blue marlin 0,022). Para referencia, **responder al azar entre 20 clases daría ~0,05**, así que
+0,393 es casi ocho veces el azar. Comprobación: el promedio de los F1 de esas 15 clases da
+0,3947, que coincide con el 0,393 reportado.
 
 ### La hipótesis del enunciado NO se sostiene
 
@@ -445,7 +464,12 @@ medido: cuánto se habría movido el resultado con otras secuencias de prueba.
 → No. La comparación es **pareada** sobre las mismas 612 secuencias. Dos intervalos individuales
 pueden solaparse y la diferencia pareada ser distinta de cero. Eso es exactamente lo que pasa acá.
 
-**«pp es lo mismo que %»**
+**«El macro-F1 promedia sobre las 20 clases» o «sobre 19 especies»**
+→ No. Promedia sobre **15**. Se excluyen cinco: Human y No fish (no son peces), Unknown y Tuna
+(son peces sin especie resuelta) y Other_rare (es un agregado). El "19" que aparece en algunas
+láminas cuenta *etiquetas con ≥100 ejemplos*, no especies, e incluye Human, No fish y Unknown.
+
+**«pp es lo mismo que %»
 → No. **pp = puntos porcentuales.** ± 5,4 pp sobre un 95 % significa bajar hasta ~90 %. No es
 el 5,4 % *de* 95.
 
