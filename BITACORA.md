@@ -252,3 +252,78 @@ Ambos son idempotentes y se pueden volver a correr:
 ```bash
 python scripts/build_splits.py
 ```
+
+---
+
+## 8. Feedback del Avance y plan para la presentación final
+
+**Presentación de Avance: 2026-09-21. Resultado: fue bien.** Estos son los comentarios de
+los evaluadores, para trabajarlos en la presentación final.
+
+### 8.1 Lo que pidieron
+
+1. **Agregar referencias** del trabajo.
+2. **Agregar fotos de los datasets.** Mostrar en vez de explicar. Ejemplo de ellos: es más
+   fácil mostrar una secuencia de fotogramas de FishNet que explicar con palabras por qué
+   complica una secuencia de fotogramas sin peces. Lo mismo con Kaggle.
+3. **Agregar más tablas comparativas**: métricas, resultados, evolución por época, etc.
+
+### 8.2 Material que ya existe para cada punto
+
+**Referencias.** Partir de la columna "Cita" de la tabla de fuentes del README y agregar las
+de los métodos usados. Lista inicial, a verificar antes de citar: ResNet (He et al., 2016),
+ViT (Dosovitskiy et al., 2021), Large Scale Fish Dataset (Ulucan et al., 2020), Fishnet Open
+Images (Kay y Merrifield, 2021), Grad-CAM (Selvaraju et al., 2017), relevancia para
+transformers (Chefer et al., 2021), attention rollout (Abnar y Zuidema, 2020), baseline de
+max-softmax para OOD (Hendrycks y Gimpel, 2017), energía para OOD (Liu et al., 2020),
+temperature scaling (Guo et al., 2017), logit adjustment (Menon et al., 2021), label
+smoothing (Szegedy et al., 2016).
+
+**Fotos.** Las imágenes están en `data/raw/` (no versionadas). Ideas que muestran cada punto
+de la presentación sin tener que explicarlo:
+- *FishNet, secuencias:* varios fotogramas seguidos con el mismo `seq_id`, incluidos los que
+  no tienen pez. Sirve para el riesgo 2.
+- *FishNet, la fuga:* un fotograma de train junto a uno de test del mismo lance. Se ven casi
+  iguales (correlación de píxeles 0,87).
+- *FishNet, dificultad:* peces amontonados y tapados, de noche o con la cubierta mojada, con
+  sus cajas dibujadas.
+- *Kaggle, duplicación:* una foto original junto a varias de sus ~21 copias giradas.
+- *Kaggle, fondo:* una foto por especie lado a lado, para que se vea que cada una tiene su mesa
+  y su luz.
+- *Kaggle, E7:* la misma foto completa, solo el fondo y solo el pez (0,997 / 0,971 / 0,999).
+- *Interpretabilidad:* mapas de Grad-CAM y de Chefer sobre la misma imagen (`src/interpret.py`).
+
+**Tablas.** Datos ya guardados, no hay que reentrenar nada:
+- Evolución por época: `runs/<exp>/seed<n>/metrics.json`, clave `hist`. Tiene 8 épocas por
+  corrida, cada una con `loss`, `val_macro_f1`, `val_acc`, `lr` y `sec`, en las 12 corridas.
+  Con eso sale la tabla o curva de aprendizaje de ResNet contra ViT, y se ve dónde se estanca
+  cada uno.
+- F1 por clase: `runs/comparacion_e4_e5_limpio.json` (y el equivalente de ResNet).
+- Test oficial contra test limpio: la inflación de ~80 %.
+- E7, auditoría, OOD, calibración y velocidad: `runs/comparacion_e7.json`,
+  `runs/auditoria.json`, `runs/calibracion_ood.json`, `runs/velocidad.json`.
+
+### 8.3 Restricciones para las fotos
+
+- **FishNet muestra tripulantes identificables** (el 53,7 % del train es `Human`). Elegir
+  fotogramas sin caras o difuminarlas.
+- **No subir al repositorio público una presentación que lleve imágenes de los datasets.** El
+  data card declara que las imágenes no se redistribuyen. Proyectarlas en clase es otra cosa,
+  pero el PPTX con fotos no se versiona.
+- Poner la fuente y la licencia al pie de cada lámina con fotos (CC BY 4.0 / CC BY-SA 4.0).
+
+### 8.4 Correcciones pendientes del mazo del Avance
+
+La versión entregada (`Caleta-Scan-Avance-G3-v2.pptx`, editada por el grupo) tenía errores que
+no alcanzaron a corregirse antes del plazo. No repetirlos en la final:
+- Lámina 5: dice "19 especies" y "3 no son especies". Son 19 *etiquetas* + `Other_rare` = 20
+  clases, y el macro-F1 promedia 15, porque excluye cinco: Human, No fish, Unknown, Tuna y
+  Other_rare.
+- Lámina 7: "Kaggle no se usará para evaluar modelos" contradice las láminas de resultados.
+  Lo correcto es que Kaggle no decide la comparación.
+- Lámina 9: "± 5,4 %" debería ser "± 5,4 puntos" (puntos porcentuales, no porcentaje).
+- Lámina 14: el +0,042 quedó sin su margen (+0,007 a +0,077). Es el dato central y necesita
+  el intervalo.
+- Lámina 3: falta decir que no hay detector (alguien marca el recuadro del pez).
+- Lámina 16: la demo funciona y no aparece como hecha.
+
