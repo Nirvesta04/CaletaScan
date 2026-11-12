@@ -14,8 +14,8 @@ Que hace, y por que asi:
   su latencia. La demo no es "un clasificador": es el experimento del proyecto.
 - Cada modelo trae su propio ajuste de logits (tau elegido en validacion: 0,18
   el ResNet, 0,05 el ViT) porque esa es la regla de decision que se reporto.
-- Cada modelo puede decir NO SE. El umbral es el de §10.3: la energia que deja
-  pasar el 95 % del test limpio. Sobre fotos de otro dominio el ResNet acepta
+- Cada modelo puede decir NO SE. El umbral es la energia que deja pasar el 95 % de
+  los recortes de val limpios que no son personas (elegido en validacion). Sobre fotos de otro dominio el ResNet acepta
   casi todo y el ViT rechaza; verlo en vivo es el resultado mas claro del
   proyecto.
 - No hay detector (§2). El usuario marca la caja arrastrando, o elige una de
@@ -76,9 +76,12 @@ class Motor:
             m.load_state_dict(torch.load(ck, map_location="cpu", weights_only=False))
             self.modelos[etiqueta] = m.to(self.dev).eval()
             self.tau[etiqueta] = C._tau(run_obj, limpio=True)
-            # umbral de energia sobre el test LIMPIO: el 95 % de lo propio pasa
-            it = run_obj.rows("test", True)
-            s = C.score_energy(run_obj.z[0]["test"][it])
+            # umbral de energia elegido en VALIDACION: deja pasar el 95 % de los
+            # recortes de val limpios que no son personas. Elegirlo en test
+            # usaria el test para decidir algo, y el test no se toca.
+            iv = run_obj.rows("val", True)
+            iv = iv[run_obj.y("val")[iv] != self.clases.index("Human")]
+            s = C.score_energy(run_obj.z[0]["val"][iv])
             k = int(np.ceil(TPR * len(s)))
             self.umbral[etiqueta] = float(np.sort(s)[len(s) - k])
 

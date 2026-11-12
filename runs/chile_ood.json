@@ -1,0 +1,55 @@
+{
+  "n": 45,
+  "por_especie": {
+    "reineta": 15,
+    "merluza": 15,
+    "congrio": 15
+  },
+  "tpr_val": 0.95,
+  "modelos": {
+    "ResNet-50": {
+      "rechaza_total": 0.1037037037037037,
+      "rechaza_por_especie": {
+        "congrio": 0.022222222222222223,
+        "merluza": 0.0,
+        "reineta": 0.28888888888888886
+      },
+      "auroc_vs_test_limpio_sin_personas": 0.6394219729029295,
+      "auroc_por_semilla": [
+        0.6462848144867631,
+        0.6285208148804251,
+        0.6434602893416003
+      ],
+      "cuando_acepta_dice": {
+        "Human": 48,
+        "Yellowfin tuna": 38,
+        "No fish": 9,
+        "Swordfish": 8,
+        "Unknown": 7,
+        "Blue marlin": 5
+      }
+    },
+    "ViT-B/16": {
+      "rechaza_total": 0.31851851851851853,
+      "rechaza_por_especie": {
+        "congrio": 0.2,
+        "merluza": 0.2,
+        "reineta": 0.5555555555555556
+      },
+      "auroc_vs_test_limpio_sin_personas": 0.8011449004363088,
+      "auroc_por_semilla": [
+        0.735173703375652,
+        0.7821572679854345,
+        0.8861037299478398
+      ],
+      "cuando_acepta_dice": {
+        "Yellowfin tuna": 44,
+        "Human": 24,
+        "Unknown": 14,
+        "Swordfish": 5,
+        "No fish": 1,
+        "Albacore": 1
+      }
+    }
+  }
+}
