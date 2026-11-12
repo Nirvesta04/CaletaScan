@@ -1,0 +1,32 @@
+# E10 - DeiT-S sobre FishNet. Separa arquitectura de tamano.
+#
+# Responde la pregunta del Avance: si el ViT-B/16 le gana al ResNet-50 por ser
+# transformer o por ser 3,4 veces mas grande. DeiT-S tiene el tamano del ResNet
+# (22 vs 26 M de parametros, 4,6 vs 4,1 GFLOPs) y pesos casi igual de buenos
+# (79,86 vs 80,86 en ImageNet). Se compara contra E4, que no se reentrena.
+#
+# Receta: la MISMA de E5 (lr, decaimiento por capa, warmup), porque DeiT-S es un
+# ViT con 12 bloques igual que ViT-B/16. Batch 64 sin acumulacion, como E4: a
+# este tamano cabe en la GPU (pico medido 2,6 GB).
+name: e10_deit_s_fishnet
+model: deit_s            # pesos oficiales FB, deit_small_patch16_224 (79,86)
+dataset: fishnet
+label_col: label_model
+purge: false
+
+epochs: 8                # 9.104 pasos, los mismos que E4 y E5
+batch_size: 64
+accum_steps: 1
+
+lr: 1.0e-4
+llrd: 0.70
+weight_decay: 0.05
+warmup_frac: 0.08
+
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 4
+seeds: [0, 1, 2]
+
+select_on_clean: true
+checkpoint_every_epoch: true

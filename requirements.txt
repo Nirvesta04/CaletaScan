@@ -25,3 +25,4 @@ pyyaml>=6.0
 # Solo para regenerar las diapositivas con scripts/build_pptx.py. No hace falta
 # para entrenar, evaluar ni reproducir ningun resultado.
 python-pptx==1.0.2
+timm==1.0.15            # solo DeiT-S (E10); los pesos se bajan de dl.fbaipublicfiles.com

@@ -1,0 +1,29 @@
+# E11 - ConvNeXt-T sobre FishNet. Par moderno: ConvNeXt-T contra Swin-T.
+#
+# Responde si la ventaja del transformer es de la atencion o de que el ResNet-50
+# es una arquitectura de 2015. ConvNeXt-T (CNN) y Swin-T (transformer con
+# atencion por ventanas) tienen el mismo tamano (28,6 vs 28,3 M) y el mismo
+# costo (4,5 GFLOPs), y se entrenan con LA MISMA receta: la de sus papers,
+# AdamW con decaimiento por nivel. Nada cambia entre E11 y E12 salvo el modelo.
+name: e11_convnext_t_fishnet
+model: convnext_t             # IMAGENET1K_V1 (82,52)
+dataset: fishnet
+label_col: label_model
+purge: false
+
+epochs: 8                # 9.104 pasos, los mismos que E4 y E5
+batch_size: 64           # pico medido < 5,1 GB, sin derrame
+accum_steps: 1
+
+lr: 1.0e-4
+llrd: 0.70               # nivel d de features usa lr * 0.70^(8-d)
+weight_decay: 0.05
+warmup_frac: 0.08
+
+label_smoothing: 0.1
+grad_clip: 1.0
+num_workers: 4
+seeds: [0, 1, 2]
+
+select_on_clean: true
+checkpoint_every_epoch: true
