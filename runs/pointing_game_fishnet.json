@@ -1,0 +1,53 @@
+{
+  "n": 483,
+  "margen": 0.5,
+  "semilla": 0,
+  "linea_base_area_caja": 0.2556750961254067,
+  "misma_prediccion_que_recorte_normal": {
+    "resnet": 0.42857142857142855,
+    "vit": 0.42857142857142855
+  },
+  "acierto_en_recorte_ancho": {
+    "resnet": 0.16977225672877846,
+    "vit": 0.2463768115942029
+  },
+  "energia_en_la_caja": {
+    "gradcam": {
+      "media": 0.5063352739895399,
+      "veces_linea_base": 1.980385581790048,
+      "ic95": [
+        0.4838226467090192,
+        0.5282699916531056
+      ],
+      "control_barajado": 0.4167164563351234,
+      "sobre_barajado": 0.08961881765441654,
+      "media_prediccion_estable": 0.6200627895580506,
+      "n_prediccion_estable": 207
+    },
+    "rollout": {
+      "media": 0.26564969332198424,
+      "veces_linea_base": 1.0390127835981533,
+      "ic95": [
+        0.2622351066797478,
+        0.26916872659856245
+      ],
+      "control_barajado": 0.2499798198090278,
+      "sobre_barajado": 0.015669873512956428,
+      "media_prediccion_estable": 0.2699213010677393,
+      "n_prediccion_estable": 207
+    },
+    "chefer": {
+      "media": 0.3856043455887038,
+      "veces_linea_base": 1.508181091675694,
+      "ic95": [
+        0.37744233086011053,
+        0.3937442645723652
+      ],
+      "control_barajado": 0.2981632661870061,
+      "sobre_barajado": 0.08744107940169771,
+      "media_prediccion_estable": 0.4260856263735444,
+      "n_prediccion_estable": 207
+    }
+  },
+  "linea_base_gaussiana_centrada": 0.5253380761358225
+}
