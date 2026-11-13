@@ -327,3 +327,46 @@ no alcanzaron a corregirse antes del plazo. No repetirlos en la final:
 - Lámina 3: falta decir que no hay detector (alguien marca el recuadro del pez).
 - Lámina 16: la demo funciona y no aparece como hecha.
 
+
+---
+
+## 9. Entrega final (16-nov-2026)
+
+### 9.1 Qué se cambió respecto del plan del Avance
+
+- **El tercer modelo no es ViT-B/32.** Sus pesos dan 75,9 % en ImageNet contra 80,9 % del
+  ResNet-50: compararlos rompe la regla de preentrenamiento parejo. Se reemplazó por dos pares:
+  ResNet-50 contra **DeiT-S** (mismo tamaño, 79,9 %; el profesor lo sugirió) y **ConvNeXt-T contra
+  Swin-T** (modernos, mismo tamaño y costo). Configs `e10`–`e12`; se entrenan con
+  `python -m scripts.entrenar_pares` (se detiene con `--parar` y retoma sin perder épocas).
+- **El umbral del «no sé» se elige en validación** (val limpio sin personas), también en la demo.
+  Antes la demo lo tomaba del test.
+
+### 9.2 Resultados nuevos (`runs/analisis_final.json`)
+
+- La fuga del split oficial, medida en **nuestro subconjunto**, es 45,8 % de las cajas de test y
+  39,1 % de las imágenes. El 44,5 % del Avance era del CSV oficial completo.
+- Con los cuatro atunes como una clase, ViT − ResNet = +0,031 [−0,004, +0,065]: no se distingue.
+- **Cámaras nuevas:** 21 de las 35 cámaras del test limpio no están en train y aportan el 69 % de
+  las cajas. Ahí los dos modelos caen ~0,10 y la diferencia no se distingue (+0,029
+  [−0,027, +0,088]).
+- **Interpretabilidad en FishNet** (`scripts/interpret_fishnet.py`): con el pez centrado, una
+  gaussiana fija daba 0,757 de energía en la caja, más que cualquier método. Con el pez en
+  posición al azar y restando la energía en la caja de otro recorte: Grad-CAM +0,090,
+  Chefer +0,087, rollout +0,016. El pointing game de Kaggle no tiene este control.
+- **Especies chilenas** (`scripts/chile_ood.py`, 45 fotos de iNaturalist): el ResNet rechaza el
+  10 % y el ViT el 32 %; AUROC 0,639 contra 0,801.
+
+### 9.3 Entregables
+
+- Mazo: `scripts/build_pptx_final.py` → `entrega/Caleta-Scan-Final-G3.pptx` (no versionado:
+  lleva fotos). Orden del profesor; las cifras se leen de `runs/`. Revisar siempre exportando a
+  PNG: python-pptx no avisa cuando un texto se sale de su caja.
+- Informe: `scripts/build_informe.py` → `docs/informe.html` y `docs/informe.pdf` (5 páginas).
+- Data card v1.1 y README actualizados.
+
+### 9.4 Pendiente
+
+- Terminar E10 (semilla 2), E11 y E12; luego `analisis_final`, `build_informe` y
+  `build_pptx_final`, y escribir la conclusión de los pares en las notas de las láminas 9 y 15.
+- Detector para contar peces: en espera; por ahora solo figura como próximo paso.

@@ -1,538 +1,293 @@
-<meta charset="utf-8">
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Informe Tecnico Caleta-Scan</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
-
+<title>Informe Caleta-Scan</title>
 <style>
-:root{
-  --paper:#eceff0; --surface:#f7f9f9; --surface-2:#e1e7e7; --rule:#c7d1d1; --rule-soft:#dae1e1;
-  --ink:#16232b; --ink-2:#42535b; --ink-3:#6e8085;
-  --accent:#0f6b63; --accent-2:#0b544e; --accent-soft:#d6e6e3;
-  --signal:#a8531b; --signal-soft:#f1e3d5;
-  --danger:#94292a; --danger-soft:#f0dcdc;
-  --ok:#2c6640;
-  --shadow:0 1px 2px rgba(22,35,43,.06), 0 6px 20px -12px rgba(22,35,43,.22);
-}
+/* Estilo del informe final: pensado para leerse en pantalla e imprimirse en A4 (4 a 6 paginas). */
+:root{--ink:#16232b;--ink-2:#42535b;--ink-3:#6e8085;--accent:#0f6b63;--rule:#c7d1d1;--rule-soft:#dfe5e5;
+      --surface:#f6f8f8;--paper:#ffffff}
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
-    --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
-    --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
-    --signal:#dd8f4e; --signal-soft:#37271a;
-    --danger:#e0797a; --danger-soft:#3a2020;
-    --ok:#74c288;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
-  }
+  :root:not([data-theme="light"]){--ink:#dfe7e6;--ink-2:#a5b4b4;--ink-3:#7c8d8e;--accent:#52b5a7;
+    --rule:#2b3c40;--rule-soft:#223134;--surface:#162326;--paper:#0f191c}
 }
-:root[data-theme="dark"]{
-  --paper:#0f191c; --surface:#162326; --surface-2:#1e2d31; --rule:#2b3c40; --rule-soft:#223134;
-  --ink:#dfe7e6; --ink-2:#a5b4b4; --ink-3:#7c8d8e;
-  --accent:#52b5a7; --accent-2:#77cabd; --accent-soft:#163935;
-  --signal:#dd8f4e; --signal-soft:#37271a;
-  --danger:#e0797a; --danger-soft:#3a2020;
-  --ok:#74c288;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
-}
+:root[data-theme="dark"]{--ink:#dfe7e6;--ink-2:#a5b4b4;--ink-3:#7c8d8e;--accent:#52b5a7;
+  --rule:#2b3c40;--rule-soft:#223134;--surface:#162326;--paper:#0f191c}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);
-     font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.62;
-     -webkit-font-smoothing:antialiased}
-.mono,code{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
-h1,h2,h3,h4{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance;margin:0}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px 110px}
-.grid{display:grid;grid-template-columns:1fr;gap:0}
-@media (min-width:1080px){.grid{grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start}}
-.grid>*{min-width:0}
-main{display:flex;flex-direction:column;gap:52px}
-.col{max-width:70ch}
-header.mast{border-bottom:2px solid var(--ink);margin-bottom:44px;padding:52px 0 22px}
-.kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
-        text-transform:uppercase;color:var(--accent);font-weight:600}
-h1{font-size:clamp(34px,5.2vw,52px);line-height:1.03;margin:14px 0 0;font-weight:700;letter-spacing:-.018em}
-.sub{font-size:19px;color:var(--ink-2);margin:16px 0 0;max-width:64ch;line-height:1.5}
-.mastmeta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
-          font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3)}
-.mastmeta b{color:var(--ink-2);font-weight:500}
-nav.idx{display:none}
-@media (min-width:1080px){
-  nav.idx{display:block;position:sticky;top:28px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.45}
-  nav.idx .lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
-               padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid var(--rule);display:block}
-  nav.idx a{display:flex;gap:9px;padding:5px 0;color:var(--ink-2);text-decoration:none;
-            border-left:2px solid transparent;padding-left:9px;margin-left:-11px}
-  nav.idx a:hover{color:var(--accent);border-left-color:var(--accent)}
-  nav.idx a span{color:var(--ink-3);min-width:14px}
-}
-section{scroll-margin-top:24px}
-h2{font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:600;
-   margin:0 0 6px;font-family:"IBM Plex Mono",monospace}
-h2 .n{color:var(--ink-3);margin-right:10px}
-.h2big{font-size:clamp(24px,3.2vw,31px);line-height:1.15;font-weight:600;margin:0 0 18px;letter-spacing:-.012em}
-h3{font-size:19px;font-weight:600;margin:32px 0 10px;line-height:1.3}
-h4{font-size:13.5px;font-weight:600;margin:22px 0 7px;color:var(--ink-2);
-   font-family:"IBM Plex Mono",monospace;letter-spacing:.03em}
-p{margin:0 0 15px}
-ul,ol{margin:0 0 15px;padding-left:22px}
-li{margin:0 0 7px}
-li::marker{color:var(--ink-3)}
-a{color:var(--accent);text-underline-offset:2px}
-code{background:var(--surface-2);padding:1.5px 5px;border-radius:2px;font-size:.86em;overflow-wrap:anywhere}
-.lead{font-size:18.5px;color:var(--ink-2);line-height:1.55;margin-bottom:22px}
-.find{border-left:3px solid var(--danger);background:var(--danger-soft);padding:18px 22px;margin:24px 0;
-      border-radius:0 3px 3px 0}
-.find.warn{border-left-color:var(--signal);background:var(--signal-soft)}
-.find.good{border-left-color:var(--accent);background:var(--accent-soft)}
-.find .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
-           font-weight:600;color:var(--danger);display:block;margin-bottom:7px}
-.find.warn .tag{color:var(--signal)}
-.find.good .tag{color:var(--accent-2)}
-.find h4{margin-top:0;font-family:Archivo,sans-serif;font-size:17px;color:var(--ink);letter-spacing:0}
-.find>:last-child{margin-bottom:0}
-.dec{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;border:1px solid var(--rule);
-     border-top:3px solid var(--accent);border-radius:0 0 3px 3px;padding:18px 22px;margin:22px 0;background:var(--surface)}
-@media (max-width:560px){.dec{grid-template-columns:1fr}.dec dt{padding-top:8px}}
-.dec dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-        color:var(--ink-3);padding-top:5px;white-space:nowrap}
-.dec dd{margin:0 0 6px;font-size:16px}
-.dec dd:last-child{margin-bottom:0}
-.tw{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
-table{border-collapse:collapse;width:100%;font-size:14px;font-family:"IBM Plex Mono",monospace;
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,"Times New Roman",serif;
+     font-size:16px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1,h2,h3{font-family:"Segoe UI",Arial,sans-serif;margin:0}
+.mast{border-bottom:2px solid var(--ink);padding:12px 0 14px;margin-bottom:18px}
+.kicker{font-family:"Segoe UI",Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+        color:var(--accent);font-weight:600}
+h1{font-size:34px;margin-top:6px}
+.sub{color:var(--ink-2);margin:6px 0 4px}
+.autores{font-family:"Segoe UI",Arial,sans-serif;font-size:14px;margin:0;color:var(--ink)}
+section{margin:0 0 14px}
+h2{font-size:17px;color:var(--accent);margin:18px 0 6px}
+h3{font-size:15px;margin:14px 0 6px}
+p{margin:0 0 9px} ul,ol{margin:0 0 9px;padding-left:20px} li{margin:0 0 4px}
+a{color:var(--accent)}
+code{font-family:Consolas,monospace;font-size:.88em;background:var(--surface);padding:1px 4px;overflow-wrap:anywhere}
+.tw{overflow-x:auto;margin:8px 0 10px;border:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%;font-family:"Segoe UI",Arial,sans-serif;font-size:12.5px;
       font-variant-numeric:tabular-nums}
-th{text-align:left;padding:10px 14px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
-   color:var(--ink-3);font-weight:600;border-bottom:1.5px solid var(--rule);white-space:nowrap;background:var(--surface-2)}
-td{padding:8px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+th{text-align:left;padding:5px 8px;font-size:11px;color:var(--ink-2);background:var(--surface);
+   border-bottom:1px solid var(--rule)}
+td{padding:4px 8px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+td.num,th.num{text-align:right;white-space:nowrap}
 tr:last-child td{border-bottom:0}
-td.num,th.num{text-align:right}
-td.name{font-family:"Source Serif 4",serif;font-size:15px}
-tr.hi td{background:var(--danger-soft)}
-tr.tot td{border-top:1.5px solid var(--rule);font-weight:600}
-.dn{color:var(--danger);font-weight:600}
-caption{caption-side:bottom;text-align:left;padding:10px 14px;font-size:13px;color:var(--ink-3);
-        font-family:"Source Serif 4",serif;line-height:1.45;border-top:1px solid var(--rule-soft)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);
-       border:1px solid var(--rule);border-radius:3px;margin:22px 0}
-.stat{background:var(--surface);padding:14px 16px}
-.stat .v{font-family:Archivo,sans-serif;font-size:25px;font-weight:600;letter-spacing:-.02em;
-         font-variant-numeric:tabular-nums;line-height:1.1}
-.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
-         color:var(--ink-3);margin-top:5px;line-height:1.35}
-.fx{font-family:"IBM Plex Mono",monospace;font-size:13.5px;line-height:1.75;background:var(--surface-2);
-    border-left:3px solid var(--rule);padding:15px 18px;margin:18px 0;overflow-x:auto;white-space:pre}
-.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
-      letter-spacing:.08em;text-transform:uppercase;padding:2.5px 8px;border-radius:2px;
-      background:var(--accent-soft);color:var(--accent-2);vertical-align:2px}
-.pill.s{background:var(--signal-soft);color:var(--signal)}
-.pill.d{background:var(--danger-soft);color:var(--danger)}
-footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
-       font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);line-height:1.7}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-/* ---------- figure ---------- */
-.viz{margin:24px 0;background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-     padding:16px 18px 14px;position:relative}
-.viz-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 20px;margin-bottom:8px}
-.viz-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15.5px;color:var(--ink);line-height:1.3}
-.viz-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2)}
-.viz-key{display:inline-block;width:14px;height:2px;border-radius:1px;vertical-align:middle;margin-right:7px}
-.k-id{background:var(--viz-id)} .k-ood{background:var(--viz-ood)}
-.viz-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px 24px}
-.viz-ptitle{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-            color:var(--ink-2);font-weight:600;margin:6px 0 0 10%}
-.viz svg{display:block;width:100%;height:auto;overflow:visible}
-.viz svg:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-.viz .vg{stroke:var(--rule-soft);stroke-width:1}
-.viz .vb{stroke:var(--rule);stroke-width:1}
-.viz .vt{fill:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:10px}
-.viz .vl{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:10px}
-.viz .vd{fill:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600}
-.viz .s-id-l,.viz .s-ood-l{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.viz .s-id-l{stroke:var(--viz-id)} .viz .s-ood-l{stroke:var(--viz-ood)}
-.viz .s-id-a{fill:var(--viz-id);fill-opacity:.10} .viz .s-ood-a{fill:var(--viz-ood);fill-opacity:.10}
-.viz .vthr{stroke:var(--ink-3);stroke-width:1}
-.viz .vhit{fill:var(--ink);fill-opacity:0;cursor:crosshair}
-.viz .vhit.on{fill-opacity:.06}
-.viz .vpt{fill:var(--accent);stroke:var(--surface);stroke-width:2}
-.viz .vci{stroke:var(--accent);stroke-width:2;stroke-linecap:round}
-.viz .vcon{stroke:var(--ink-3);stroke-width:1}
-.viz .v32{fill:var(--ink-3)}
-.viz .vhot{fill:transparent;cursor:pointer}
-#fig-vel svg{max-width:500px}
-#fig-vel .vt{font-size:12px} #fig-vel .vd{font-size:13px}
-.viz .vhot:focus-visible{outline:none;stroke:var(--accent);stroke-width:1.5}
-.viz-axis{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);text-align:center;margin-top:2px}
-.viz figcaption{font-size:13.5px;color:var(--ink-3);line-height:1.45;margin-top:10px;max-width:84ch}
-.viz-tip{position:absolute;pointer-events:none;z-index:3;background:var(--surface);border:1px solid var(--rule);
-         border-radius:3px;box-shadow:var(--shadow);padding:7px 10px;font-family:"IBM Plex Mono",monospace;
-         font-size:12px;line-height:1.55;color:var(--ink-2);white-space:nowrap}
-.viz-tip b{color:var(--ink);font-weight:600;margin-right:6px}
-.viz-tip .tk{display:inline-block;width:12px;height:2px;border-radius:1px;vertical-align:middle;margin-right:7px}
-.viz-table summary{cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);margin-top:10px}
-.viz-table .tw{margin:10px 0 0}
-
+caption{caption-side:bottom;text-align:left;padding:5px 8px;font-size:11.5px;color:var(--ink-3)}
+.fx{font-family:Consolas,monospace;font-size:12px;line-height:1.5;background:var(--surface);
+    border-left:3px solid var(--rule);padding:8px 12px;white-space:pre;overflow-x:auto}
 .fx .c{color:var(--ink-3)}
-</style>
+.refs{font-size:13px} .refs li{margin:0 0 2px}
+@page{size:A4;margin:15mm 16mm}
+@media print{
+  :root{--ink:#16232b;--ink-2:#42535b;--ink-3:#6e8085;--accent:#0f6b63;--rule:#c7d1d1;--rule-soft:#dfe5e5;
+        --surface:#f3f5f5;--paper:#fff}
+  body{font-size:10.5pt;line-height:1.45}
+  .wrap{max-width:none;padding:0}
+  h1{font-size:22pt} h2{font-size:12.5pt;break-after:avoid} h3{break-after:avoid}
+  table{font-size:8.6pt} .tw{break-inside:avoid;overflow:visible} .refs{font-size:8.8pt}
+  .fx{font-size:8.5pt}
+}
 
-<div class="wrap">
+</style></head>
+<body><div class="wrap">
 <header class="mast">
-  <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II · PUCV</div>
+  <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · noviembre 2026</div>
   <h1>Informe técnico</h1>
-  <p class="sub">Clasificar especies de pescado con ResNet y con ViT: qué datos se usaron, cómo se comparó, qué salió, y qué no se puede afirmar con esto.</p>
-  <div class="mastmeta">
-    <span><b>Versión</b> · 1.0 · 20-sep-2026</span>
-    <span><b>Código</b> · repositorio del grupo, commits incrementales</span>
-    <span><b>Detalle</b> · docs/plan-modelos.html · docs/data-card.html</span>
-  </div>
+  <p class="sub">Clasificación de especies de pescado con redes convolucionales y transformers:
+  datos, protocolo de comparación, resultados y límites.</p>
+  <p class="autores">Patricio Toledo · Andrés Saavedra · Sebastián Casas · Bastián Molina</p>
 </header>
 
-<div class="grid">
-
-<nav class="idx">
-  <span class="lbl">Contenido</span>
-  <a href="#s1"><span>1</span>Resumen</a>
-  <a href="#s2"><span>2</span>El problema</a>
-  <a href="#s3"><span>3</span>Los datos</a>
-  <a href="#s4"><span>4</span>Comparar sin trampa</a>
-  <a href="#s5"><span>5</span>Resultados</a>
-  <a href="#s6"><span>6</span>¿Dónde mira el modelo?</a>
-  <a href="#s7"><span>7</span>¿Sabe que no sabe?</a>
-  <a href="#s8"><span>8</span>Cuánto cuesta</a>
-  <a href="#s9"><span>9</span>La demo</a>
-  <a href="#s10"><span>10</span>Límites</a>
-  <a href="#s11"><span>11</span>Reproducir</a>
-</nav>
-
-<main>
-
-<!-- 1 -->
-<section id="s1">
-  <h2><span class="n">01</span>Resumen</h2>
-  <div class="col">
-  <p class="h2big">Entrenamos las dos arquitecturas, las comparamos con cuidado, y lo más valioso que encontramos fueron los problemas de los datos.</p>
-  <p class="lead">El encargo era entrenar y comparar una red convolucional (ResNet-50) contra un transformer de visión (ViT-B/16) para identificar especies de pescado. Lo hicimos, y además medimos cuatro cosas que normalmente quedan escondidas y que cambian cómo hay que leer cualquier resultado.</p>
-  <ol>
-    <li><strong>El ViT gana, y la diferencia es real</strong>, pero solo en el conjunto difícil: +0,041 de macro-F1 con un intervalo de confianza que no toca el cero. En el conjunto fácil las dos empatan porque ambas llegan al techo.</li>
-    <li><strong>El conjunto fácil no mide lo que parece.</strong> Una red entrenada <em>sin ver el pez</em>, con el animal borrado de la foto, acierta el 97 %. Ese dataset se resuelve mirando el fondo.</li>
-    <li><strong>El split oficial del conjunto difícil viene con fuga</strong>: el 44,5 % de sus imágenes de prueba son casi duplicados de imágenes de entrenamiento. Al limpiarlo, los resultados caen alrededor de un 80 %.</li>
-    <li><strong>La hipótesis del enunciado no se sostiene.</strong> Se esperaba que el ViT ganara sobre todo con peces amontonados; medido por grado de amontonamiento, la ventaja no crece, e incluso tiende a bajar.</li>
-    <li><strong>La diferencia más grande entre las dos no está en el acierto, sino en saber decir «no sé»</strong> frente a una imagen de otro mundo. Ahí el ViT es muy superior.</li>
-  </ol>
-  </div>
+<section>
+<h2>1 · Resumen</h2>
+<p>Comparamos redes convolucionales (CNN) y transformers de visión para identificar la especie de
+un pez en fotos de faena pesquera, como apoyo al registro de desembarque de Sernapesca en la
+Caleta Portales. Entrenamos cinco modelos en tres pares con preentrenamiento parejo y el mismo
+presupuesto, y los evaluamos en FishNet, un conjunto de cámaras a bordo de barcos reales, con una
+prueba limpia de fugas. Lo principal:</p>
+<ol>
+<li>El ViT-B/16 supera al ResNet-50 por +0,042 de macro-F1, con un margen
+al 95 % de [+0,007 · +0,077] que no incluye el cero.</li>
+<li>Esa ventaja se achica al tratar los cuatro atunes como una sola clase y no se distingue en
+barcos que el modelo no vio, que son el 69 % de la prueba.</li>
+<li>El reparto oficial de FishNet tiene fuga: el 45,8 % de sus cajas de prueba
+comparte lance con el entrenamiento, y eso infla los resultados alrededor de un 80 %.</li>
+<li>Con el pez en posición al azar, ResNet y ViT concentran su atención en el pez en una medida
+parecida: el ViT no mira menos el fondo.</li>
+<li>El ViT reconoce mejor lo que no conoce, pero ninguno de los dos sirve todavía para especies chilenas.</li>
+</ol>
 </section>
 
-<!-- 2 -->
-<section id="s2">
-  <h2><span class="n">02</span>El problema</h2>
-  <div class="col">
-  <p>La idea es apoyar el monitoreo de Sernapesca en la Caleta Portales: que una foto de la faena permita saber qué especies se están desembarcando y cuántas. Eso tiene dos partes: <em>encontrar</em> cada pez en la imagen y <em>decir</em> de qué especie es.</p>
-  <p>Este proyecto se concentra en la segunda parte, la clasificación, que es la que el curso pide comparar. La primera exigiría un detector, y meter un detector distinto en cada rama arruinaría la comparación: ya no sabríamos si la diferencia viene de la arquitectura o del detector. Por eso el sistema trabaja sobre recortes: alguien (o una anotación) marca el pez, y el modelo dice qué es.</p>
-  <p>Hay un límite que conviene decir de entrada: <strong>no existen datos públicos de la Caleta Portales</strong>, y ninguna de las especies del caso de uso —reineta, merluza, congrio— aparece en los conjuntos disponibles. Lo que se puede demostrar aquí es la comparación entre arquitecturas y el comportamiento del sistema; llevarlo al muelle exige recolectar datos locales primero.</p>
-  </div>
+<section>
+<h2>2 · Problema y alcance</h2>
+<p>En la Caleta Portales un inspector anota especie y cantidad durante la descarga. El proceso es
+lento, depende de quién esté de turno y no alcanza en temporada alta. La idea es que una foto de la
+faena permita proponer la especie de cada pez, con su nivel de confianza, para que la persona revise
+y corrija.</p>
+<p><strong>Qué hace el sistema:</strong> recibe el recorte de un pez ya marcado con una caja y devuelve la
+especie más probable o «no sé». <strong>Qué no hace:</strong> no detecta ni cuenta peces en la foto completa,
+y no conoce reineta, merluza ni congrio, porque esas especies no están en ningún conjunto público.
+Por eso lo que se demuestra aquí es el método de comparación; usarlo en la caleta exige fotos locales.</p>
 </section>
 
-<!-- 3 -->
-<section id="s3">
-  <h2><span class="n">03</span>Los datos y sus trampas</h2>
-  <div class="col">
-  <p>Se usaron dos conjuntos públicos con papeles distintos.</p>
-  <ul>
-    <li><strong>Kaggle · A Large Scale Fish Dataset:</strong> 9.000 fotos de 9 especies compradas en un supermercado y fotografiadas sobre una superficie de estudio. Trae además una máscara que marca exactamente qué píxeles son el pez. Es fácil y limpio.</li>
-    <li><strong>FishNet Open Images:</strong> imágenes de cámaras instaladas en la cubierta de barcos pesqueros. Usamos 20.002 fotos con 99.019 peces y objetos marcados. Es difícil y desordenado: peces amontonados, de noche, mojados, tapados por manos y cajas.</li>
-  </ul>
-  <p>Auditamos los dos antes de entrenar, y aparecieron cuatro problemas. Ninguno estaba documentado en las fuentes.</p>
-  </div>
-
-  <div class="find">
-    <span class="tag">Problema 1 · fotos repetidas</span>
-    <h4>Las 1.000 imágenes por especie son 30 a 50 fotos giradas</h4>
-    <div class="col">
-    <p>Si se reparten al azar, el conjunto de prueba termina lleno de rotaciones de fotos que el modelo ya vio entrenando. Es como estudiar con el examen resuelto. <strong>Solución:</strong> repartimos <em>fotos originales</em>, no imágenes. Efecto secundario que no desaparece: la prueba tiene 62 fotos independientes, no 1.336, y eso hay que tenerlo en cuenta al calcular márgenes de error.</p>
-    </div>
-  </div>
-
-  <div class="find">
-    <span class="tag">Problema 2 · el split publicado filtra</span>
-    <h4>El 44,5 % de la prueba de FishNet comparte secuencia con el entrenamiento</h4>
-    <div class="col">
-    <p>Una «secuencia» son fotogramas seguidos del mismo lance: prácticamente la misma escena. El reparto oficial del dataset se hizo caja por caja, sin agrupar por secuencia, así que hay casi duplicados a ambos lados. Lo comprobamos midiendo el parecido entre imágenes: 0,87 de correlación entre pares que cruzan, contra 0,03 entre pares cualesquiera.</p>
-    <p><strong>Solución:</strong> reportamos siempre dos números, el del test oficial y el del test limpio, que saca toda imagen cuya secuencia esté en entrenamiento. Es el mismo modelo evaluado en dos conjuntos distintos.</p>
-    </div>
-  </div>
-
-  <div class="find warn">
-    <span class="tag">Problema 3 · el atajo del fondo</span>
-    <h4>En Kaggle se acierta el 97 % sin ver el pez</h4>
-    <div class="col">
-    <p>Cada especie se fotografió en una sesión distinta, con una superficie y una luz levemente distintas. Usando las máscaras borramos el pez y dejamos solo el fondo: una red entrenada así alcanza 0,971 de macro-F1, contra 0,997 con la imagen completa. Borrar el pez entero cuesta apenas tres puntos.</p>
-    <p>La conclusión es incómoda y hay que decirla: <strong>los buenos resultados en Kaggle no demuestran que el modelo reconozca peces.</strong> Por eso la comparación seria se juega en FishNet.</p>
-    </div>
-  </div>
-
-  <div class="find warn">
-    <span class="tag">Problema 4 · márgenes de error</span>
-    <h4>Las observaciones no son independientes</h4>
-    <div class="col">
-    <p>Veinte rotaciones de una foto no son veinte pruebas; diez fotogramas de un lance, tampoco. Si se cuentan como independientes, los márgenes de error salen hasta 4,6 veces más angostos de lo real y cualquier diferencia pequeña parece significativa. Todos los intervalos de este informe se calculan remuestreando <em>grupos completos</em> (la foto original en Kaggle, la secuencia en FishNet).</p>
-    </div>
-  </div>
+<section>
+<h2>3 · Datos y riesgos</h2>
+<p><strong>Kaggle · A Large Scale Fish Dataset</strong> (Ulucan et al., 2020): 9.000 fotos de 9 especies de
+supermercado sobre fondo de estudio, con la silueta de cada pez marcada. Son 411 fotos originales;
+el resto son copias giradas y espejadas. <strong>FishNet Open Images</strong> (Kay y Merrifield, 2021): usamos
+20.002 fotos de 77 cámaras a bordo, con 99.019 cajas. El modelo predice 20 clases (19 etiquetas con al
+menos 100 ejemplos y una clase de especies raras); el macro-F1 se promedia sobre las 15 que son
+especies, sin persona, sin pez, desconocido, atún sin especie ni especies raras.</p>
+<div class="tw"><table>
+<thead><tr><th>Riesgo</th><th>Medición</th><th>Qué hicimos</th></tr></thead>
+<tbody>
+<tr><td class="name">Kaggle: ~21 copias por foto original</td><td>411 originales en 9.000 imágenes</td><td>Reparto por foto original; la prueba tiene 62 fotos independientes</td></tr>
+<tr><td class="name">Kaggle: el fondo delata la especie</td><td>macro-F1 0,971 con el pez borrado (contra 0,997)</td><td>Kaggle no decide la comparación</td></tr>
+<tr><td class="name">FishNet: fuga por lance en el reparto oficial</td><td>45,8 % de las cajas de prueba y 39,1 % de las imágenes</td><td>Prueba limpia: 7.159 cajas de 612 lances sin cruce</td></tr>
+<tr><td class="name">Fotos de un lance no son independientes</td><td>Márgenes hasta 4,6 veces más angostos si se ignora</td><td>Bootstrap por lance completo</td></tr>
+<tr><td class="name">FishNet: barcos repetidos</td><td>31 % de la prueba limpia viene de cámaras de entrenamiento</td><td>Se reporta aparte (sección 5)</td></tr>
+</tbody></table></div>
+<p>La auditoría (<code>scripts/auditoria.py</code>) confirmó que en los repartos que usamos ningún lance ni
+foto original cruza de entrenamiento a prueba. Un vecino más cercano sobre miniaturas de 32×32 píxeles,
+sin ninguna red, acierta 0,829 en Kaggle y 0,559 en FishNet: Kaggle es casi trivial y FishNet no.</p>
 </section>
 
-<!-- 4 -->
-<section id="s4">
-  <h2><span class="n">04</span>Cómo se comparó sin hacer trampa</h2>
-  <div class="col">
-  <p>Comparar dos arquitecturas solo tiene sentido si todo lo demás es igual. Cuatro decisiones sostienen eso:</p>
-  <ul>
-    <li><strong>Pesos iniciales parejos.</strong> Las dos redes parten de un entrenamiento previo en ImageNet, y elegimos versiones de calidad equivalente: 80,86 % para el ResNet y 81,07 % para el ViT. La trampa habitual es usar la versión por defecto del ResNet, que está 5 puntos por debajo: así el ViT «gana» por el preentrenamiento, no por su arquitectura.</li>
-    <li><strong>Mismo presupuesto de entrenamiento</strong>, contado en pasos de optimización y no en épocas, con el mismo tamaño de lote efectivo y las mismas semillas. Cada arquitectura usa la receta de optimización propia de su familia: forzar la misma sería sabotear una de las dos.</li>
-    <li><strong>Mismo preprocesamiento exacto</strong>, escrito una vez y compartido, en vez de dejar que cada modelo traiga el suyo.</li>
-    <li><strong>Tres semillas por experimento</strong> y métricas con intervalo de confianza, para poder distinguir una diferencia real del ruido del entrenamiento.</li>
-  </ul>
-  <p>La métrica principal es el <strong>macro-F1 sobre especies</strong>: el promedio del desempeño de cada especie, dándole el mismo peso a todas. La accuracy global no sirve aquí, porque más de la mitad de FishNet son personas: un modelo que dijera «persona» siempre parecería bueno.</p>
-  <p>Y para decidir si una diferencia es real usamos una prueba pareada sobre los mismos grupos: se remuestrean secuencias completas y se mira la diferencia entre los dos modelos en cada remuestreo. Si el intervalo resultante no cruza el cero, la diferencia se sostiene.</p>
-  </div>
+<section>
+<h2>4 · Modelos y protocolo</h2>
+<div class="tw"><table>
+<thead><tr><th>Par</th><th>CNN</th><th>Transformer</th><th>Qué responde</th></tr></thead>
+<tbody>
+<tr><td class="name">Original</td><td>ResNet-50 · V2 · 80,9 % · 26 M</td><td>ViT-B/16 · V1 · 81,1 % · 87 M</td><td>¿Cuál conviene, con preentrenamiento parejo?</td></tr>
+<tr><td class="name">Mismo tamaño</td><td>ResNet-50 (el mismo)</td><td>DeiT-S · 79,9 % · 22 M</td><td>¿El ViT-B/16 ganaba por ser transformer o por ser más grande?</td></tr>
+<tr><td class="name">Moderno</td><td>ConvNeXt-T · 82,5 % · 29 M</td><td>Swin-T · 81,5 % · 28 M</td><td>¿El ResNet perdía por ser una arquitectura de 2015?</td></tr>
+</tbody></table></div>
+<p>El porcentaje es el acierto en ImageNet de los pesos de partida, según quien los publica
+(torchvision; DeiT-S con los pesos oficiales de Facebook, sin destilación). Todos los modelos reciben
+9.104 pasos de entrenamiento con lote efectivo de 64, la misma resolución (224 px), los mismos aumentos
+y tres semillas. Todos se entrenan con AdamW; los transformers y el par moderno con tasa decreciente
+por capa, como en sus artículos, y el ResNet con una tasa para el cuerpo y otra para la cabeza. La época se elige con la validación limpia; la prueba
+se usa una sola vez.</p>
+<p><strong>Métrica.</strong> El macro-F1 es el promedio del F1 de las 15 especies, de 0 a 1: cada especie pesa
+lo mismo. No usamos la accuracy porque el 68 % de la prueba son personas y un modelo que siempre diga
+«persona» ya acierta el 68 %. Antes del argmax se aplica el ajuste de logits de Menon et al. (2021),
+con su parámetro elegido en validación. Si el modelo dice un atún específico sobre una caja anotada
+como «atún sin especie», no se cuenta como error de ese atún. <strong>Margen:</strong> intervalo de confianza al 95 % por bootstrap, remuestreando lances
+completos (2.000 réplicas). Para comparar dos modelos se remuestrean los mismos lances para ambos y
+se mira la diferencia; se distingue si su margen no incluye el cero.</p>
 </section>
 
-<!-- 5 -->
-<section id="s5">
-  <h2><span class="n">05</span>Resultados</h2>
-  <div class="col">
-  <h3>En el conjunto fácil, empate</h3>
-  <p>En Kaggle el ResNet llega a 0,9970 y el ViT a 1,0000: acierta las 1.336 imágenes. La diferencia no es distinguible, y la razón es reveladora: los cuatro errores del ResNet son las cuatro rotaciones de <em>una sola foto</em>, un salmonete confundido con otro salmonete parecido. Toda la supuesta ventaja del ViT depende de una foto entre 62.</p>
+<section>
+<h2>5 · Resultados</h2>
+<div class="tw"><table>
+<caption>Prueba limpia de FishNet. Macro-F1 promedio de las semillas y su margen al 95 %; a la derecha, el valor de cada semilla.</caption>
+<thead><tr><th>Modelo</th><th class="num">macro-F1 [margen]</th><th class="num">por semilla</th><th class="num">semillas</th></tr></thead>
+<tbody>
+<tr><td class="name">ResNet-50</td><td class="num">0,352 [0,306 · 0,385]</td><td class="num">0,363 · 0,342 · 0,352</td><td class="num">3</td></tr>
+<tr><td class="name">ViT-B/16</td><td class="num">0,393 [0,349 · 0,424]</td><td class="num">0,389 · 0,413 · 0,379</td><td class="num">3</td></tr>
+<tr><td class="name">DeiT-S</td><td class="num" colspan="3">pendiente</td></tr>
+<tr><td class="name">ConvNeXt-T</td><td class="num" colspan="3">pendiente</td></tr>
+<tr><td class="name">Swin-T</td><td class="num" colspan="3">pendiente</td></tr>
+</tbody></table></div>
+<div class="tw"><table>
+<caption>Diferencia transformer − CNN, con bootstrap pareado sobre los mismos lances.</caption>
+<thead><tr><th>Par</th><th class="num">diferencia</th><th class="num">margen al 95 %</th><th class="num">¿se distingue?</th></tr></thead>
+<tbody>
+<tr><td class="name">Original · ViT-B/16 − ResNet-50</td><td class="num"><strong>+0,042</strong></td><td class="num">[+0,007 · +0,077]</td><td class="num">sí</td></tr>
+<tr><td class="name">Mismo tamaño · DeiT-S − ResNet-50</td><td class="num" colspan="3">pendiente</td></tr>
+<tr><td class="name">Moderno · Swin-T − ConvNeXt-T</td><td class="num" colspan="3">pendiente</td></tr>
+</tbody></table></div>
+<ul>
+<li><strong>ViT-B/16 contra ResNet-50 (+0,042, margen [+0,007 · +0,077]):</strong> el transformer gana con preentrenamiento parejo, y la peor semilla del ViT supera a la mejor del ResNet.</li>
+<li><strong>DeiT-S contra ResNet-50:</strong> pendiente de entrenamiento.</li>
+<li><strong>Swin-T contra ConvNeXt-T:</strong> pendiente de entrenamiento.</li>
+</ul>
 
-  <h3>En el conjunto difícil, el ViT gana</h3>
-  </div>
-  <div class="tw">
-    <table>
-      <caption>FishNet, tres semillas por modelo, mismo presupuesto. «Test limpio» es el conjunto sin las secuencias contaminadas; es el número honesto. Entre corchetes, el intervalo de confianza del 95 %.</caption>
-      <thead><tr><th>Modelo</th><th class="num">test limpio</th><th class="num">test oficial</th><th class="num">accuracy</th></tr></thead>
-      <tbody>
-        <tr><td class="name">ResNet-50</td><td class="num">0,352 [0,306 · 0,385]</td><td class="num">0,602</td><td class="num">0,856</td></tr>
-        <tr><td class="name">ViT-B/16</td><td class="num"><strong>0,393</strong> [0,349 · 0,424]</td><td class="num">0,641</td><td class="num">0,882</td></tr>
-        <tr class="tot"><td class="name">Diferencia pareada</td><td class="num">+0,042 [+0,007 · +0,077]</td><td class="num">—</td><td class="num">—</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="col">
-  <p>El intervalo de la diferencia no cruza cero, así que <strong>aquí sí se distinguen</strong>. Y probablemente es un piso: el ResNet tocó techo en la época 2 de 8 y después empeoró, mientras el ViT seguía mejorando al terminar. Con el mismo presupuesto, el ViT gana estando aún sin converger.</p>
-  <p>Los números absolutos son bajos —0,39 de macro-F1— y conviene entender por qué: hay 20 clases, varias con muy pocos ejemplos de prueba, muchas especies de atún casi idénticas entre sí, y peces tapados o borrosos. El macro-F1 castiga fuerte el fallo en las clases raras.</p>
-
-  <h3>Cuánto infla el split sucio</h3>
-  <p>Los mismos modelos evaluados en el test oficial dan 0,602 y 0,641, casi un 80 % más alto. Todas las clases suben, sin excepción, y el caso extremo es el atún de aleta amarilla: su F1 pasa de 0,27 a 0,88 porque el 91 % de sus imágenes de prueba están contaminadas. Cualquiera que compare contra cifras publicadas sobre este dataset está comparándose contra números inflados.</p>
-
-  <h3>La hipótesis del enunciado no se cumple</h3>
-  <p>El enunciado proponía que el ViT gana porque su atención global separa mejor peces amontonados. Es contrastable: medimos cuánta área de cada pez está tapada por otros y partimos la prueba en cuatro grupos, de aislado a muy tapado. Si la hipótesis fuera cierta, la ventaja crecería con el amontonamiento. Lo medido es +0,052 → +0,071 → +0,017 → +0,044: <strong>no crece, y la tendencia es levemente negativa</strong>. El ViT es mejor, pero no por el motivo propuesto. Un resultado negativo bien medido vale más que confirmar una hipótesis con una tabla sin desglose.</p>
-  </div>
+<h3>Qué tan firme es la ventaja del ViT-B/16</h3>
+<div class="tw"><table>
+<thead><tr><th>Prueba</th><th class="num">ResNet-50</th><th class="num">ViT-B/16</th><th class="num">diferencia [margen]</th></tr></thead>
+<tbody>
+<tr><td class="name">Prueba limpia completa</td><td class="num">0,352</td><td class="num">0,393</td><td class="num">+0,042 [+0,007 · +0,077]</td></tr>
+<tr><td class="name">Los cuatro atunes como una clase</td><td class="num">0,378</td><td class="num">0,408</td><td class="num">+0,031 [-0,004 · +0,065]</td></tr>
+<tr><td class="name">Cámaras vistas en entrenamiento (2.218 cajas)</td><td class="num">0,355</td><td class="num">0,396</td><td class="num">+0,047 [+0,016 · +0,080]</td></tr>
+<tr><td class="name">Cámaras nuevas (4.941 cajas, 21 cámaras)</td><td class="num">0,253</td><td class="num">0,280</td><td class="num">+0,029 [-0,027 · +0,088]</td></tr>
+</tbody></table></div>
+<p>Parte de la ventaja viene de separar un atún de otro: el mayor cambio por especie es el albacora
+(F1 0,31 → 0,54), que se confunde con el atún aleta amarilla.
+En total el ViT gana en 10 de las 15 especies. En barcos que no estaban en entrenamiento los dos
+modelos caen cerca de 0,10 y la diferencia deja de distinguirse. Para la caleta, todo barco sería nuevo:
+es la limitación más importante de este trabajo.</p>
+<p>Otros dos resultados del Avance se mantienen. Con el reparto oficial, el macro-F1 sube a 0,602
+(ResNet) y 0,641 (ViT): la fuga infla los números alrededor de un 80 %. Y la hipótesis del enunciado,
+que el ViT gana gracias a la atención global sobre peces amontonados, no se sostiene: separando la
+prueba en cuatro grados de oclusión, la ventaja es +0,052, +0,071, +0,017 y +0,044, sin crecer con la
+oclusión (Spearman −0,60).</p>
 </section>
 
-<!-- 6 -->
-<section id="s6">
-  <h2><span class="n">06</span>¿Dónde mira el modelo?</h2>
-  <div class="col">
-  <p>Para no quedarnos en «el ViT es mejor», miramos qué parte de la imagen usa cada red. Hay dos herramientas clásicas, pero no son comparables entre sí: Grad-CAM (para redes convolucionales) responde «¿qué miró <em>para decir esta clase</em>?», mientras que el <em>attention rollout</em> del ViT da el mismo mapa para todas las clases. Ponerlas lado a lado y sacar conclusiones sería comparar peras con manzanas, así que añadimos el método de Chefer, que es el equivalente del ViT sí condicionado a la clase.</p>
-  <p>Y en vez de mirar figuras bonitas, lo convertimos en un número usando las máscaras de Kaggle: <strong>qué fracción de la «atención» cae dentro del pez</strong>. Como referencia, el pez ocupa en promedio el 16,1 % de la imagen, así que un mapa que mirara al azar daría 0,169.</p>
-  </div>
-  <div class="tw">
-    <table>
-      <caption>Energía del mapa que cae dentro del pez, sobre el test de Kaggle. Más alto es mejor. El rollout es agnóstico de clase, por eso queda apenas sobre el azar.</caption>
-      <thead><tr><th>Método</th><th class="num">dentro del pez</th><th class="num">veces sobre el azar</th></tr></thead>
-      <tbody>
-        <tr><td class="name">ResNet-50 · Grad-CAM</td><td class="num">0,582</td><td class="num">3,45×</td></tr>
-        <tr><td class="name">ViT-B/16 · relevancia de Chefer</td><td class="num">0,408</td><td class="num">2,41×</td></tr>
-        <tr><td class="name">ViT-B/16 · attention rollout</td><td class="num">0,204</td><td class="num">1,21×</td></tr>
-        <tr><td class="name">Línea base (mirar al azar)</td><td class="num">0,169</td><td class="num">1,00×</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="col">
-  <p>Los dos miran el pez bastante más que al azar, el ResNet más concentrado que el ViT. Pero el experimento que de verdad zanja el asunto es otro: entrenamos cada arquitectura <strong>solo con el fondo</strong> y <strong>solo con el pez</strong>.</p>
-  </div>
-  <div class="tw">
-    <table>
-      <caption>Macro-F1 en Kaggle, tres semillas. Borrar el pez cuesta tres puntos; borrar el fondo, nada.</caption>
-      <thead><tr><th>Modelo</th><th class="num">imagen completa</th><th class="num">solo fondo</th><th class="num">solo pez</th></tr></thead>
-      <tbody>
-        <tr><td class="name">ResNet-50</td><td class="num">0,9970</td><td class="num">0,9710</td><td class="num">0,9990</td></tr>
-        <tr><td class="name">ViT-B/16</td><td class="num">1,0000</td><td class="num">0,9698</td><td class="num">0,9988</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="col">
-  <p>Las dos señales son redundantes: el pez solo basta, y el fondo solo casi también. Por eso el acierto en Kaggle no puede decir cuál de las dos está usando el modelo, y por eso hacía falta el número del párrafo anterior. Las dos arquitecturas se comportan igual en esto: el atajo es del dataset, no de una red.</p>
-  </div>
+<section>
+<h2>6 · Dónde mira cada modelo</h2>
+<p>Medimos qué fracción de la atención de cada mapa cae dentro de la caja del pez, sobre 483
+recortes de la prueba limpia de FishNet, los mismos para los dos modelos: Grad-CAM (Selvaraju et al.,
+2017) para el ResNet; attention rollout (Abnar y Zuidema, 2020) y la relevancia de Chefer et al.
+(2021), que sí depende de la clase como Grad-CAM, para el ViT.</p>
+<p>Con el pez siempre al centro del recorte, una gaussiana fija en el centro, que no mira la imagen,
+obtenía 0,757, más que cualquier modelo: la medida premiaba mirar el centro. Por eso ampliamos el
+recorte con el pez en una posición al azar y restamos la atención que el mismo mapa deja en la caja de
+<em>otro</em> recorte. Lo que queda es cuánto sigue el mapa al pez.</p>
+<div class="tw"><table>
+<thead><tr><th>Método</th><th class="num">en la caja</th><th class="num">en la caja de otro recorte</th><th class="num">diferencia</th></tr></thead>
+<tbody>
+<tr><td class="name">ResNet-50 · Grad-CAM</td><td class="num">0,506</td><td class="num">0,417</td><td class="num"><strong>+0,090</strong></td></tr>
+<tr><td class="name">ViT-B/16 · Chefer</td><td class="num">0,386</td><td class="num">0,298</td><td class="num"><strong>+0,087</strong></td></tr>
+<tr><td class="name">ViT-B/16 · rollout</td><td class="num">0,266</td><td class="num">0,250</td><td class="num">+0,016</td></tr>
+</tbody></table></div>
+<p>Grad-CAM y Chefer siguen al pez casi por igual; la ventaja aparente de Grad-CAM en la columna de la
+izquierda es su tendencia a marcar el centro. El ViT no mira menos el fondo que el ResNet. En Kaggle
+habíamos medido 0,582 para Grad-CAM y 0,408 para Chefer, pero sin este control: es probable que ese
+número tenga el mismo sesgo. Una limitación: con el recorte ampliado, cada modelo cambia su predicción
+en la mitad de los casos, así que los mapas explican decisiones sobre una imagen algo distinta de la
+que ve normalmente (semilla 0).</p>
 </section>
 
-<!-- 7 -->
-<section id="s7">
-  <h2><span class="n">07</span>¿Sabe cuándo no sabe?</h2>
-  <div class="col">
-  <p>Un sistema en un muelle se va a encontrar con especies que nunca vio, con una cámara nueva, con una caja vacía. Lo peligroso no es equivocarse: es equivocarse con seguridad. Medimos dos cosas distintas que se confunden a menudo.</p>
-
-  <h3>Rechazar lo desconocido: aquí está la diferencia grande</h3>
-  <p>Le dimos a los modelos entrenados en FishNet las fotos de Kaggle, que son de otro mundo: pescado de supermercado sobre fondo liso. La pregunta es si la confianza del modelo baja lo suficiente como para poder rechazarlas.</p>
-  </div>
-
-  <figure class="viz" id="fig-ood">
-  <div class="viz-head">
-    <div class="viz-title">¿Cuánta confianza pone el modelo de FishNet en un pez que nunca vio?</div>
-    <div class="viz-legend"><span><i class="viz-key k-id"></i>FishNet · test limpio sin personas (ID)</span><span><i class="viz-key k-ood"></i>Kaggle · test (OOD)</span></div>
-  </div>
-  <div class="viz-panels"><div class="viz-panel"><div class="viz-ptitle">ResNet-50</div><svg viewBox="0 0 340 214" role="img" tabindex="0" aria-label="ResNet-50: distribucion de la max-softmax, FishNet sin personas contra Kaggle"><line class="vg" x1="36" x2="330" y1="182.0" y2="182.0"/><text class="vt" x="30" y="186.0" text-anchor="end">0</text><line class="vg" x1="36" x2="330" y1="126.7" y2="126.7"/><text class="vt" x="30" y="130.7" text-anchor="end">10</text><line class="vg" x1="36" x2="330" y1="71.3" y2="71.3"/><text class="vt" x="30" y="75.3" text-anchor="end">20</text><line class="vg" x1="36" x2="330" y1="16.0" y2="16.0"/><text class="vt" x="30" y="20.0" text-anchor="end">30</text><text class="vt" x="36.0" y="198" text-anchor="middle">0</text><text class="vt" x="109.5" y="198" text-anchor="middle">0,25</text><text class="vt" x="183.0" y="198" text-anchor="middle">0,5</text><text class="vt" x="256.5" y="198" text-anchor="middle">0,75</text><text class="vt" x="330.0" y="198" text-anchor="middle">1</text><line class="vb" x1="36" x2="330" y1="182.0" y2="182.0"/><path class="s-ood-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.9 L80.1,181.9 L80.1,175.1 L94.8,175.1 L94.8,154.0 L109.5,154.0 L109.5,132.4 L124.2,132.4 L124.2,118.2 L138.9,118.2 L138.9,123.5 L153.6,123.5 L153.6,122.2 L168.3,122.2 L168.3,128.8 L183.0,128.8 L183.0,133.3 L197.7,133.3 L197.7,138.4 L212.4,138.4 L212.4,148.2 L227.1,148.2 L227.1,156.6 L241.8,156.6 L241.8,157.7 L256.5,157.7 L256.5,156.7 L271.2,156.7 L271.2,163.2 L285.9,163.2 L285.9,172.6 L300.6,172.6 L300.6,177.8 L315.3,177.8 L315.3,182.0 L330.0,182.0 L330.0,182.0 Z"/><path class="s-ood-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.9 L80.1,181.9 L80.1,175.1 L94.8,175.1 L94.8,154.0 L109.5,154.0 L109.5,132.4 L124.2,132.4 L124.2,118.2 L138.9,118.2 L138.9,123.5 L153.6,123.5 L153.6,122.2 L168.3,122.2 L168.3,128.8 L183.0,128.8 L183.0,133.3 L197.7,133.3 L197.7,138.4 L212.4,138.4 L212.4,148.2 L227.1,148.2 L227.1,156.6 L241.8,156.6 L241.8,157.7 L256.5,157.7 L256.5,156.7 L271.2,156.7 L271.2,163.2 L285.9,163.2 L285.9,172.6 L300.6,172.6 L300.6,177.8 L315.3,177.8 L315.3,182.0 L330.0,182.0 L330.0,182.0"/><path class="s-id-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.5 L80.1,181.5 L80.1,174.8 L94.8,174.8 L94.8,160.9 L109.5,160.9 L109.5,153.0 L124.2,153.0 L124.2,147.2 L138.9,147.2 L138.9,146.9 L153.6,146.9 L153.6,148.0 L168.3,148.0 L168.3,149.1 L183.0,149.1 L183.0,155.3 L197.7,155.3 L197.7,155.6 L212.4,155.6 L212.4,155.9 L227.1,155.9 L227.1,156.8 L241.8,156.8 L241.8,158.0 L256.5,158.0 L256.5,155.1 L271.2,155.1 L271.2,146.0 L285.9,146.0 L285.9,110.8 L300.6,110.8 L300.6,101.5 L315.3,101.5 L315.3,166.1 L330.0,166.1 L330.0,182.0 Z"/><path class="s-id-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.5 L80.1,181.5 L80.1,174.8 L94.8,174.8 L94.8,160.9 L109.5,160.9 L109.5,153.0 L124.2,153.0 L124.2,147.2 L138.9,147.2 L138.9,146.9 L153.6,146.9 L153.6,148.0 L168.3,148.0 L168.3,149.1 L183.0,149.1 L183.0,155.3 L197.7,155.3 L197.7,155.6 L212.4,155.6 L212.4,155.9 L227.1,155.9 L227.1,156.8 L241.8,156.8 L241.8,158.0 L256.5,158.0 L256.5,155.1 L271.2,155.1 L271.2,146.0 L285.9,146.0 L285.9,110.8 L300.6,110.8 L300.6,101.5 L315.3,101.5 L315.3,166.1 L330.0,166.1 L330.0,182.0"/><line class="vthr" x1="109.0" x2="109.0" y1="16" y2="182.0"/><text class="vl" x="114.0" y="25">umbral 95 % ID<tspan x="114.0" dy="12">acepta 93,9 % de Kaggle</tspan></text><text class="vd" x="307.9" y="94.5" text-anchor="middle">FishNet</text><text class="vd" x="114.9" y="111.2" text-anchor="start">Kaggle</text><rect class="vhit" x="36.0" y="16" width="14.7" height="166.0" data-bin="0,00–0,05" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="50.7" y="16" width="14.7" height="166.0" data-bin="0,05–0,10" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="65.4" y="16" width="14.7" height="166.0" data-bin="0,10–0,15" data-id="0,1" data-ood="0,0"/><rect class="vhit" x="80.1" y="16" width="14.7" height="166.0" data-bin="0,15–0,20" data-id="1,3" data-ood="1,2"/><rect class="vhit" x="94.8" y="16" width="14.7" height="166.0" data-bin="0,20–0,25" data-id="3,8" data-ood="5,1"/><rect class="vhit" x="109.5" y="16" width="14.7" height="166.0" data-bin="0,25–0,30" data-id="5,2" data-ood="9,0"/><rect class="vhit" x="124.2" y="16" width="14.7" height="166.0" data-bin="0,30–0,35" data-id="6,3" data-ood="11,5"/><rect class="vhit" x="138.9" y="16" width="14.7" height="166.0" data-bin="0,35–0,40" data-id="6,3" data-ood="10,6"/><rect class="vhit" x="153.6" y="16" width="14.7" height="166.0" data-bin="0,40–0,45" data-id="6,1" data-ood="10,8"/><rect class="vhit" x="168.3" y="16" width="14.7" height="166.0" data-bin="0,45–0,50" data-id="6,0" data-ood="9,6"/><rect class="vhit" x="183.0" y="16" width="14.7" height="166.0" data-bin="0,50–0,55" data-id="4,8" data-ood="8,8"/><rect class="vhit" x="197.7" y="16" width="14.7" height="166.0" data-bin="0,55–0,60" data-id="4,8" data-ood="7,9"/><rect class="vhit" x="212.4" y="16" width="14.7" height="166.0" data-bin="0,60–0,65" data-id="4,7" data-ood="6,1"/><rect class="vhit" x="227.1" y="16" width="14.7" height="166.0" data-bin="0,65–0,70" data-id="4,5" data-ood="4,6"/><rect class="vhit" x="241.8" y="16" width="14.7" height="166.0" data-bin="0,70–0,75" data-id="4,3" data-ood="4,4"/><rect class="vhit" x="256.5" y="16" width="14.7" height="166.0" data-bin="0,75–0,80" data-id="4,9" data-ood="4,6"/><rect class="vhit" x="271.2" y="16" width="14.7" height="166.0" data-bin="0,80–0,85" data-id="6,5" data-ood="3,4"/><rect class="vhit" x="285.9" y="16" width="14.7" height="166.0" data-bin="0,85–0,90" data-id="12,9" data-ood="1,7"/><rect class="vhit" x="300.6" y="16" width="14.7" height="166.0" data-bin="0,90–0,95" data-id="14,5" data-ood="0,8"/><rect class="vhit" x="315.3" y="16" width="14.7" height="166.0" data-bin="0,95–1,00" data-id="2,9" data-ood="0,0"/></svg></div><div class="viz-panel"><div class="viz-ptitle">ViT-B/16</div><svg viewBox="0 0 340 214" role="img" tabindex="0" aria-label="ViT-B/16: distribucion de la max-softmax, FishNet sin personas contra Kaggle"><line class="vg" x1="36" x2="330" y1="182.0" y2="182.0"/><text class="vt" x="30" y="186.0" text-anchor="end">0</text><line class="vg" x1="36" x2="330" y1="126.7" y2="126.7"/><text class="vt" x="30" y="130.7" text-anchor="end">10</text><line class="vg" x1="36" x2="330" y1="71.3" y2="71.3"/><text class="vt" x="30" y="75.3" text-anchor="end">20</text><line class="vg" x1="36" x2="330" y1="16.0" y2="16.0"/><text class="vt" x="30" y="20.0" text-anchor="end">30</text><text class="vt" x="36.0" y="198" text-anchor="middle">0</text><text class="vt" x="109.5" y="198" text-anchor="middle">0,25</text><text class="vt" x="183.0" y="198" text-anchor="middle">0,5</text><text class="vt" x="256.5" y="198" text-anchor="middle">0,75</text><text class="vt" x="330.0" y="198" text-anchor="middle">1</text><line class="vb" x1="36" x2="330" y1="182.0" y2="182.0"/><path class="s-ood-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,181.6 L65.4,181.6 L65.4,143.0 L80.1,143.0 L80.1,83.8 L94.8,83.8 L94.8,77.5 L109.5,77.5 L109.5,101.7 L124.2,101.7 L124.2,120.4 L138.9,120.4 L138.9,144.0 L153.6,144.0 L153.6,154.5 L168.3,154.5 L168.3,161.3 L183.0,161.3 L183.0,165.3 L197.7,165.3 L197.7,171.7 L212.4,171.7 L212.4,173.9 L227.1,173.9 L227.1,173.7 L241.8,173.7 L241.8,174.8 L256.5,174.8 L256.5,175.1 L271.2,175.1 L271.2,176.7 L285.9,176.7 L285.9,173.6 L300.6,173.6 L300.6,170.0 L315.3,170.0 L315.3,182.0 L330.0,182.0 L330.0,182.0 Z"/><path class="s-ood-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,181.6 L65.4,181.6 L65.4,143.0 L80.1,143.0 L80.1,83.8 L94.8,83.8 L94.8,77.5 L109.5,77.5 L109.5,101.7 L124.2,101.7 L124.2,120.4 L138.9,120.4 L138.9,144.0 L153.6,144.0 L153.6,154.5 L168.3,154.5 L168.3,161.3 L183.0,161.3 L183.0,165.3 L197.7,165.3 L197.7,171.7 L212.4,171.7 L212.4,173.9 L227.1,173.9 L227.1,173.7 L241.8,173.7 L241.8,174.8 L256.5,174.8 L256.5,175.1 L271.2,175.1 L271.2,176.7 L285.9,176.7 L285.9,173.6 L300.6,173.6 L300.6,170.0 L315.3,170.0 L315.3,182.0 L330.0,182.0 L330.0,182.0"/><path class="s-id-a" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.3 L80.1,181.3 L80.1,176.3 L94.8,176.3 L94.8,169.3 L109.5,169.3 L109.5,163.5 L124.2,163.5 L124.2,161.6 L138.9,161.6 L138.9,161.5 L153.6,161.5 L153.6,160.0 L168.3,160.0 L168.3,163.1 L183.0,163.1 L183.0,164.5 L197.7,164.5 L197.7,164.3 L212.4,164.3 L212.4,164.5 L227.1,164.5 L227.1,162.6 L241.8,162.6 L241.8,163.1 L256.5,163.1 L256.5,154.9 L271.2,154.9 L271.2,147.3 L285.9,147.3 L285.9,53.4 L300.6,53.4 L300.6,30.9 L315.3,30.9 L315.3,180.5 L330.0,180.5 L330.0,182.0 Z"/><path class="s-id-l" d="M36.0,182.0 L36.0,182.0 L50.7,182.0 L50.7,182.0 L65.4,182.0 L65.4,181.3 L80.1,181.3 L80.1,176.3 L94.8,176.3 L94.8,169.3 L109.5,169.3 L109.5,163.5 L124.2,163.5 L124.2,161.6 L138.9,161.6 L138.9,161.5 L153.6,161.5 L153.6,160.0 L168.3,160.0 L168.3,163.1 L183.0,163.1 L183.0,164.5 L197.7,164.5 L197.7,164.3 L212.4,164.3 L212.4,164.5 L227.1,164.5 L227.1,162.6 L241.8,162.6 L241.8,163.1 L256.5,163.1 L256.5,154.9 L271.2,154.9 L271.2,147.3 L285.9,147.3 L285.9,53.4 L300.6,53.4 L300.6,30.9 L315.3,30.9 L315.3,180.5 L330.0,180.5 L330.0,182.0"/><line class="vthr" x1="116.9" x2="116.9" y1="16" y2="182.0"/><text class="vl" x="121.9" y="25">umbral 95 % ID<tspan x="121.9" dy="12">acepta 48,6 % de Kaggle</tspan></text><text class="vd" x="307.9" y="23.9" text-anchor="middle">FishNet</text><text class="vd" x="111.0" y="70.5" text-anchor="end">Kaggle</text><rect class="vhit" x="36.0" y="16" width="14.7" height="166.0" data-bin="0,00–0,05" data-id="0,0" data-ood="0,0"/><rect class="vhit" x="50.7" y="16" width="14.7" height="166.0" data-bin="0,05–0,10" data-id="0,0" data-ood="0,1"/><rect class="vhit" x="65.4" y="16" width="14.7" height="166.0" data-bin="0,10–0,15" data-id="0,1" data-ood="7,0"/><rect class="vhit" x="80.1" y="16" width="14.7" height="166.0" data-bin="0,15–0,20" data-id="1,0" data-ood="17,7"/><rect class="vhit" x="94.8" y="16" width="14.7" height="166.0" data-bin="0,20–0,25" data-id="2,3" data-ood="18,9"/><rect class="vhit" x="109.5" y="16" width="14.7" height="166.0" data-bin="0,25–0,30" data-id="3,3" data-ood="14,5"/><rect class="vhit" x="124.2" y="16" width="14.7" height="166.0" data-bin="0,30–0,35" data-id="3,7" data-ood="11,1"/><rect class="vhit" x="138.9" y="16" width="14.7" height="166.0" data-bin="0,35–0,40" data-id="3,7" data-ood="6,9"/><rect class="vhit" x="153.6" y="16" width="14.7" height="166.0" data-bin="0,40–0,45" data-id="4,0" data-ood="5,0"/><rect class="vhit" x="168.3" y="16" width="14.7" height="166.0" data-bin="0,45–0,50" data-id="3,4" data-ood="3,7"/><rect class="vhit" x="183.0" y="16" width="14.7" height="166.0" data-bin="0,50–0,55" data-id="3,2" data-ood="3,0"/><rect class="vhit" x="197.7" y="16" width="14.7" height="166.0" data-bin="0,55–0,60" data-id="3,2" data-ood="1,9"/><rect class="vhit" x="212.4" y="16" width="14.7" height="166.0" data-bin="0,60–0,65" data-id="3,2" data-ood="1,5"/><rect class="vhit" x="227.1" y="16" width="14.7" height="166.0" data-bin="0,65–0,70" data-id="3,5" data-ood="1,5"/><rect class="vhit" x="241.8" y="16" width="14.7" height="166.0" data-bin="0,70–0,75" data-id="3,4" data-ood="1,3"/><rect class="vhit" x="256.5" y="16" width="14.7" height="166.0" data-bin="0,75–0,80" data-id="4,9" data-ood="1,2"/><rect class="vhit" x="271.2" y="16" width="14.7" height="166.0" data-bin="0,80–0,85" data-id="6,3" data-ood="0,9"/><rect class="vhit" x="285.9" y="16" width="14.7" height="166.0" data-bin="0,85–0,90" data-id="23,2" data-ood="1,5"/><rect class="vhit" x="300.6" y="16" width="14.7" height="166.0" data-bin="0,90–0,95" data-id="27,3" data-ood="2,2"/><rect class="vhit" x="315.3" y="16" width="14.7" height="166.0" data-bin="0,95–1,00" data-id="0,3" data-ood="0,0"/></svg></div></div>
-  <div class="viz-axis">max-softmax · eje vertical: % de las filas de cada conjunto, bins de 0,05</div>
-  <div class="viz-tip" role="status" aria-live="polite" hidden></div>
-  <figcaption>Las 3 semillas agregadas: 2.258 filas ID y 1.336 OOD por semilla. El umbral es el que conserva el 95 % de los peces de FishNet; la fracción de Kaggle que lo supera es el FPR@95. El ResNet reparte a los peces de Kaggle casi como a los suyos; el ViT los empuja hacia confianza baja.</figcaption>
-  <details class="viz-table"><summary>Ver como tabla</summary>
-    <div class="tw"><table>
-      <thead><tr><th>max-softmax</th><th class="num">ResNet · ID</th><th class="num">ResNet · OOD</th><th class="num">ViT · ID</th><th class="num">ViT · OOD</th></tr></thead>
-      <tbody><tr><td>0,00–0,05</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td></tr><tr><td>0,05–0,10</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">0,1</td></tr><tr><td>0,10–0,15</td><td class="num">0,1</td><td class="num">0,0</td><td class="num">0,1</td><td class="num">7,0</td></tr><tr><td>0,15–0,20</td><td class="num">1,3</td><td class="num">1,2</td><td class="num">1,0</td><td class="num">17,7</td></tr><tr><td>0,20–0,25</td><td class="num">3,8</td><td class="num">5,1</td><td class="num">2,3</td><td class="num">18,9</td></tr><tr><td>0,25–0,30</td><td class="num">5,2</td><td class="num">9,0</td><td class="num">3,3</td><td class="num">14,5</td></tr><tr><td>0,30–0,35</td><td class="num">6,3</td><td class="num">11,5</td><td class="num">3,7</td><td class="num">11,1</td></tr><tr><td>0,35–0,40</td><td class="num">6,3</td><td class="num">10,6</td><td class="num">3,7</td><td class="num">6,9</td></tr><tr><td>0,40–0,45</td><td class="num">6,1</td><td class="num">10,8</td><td class="num">4,0</td><td class="num">5,0</td></tr><tr><td>0,45–0,50</td><td class="num">6,0</td><td class="num">9,6</td><td class="num">3,4</td><td class="num">3,7</td></tr><tr><td>0,50–0,55</td><td class="num">4,8</td><td class="num">8,8</td><td class="num">3,2</td><td class="num">3,0</td></tr><tr><td>0,55–0,60</td><td class="num">4,8</td><td class="num">7,9</td><td class="num">3,2</td><td class="num">1,9</td></tr><tr><td>0,60–0,65</td><td class="num">4,7</td><td class="num">6,1</td><td class="num">3,2</td><td class="num">1,5</td></tr><tr><td>0,65–0,70</td><td class="num">4,5</td><td class="num">4,6</td><td class="num">3,5</td><td class="num">1,5</td></tr><tr><td>0,70–0,75</td><td class="num">4,3</td><td class="num">4,4</td><td class="num">3,4</td><td class="num">1,3</td></tr><tr><td>0,75–0,80</td><td class="num">4,9</td><td class="num">4,6</td><td class="num">4,9</td><td class="num">1,2</td></tr><tr><td>0,80–0,85</td><td class="num">6,5</td><td class="num">3,4</td><td class="num">6,3</td><td class="num">0,9</td></tr><tr><td>0,85–0,90</td><td class="num">12,9</td><td class="num">1,7</td><td class="num">23,2</td><td class="num">1,5</td></tr><tr><td>0,90–0,95</td><td class="num">14,5</td><td class="num">0,8</td><td class="num">27,3</td><td class="num">2,2</td></tr><tr><td>0,95–1,00</td><td class="num">2,9</td><td class="num">0,0</td><td class="num">0,3</td><td class="num">0,0</td></tr></tbody>
-    </table></div>
-  </details>
-</figure>
-
-  <div class="col">
-  <p>Con el umbral que deja pasar el 95 % de sus propios peces, <strong>el ResNet acepta el 94 % de los peces ajenos y el ViT el 49 %</strong> —y baja al 27 % usando una medida de confianza mejor, la energía. La diferencia en AUROC es de +0,21 con un intervalo que ni se acerca al cero. Es el resultado más nítido de toda la comparación.</p>
-  <p>Al revés no informa nada: los modelos entrenados en Kaggle separan perfectamente los recortes de FishNet, con AUROC 1,000. Un pez de estudio y una cubierta de barco de noche están tan lejos que cualquier modelo los distingue.</p>
-
-  <h3>La confianza como porcentaje: no sirve tal cual</h3>
-  <p>Otra cosa es si el «89 %» que muestra el modelo significa que acierta 89 veces de 100. No. Y el detalle es interesante: se equivoca <strong>en direcciones opuestas según la clase</strong>. Con las personas es demasiado modesto (dice 0,88 y acierta 0,99), y con los peces demasiado confiado (dice 0,64 y acierta 0,47). En el promedio ambos errores se cancelan y el problema queda escondido.</p>
-  <p>El arreglo estándar es ajustar un único número, la «temperatura», que sube o baja toda la confianza a la vez. Aquí no puede funcionar, porque los dos errores van en sentido contrario. Peor aún: la temperatura ajustada en validación <em>empeora</em> el resultado en prueba, porque las dos particiones no se parecen —la validación tiene 91 % de cámaras nuevas y la prueba 69 %—. La lección práctica: <strong>la confianza habría que recalibrarla en el sitio donde se despliegue</strong>, y con algo más flexible que un solo número.</p>
-  </div>
+<section>
+<h2>7 · Decir «no sé»</h2>
+<p><strong>Criterio:</strong> si la energía de la salida (Liu et al., 2020) es más baja que la del 95 % de los
+peces de validación, el modelo responde «no sé». El umbral se fija en validación. Medimos la separación
+con el AUROC (1 = separa perfecto lo conocido de lo nuevo; 0,5 = no separa).</p>
+<div class="tw"><table>
+<thead><tr><th>Prueba</th><th class="num">ResNet-50</th><th class="num">ViT-B/16</th></tr></thead>
+<tbody>
+<tr><td class="name">AUROC, peces de Kaggle frente a la prueba de FishNet sin personas</td><td class="num">0,766</td><td class="num">0,926</td></tr>
+<tr><td class="name">Peces de Kaggle aceptados con el umbral del 95 %</td><td class="num">84 %</td><td class="num">27 %</td></tr>
+<tr><td class="name">AUROC, 45 fotos de reineta, merluza y congrio</td><td class="num">0,639</td><td class="num">0,801</td></tr>
+<tr><td class="name">Fotos chilenas rechazadas</td><td class="num">10 %</td><td class="num">32 %</td></tr>
+</tbody></table></div>
+<p>Las 45 fotos chilenas son de iNaturalist con licencia CC0, CC BY o CC BY-NC (créditos en
+<code>data/chile_creditos.csv</code>). Lo correcto frente a ellas es «no sé». El ViT lo dice más seguido, pero
+cuando ninguno rechaza, casi siempre responden «atún aleta amarilla». Es una prueba cualitativa: son
+fotos de peces en la mano o sobre una mesa, así que parte de lo detectado es el cambio de tipo de foto.
+Además, la confianza que muestran los modelos no está calibrada: es baja en personas y demasiado alta en
+peces, y un ajuste de temperatura único no lo corrige.</p>
 </section>
 
-<!-- 8 -->
-<section id="s8">
-  <h2><span class="n">08</span>Cuánto cuesta cada uno</h2>
-  <div class="col">
-  <p>El ViT es más pesado: 3,6 veces más parámetros y 4,1 veces más cómputo. Medimos la inferencia en el escenario que importa, un PC sin tarjeta gráfica, y también en GPU por lotes.</p>
-  </div>
-
-  <figure class="viz" id="fig-vel">
-  <div class="viz-head">
-    <div class="viz-title">En CPU, el ViT-B/16 da +0,041 de macro-F1 a cambio de ×2,7 de latencia</div>
-  </div>
-  <svg viewBox="0 0 420 280" role="img" aria-label="macro-F1 contra latencia de CPU: ResNet-50 y ViT-B/16, con ViT-B/32 marcado en el eje"><line class="vg" x1="50" x2="406" y1="213.3" y2="213.3"/><text class="vt" x="42" y="217.3" text-anchor="end">0,30</text><line class="vg" x1="50" x2="406" y1="146.4" y2="146.4"/><text class="vt" x="42" y="150.4" text-anchor="end">0,35</text><line class="vg" x1="50" x2="406" y1="79.5" y2="79.5"/><text class="vt" x="42" y="83.5" text-anchor="end">0,40</text><text class="vt" x="50.0" y="257" text-anchor="middle">0</text><text class="vt" x="118.5" y="257" text-anchor="middle">25</text><text class="vt" x="186.9" y="257" text-anchor="middle">50</text><text class="vt" x="255.4" y="257" text-anchor="middle">75</text><text class="vt" x="323.8" y="257" text-anchor="middle">100</text><text class="vt" x="392.3" y="257" text-anchor="middle">125</text><line class="vb" x1="50" x2="406" y1="240.0" y2="240.0"/><text class="vt" x="228.0" y="274" text-anchor="middle">ms por imagen · CPU, batch 1, mediana</text><text class="vt" x="4" y="24">macro-F1 · test limpio</text><line class="vcon" x1="168.6" y1="143.7" x2="374.6" y2="88.5"/><line class="vci" x1="168.6" x2="168.6" y1="205.1" y2="99.8"/><line class="vci" x1="163.6" x2="173.6" y1="205.1" y2="205.1"/><line class="vci" x1="163.6" x2="173.6" y1="99.8" y2="99.8"/><circle class="vpt" cx="168.6" cy="143.7" r="5"/><text class="vd" x="178.6" y="161.7" text-anchor="start">ResNet-50</text><text class="vt" x="178.6" y="178.7" text-anchor="start">23,5 M · 4,1 GMACs</text><circle class="vhot" cx="168.6" cy="143.7" r="14" tabindex="0" data-t="ResNet-50" data-a="43,3 ms mediana · p95 45,3 ms" data-b="macro-F1 0,352 [0,306 · 0,385]" data-c="23,5 M params · 4,1 GMACs"/><line class="vci" x1="374.6" x2="374.6" y1="148.2" y2="47.6"/><line class="vci" x1="369.6" x2="379.6" y1="148.2" y2="148.2"/><line class="vci" x1="369.6" x2="379.6" y1="47.6" y2="47.6"/><circle class="vpt" cx="374.6" cy="88.5" r="5"/><text class="vd" x="364.6" y="67.5" text-anchor="end">ViT-B/16</text><text class="vt" x="364.6" y="84.5" text-anchor="end">85,8 M · 16,8 GMACs</text><circle class="vhot" cx="374.6" cy="88.5" r="14" tabindex="0" data-t="ViT-B/16" data-a="118,5 ms mediana · p95 123,5 ms" data-b="macro-F1 0,393 [0,349 · 0,424]" data-c="85,8 M params · 16,8 GMACs"/><path class="v32" d="M163.9,231.0 l-5,9 h10 Z"/><text class="vt" x="172.9" y="236.0">ViT-B/32 · sin entrenar (E9)</text><circle class="vhot" cx="163.9" cy="235.0" r="12" tabindex="0" data-t="ViT-B/32" data-a="41,6 ms mediana · p95 44,0 ms" data-b="sin entrenar en FishNet (E9)" data-c="87,5 M params · 4,4 GMACs"/></svg>
-  <div class="viz-tip" role="status" aria-live="polite" hidden></div>
-  <figcaption>Macro-F1 del test limpio de FishNet con IC95 de bootstrap por secuencias; latencia mediana por imagen en un i5-12400F con 6 hilos. Los IC se solapan, pero la comparación pareada sobre las mismas 612 secuencias no cruza cero (IC95 [+0,007 · +0,077]): solaparse no significa empatar. Los valores exactos están en la tabla de arriba.</figcaption>
-</figure>
-
-  <div class="col">
-  <p>En CPU, cada pez cuesta 43 ms con el ResNet y 119 ms con el ViT: unos 20 peces por segundo contra 8. La foto típica de FishNet trae 5 peces, así que se clasifica entera en 0,25 s o en 0,6 s.</p>
-  <p>Lo importante es que <strong>esa diferencia no cambia qué se puede hacer</strong>. Para monitoreo con fotos, los dos alcanzan de sobra en un PC corriente. Para video continuo a 30 cuadros por segundo, ninguno alcanza en CPU y los dos alcanzan en GPU. Si ningún escenario se vuelve posible o imposible según la elección, entonces la velocidad no decide, y a igualdad de condiciones gana la calidad: <strong>elegimos ViT-B/16</strong>, por sus 4 puntos de macro-F1 y, sobre todo, por su capacidad de rechazar lo que no conoce.</p>
-  <p>Queda un experimento pendiente que sí podría cambiar la decisión: <strong>ViT-B/32</strong>, una variante que cuesta lo mismo que el ResNet (42 ms en CPU). Si conservara la ventaja del ViT, tendría la calidad de uno al precio del otro. No está medido, y su preentrenamiento es 5 puntos peor, así que no se puede dar por hecho.</p>
-  </div>
+<section>
+<h2>8 · Costo</h2>
+<p>En un PC sin GPU (i5-12400F), clasificar un pez toma 43 ms con el ResNet-50 y 119 ms con el ViT-B/16.
+Una foto típica de FishNet tiene 5 peces: 0,2 s contra 0,6 s. Para fotos de desembarque, los dos
+alcanzan; para video continuo, ninguno alcanza en CPU y los dos alcanzan en GPU. La velocidad no cambia
+lo que se puede hacer.</p>
 </section>
 
-<!-- 9 -->
-<section id="s9">
-  <h2><span class="n">09</span>La demo</h2>
-  <div class="col">
-  <p>La demo se levanta con <code>python -m src.demo</code> y no necesita instalar nada nuevo: es un servidor de la biblioteca estándar de Python con una página propia. Está pensada para <em>mostrar el experimento</em>, no para lucir un clasificador: la misma caja pasa por las dos arquitecturas y se ven lado a lado.</p>
-  <p>Se puede tocar una de las cajas ya anotadas de una foto de prueba, marcar una caja arrastrando sobre la imagen, clasificar la foto completa o subir una propia. De cada modelo se muestran sus tres mejores respuestas, su nivel de confianza, si acepta o dice <strong>no sé</strong>, y cuánto tardó.</p>
-  <p>La página declara sus propios límites, que es lo que más fácil se calla en una demo: no hay detector, y los porcentajes no son probabilidades calibradas. Puesta a prueba, una foto de Kaggle es rechazada por ambos modelos, tal como predice la medición de la sección 7.</p>
-  </div>
+<section>
+<h2>9 · Límites y próximos pasos</h2>
+<ul>
+<li><strong>Barcos nuevos.</strong> El rendimiento cae en cámaras no vistas. Próximo paso: entrenar y evaluar
+con un reparto por cámara.</li>
+<li><strong>Conteo.</strong> El objetivo original incluía contar peces amontonados. Falta un detector,
+entrenado con las cajas de FishNet, antes del clasificador; se debe evaluar por separado.</li>
+<li><strong>Especies chilenas.</strong> Sin fotos de la caleta, el sistema no se puede usar allí.</li>
+<li><strong>Especies raras.</strong> Cuatro especies tienen menos de 25 cajas de prueba; su F1 es poco confiable.</li>
+<li><strong>Privacidad.</strong> FishNet muestra tripulantes (54 % del entrenamiento son personas). No
+redistribuimos imágenes y las fotos de las láminas llevan las caras pixeladas.</li>
+</ul>
 </section>
 
-<!-- 10 -->
-<section id="s10">
-  <h2><span class="n">10</span>Límites, riesgos y qué falta</h2>
-  <div class="col">
-  <ul>
-    <li><strong>Brecha de dominio total con el caso de uso.</strong> Cero solapamiento de especies con la pesca chilena. Sin datos de la Caleta Portales esto no se despliega; lo que sí se traslada es el método.</li>
-    <li><strong>No hay conteo de extremo a extremo.</strong> Contamos «dadas las cajas»; poner un detector es trabajo aparte y hay que evaluarlo aparte.</li>
-    <li><strong>Trece clases con respaldo.</strong> El modelo predice 20 clases, pero solo 13 tienen suficientes ejemplos de prueba limpios para reportar un número creíble. Cuatro especies quedan con 7, 11, 12 y 22 ejemplos: se declaran «sin potencia».</li>
-    <li><strong>La confianza no está calibrada</strong>, y recalibrarla exige datos del lugar de despliegue.</li>
-    <li><strong>Privacidad.</strong> FishNet son cámaras de vigilancia a bordo: más de la mitad del entrenamiento son tripulantes identificables. No redistribuimos imágenes y no entrenamos nada sobre personas más allá de distinguir «esto no es un pez». Un despliegue real sobre trabajadores exigiría su consentimiento antes que cualquier modelo.</li>
-    <li><strong>Lo que falta:</strong> el experimento ViT-B/32 (sección 8) y, si hubiera tiempo, un ResNet con preentrenamiento antiguo para separar cuánto de la brecha es arquitectura y cuánto es receta.</li>
-  </ul>
-
-  <h3>Lo que comprobamos para creerle a estos números</h3>
-  <p>Un resultado cercano al 100 % obliga a descartar que venga de una fuga. Corrimos una auditoría aparte (<code>scripts/auditoria.py</code>) que no confía en el código que hizo los splits, sino que vuelve a mirar los datos:</p>
-  <ul>
-    <li><strong>Ningún grupo, imagen ni secuencia cruza particiones</strong> en lo que reportamos. En el split oficial de FishNet sí: 6.048 cajas de prueba comparten secuencia con entrenamiento y 7 imágenes aparecen enteras en ambos lados. Nuestra purga elimina las dos cosas.</li>
-    <li><strong>Comparamos píxeles, no etiquetas.</strong> Cada imagen de prueba contra todas las de entrenamiento, incluidas sus 8 rotaciones y espejos. En FishNet, el 38 % de las cajas que purgamos tiene un casi gemelo en entrenamiento, contra el 2,6 % de las que conservamos: la purga funciona. Quitar ese 2,6 % residual cambia el resultado en 0,003 y la ventaja del ViT sigue en +0,042.</li>
-    <li><strong>El 100 % de Kaggle no es mérito del modelo.</strong> Un clasificador trivial —mirar la miniatura de 32×32 píxeles más parecida del entrenamiento y copiar su clase— ya acierta el 83 %. En FishNet ese mismo truco solo llega al 56 %, frente al 82-85 % de las redes: ahí sí aportan.</li>
-    <li><strong>Sobreajuste medido.</strong> En Kaggle no hay brecha entre entrenamiento y prueba porque el problema está saturado. En FishNet la brecha es grande: el ResNet baja de 0,78 a 0,34 de macro-F1 y el ViT de 0,93 a 0,37. Las dos memorizan, el ViT más, y aun así generaliza mejor.</li>
-    <li><strong>La comparación no está inclinada.</strong> Los dos modelos recibieron exactamente los mismos pasos de entrenamiento (9.104), el mismo tamaño de lote y las mismas semillas; la época elegida fue siempre la mejor en validación, nunca en prueba; las métricas recalculadas desde las salidas guardadas coinciden con las reportadas; y la peor semilla del ViT (0,379) sigue por encima de la mejor del ResNet (0,363).</li>
-  </ul>
-  </div>
+<section>
+<h2>10 · Reproducción</h2>
+<p>Código, configuraciones, repartos, métricas por semilla y pruebas en
+<a href="https://github.com/Nirvesta04/CaletaScan">github.com/Nirvesta04/CaletaScan</a>. Todo lo posterior al
+entrenamiento trabaja sobre las salidas guardadas y no usa la GPU. La demo (<code>python -m src.demo</code>)
+pasa la misma caja por las dos arquitecturas y muestra la especie, la confianza, si responde «no sé» y
+el tiempo de cada una; no necesita instalar nada fuera de los requisitos.</p>
+<div class="fx">python scripts/build_splits.py
+python -m scripts.entrenar_pares            <span class="c"># E10-E12; --parar para detener</span>
+python -m scripts.analisis_final            <span class="c"># tablas de este informe</span>
+python -m scripts.interpret_fishnet
+python -m scripts.chile_ood
+python -m src.demo                          <span class="c"># demo local en el puerto 8000</span>
+python -m tests.test_stats &amp;&amp; python -m tests.test_calibrate</div>
 </section>
 
-<!-- 11 -->
-<section id="s11">
-  <h2><span class="n">11</span>Cómo reproducirlo</h2>
-  <div class="col">
-  <p>Cada experimento es un archivo de configuración; el entrenamiento se reanuda solo si se corta a mitad. Todo lo que viene después del entrenamiento trabaja sobre las salidas guardadas, así que se recalcula en segundos sin volver a tocar la GPU.</p>
-  </div>
-  <div class="fx">python scripts/build_splits.py                     <span class="c">// reparte los datos, idempotente</span>
-python -m src.train --config configs/e5_vit_b_16_fishnet.yaml
-python -m src.evaluate --run e5_vit_b_16_fishnet --compare e4_resnet50_fishnet --limpio
-python -m src.interpret                            <span class="c">// dónde mira cada modelo</span>
-python -m src.calibrate --inferir && python -m src.calibrate
-python -m src.speed                                <span class="c">// latencias y tamaños</span>
-python -m src.demo                                 <span class="c">// la demo</span>
-python -m tests.test_stats && python -m tests.test_calibrate</div>
-  <div class="col">
-  <p>Las dos últimas líneas son las pruebas de la maquinaria estadística: 15 y 14 comprobaciones contra <code>scikit-learn</code> y contra casos de respuesta conocida. Encontraron dos errores reales antes de que llegaran a los resultados.</p>
-  <p>El detalle completo del protocolo está en <code>docs/plan-modelos.html</code>, y todo sobre los datos en <code>docs/data-card.html</code>.</p>
-  </div>
+<section>
+<h2>Referencias</h2>
+<ol class="refs">
+<li>Abnar, S. y Zuidema, W. (2020). Quantifying attention flow in transformers. ACL.</li>
+<li>Chefer, H., Gur, S. y Wolf, L. (2021). Transformer interpretability beyond attention visualization. CVPR.</li>
+<li>Dosovitskiy, A. et al. (2021). An image is worth 16x16 words: Transformers for image recognition at scale. ICLR.</li>
+<li>He, K. et al. (2016). Deep residual learning for image recognition. CVPR.</li>
+<li>Kapoor, S. y Narayanan, A. (2023). Leakage and the reproducibility crisis in machine-learning-based science. Patterns.</li>
+<li>Kay, J. y Merrifield, M. (2021). The Fishnet Open Images Database. arXiv:2106.09178.</li>
+<li>Liu, W. et al. (2020). Energy-based out-of-distribution detection. NeurIPS.</li>
+<li>Liu, Z. et al. (2021). Swin Transformer: Hierarchical vision transformer using shifted windows. ICCV.</li>
+<li>Liu, Z. et al. (2022). A ConvNet for the 2020s. CVPR.</li>
+<li>Menon, A. K. et al. (2021). Long-tail learning via logit adjustment. ICLR.</li>
+<li>Selvaraju, R. R. et al. (2017). Grad-CAM: Visual explanations from deep networks via gradient-based localization. ICCV.</li>
+<li>Touvron, H. et al. (2021). Training data-efficient image transformers &amp; distillation through attention. ICML.</li>
+<li>Ulucan, O., Karakaya, D. y Turkan, M. (2020). A large-scale dataset for fish segmentation and classification. ASYU.</li>
+</ol>
 </section>
-
-</main>
-</div>
-
-<footer>
-  Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · informe v1.0, 20-sep-2026<br>
-  Todas las cifras se midieron sobre este repositorio y esta máquina (RTX 3060 Ti, i5-12400F, torch 2.6.0+cu124).<br>
-  Protocolo completo en <code>docs/plan-modelos.html</code> · datos en <code>docs/data-card.html</code>
-</footer>
-</div>
-<script>
-(function(){
-  var fig=document.getElementById('fig-ood'); if(!fig) return;
-  var tip=fig.querySelector('.viz-tip');
-  function row(cls,val,lab){var d=document.createElement('div');var k=document.createElement('i');k.className='tk '+cls;
-    var b=document.createElement('b');b.textContent=val+' %';d.appendChild(k);d.appendChild(b);d.appendChild(document.createTextNode(lab));return d;}
-  function show(r){
-    fig.querySelectorAll('.vhit.on').forEach(function(e){e.classList.remove('on');}); r.classList.add('on');
-    tip.textContent='';
-    var h=document.createElement('div');h.textContent=r.closest('.viz-panel').querySelector('.viz-ptitle').textContent+' · max-softmax '+r.dataset.bin;
-    tip.appendChild(h); tip.appendChild(row('k-id',r.dataset.id,'FishNet (ID)')); tip.appendChild(row('k-ood',r.dataset.ood,'Kaggle (OOD)'));
-    tip.hidden=false;
-    var fb=fig.getBoundingClientRect(), rb=r.getBoundingClientRect(), tw=tip.offsetWidth;
-    var x=rb.left-fb.left+rb.width/2+12; if(x+tw>fb.width-8) x=rb.left-fb.left+rb.width/2-tw-12;
-    tip.style.left=Math.max(8,x)+'px'; tip.style.top=(rb.top-fb.top+8)+'px';
-  }
-  function hide(){tip.hidden=true; fig.querySelectorAll('.vhit.on').forEach(function(e){e.classList.remove('on');});}
-  fig.querySelectorAll('svg').forEach(function(svg){
-    var hits=[].slice.call(svg.querySelectorAll('.vhit')), cur=-1;
-    hits.forEach(function(r,i){r.addEventListener('pointerenter',function(){cur=i;show(r);});});
-    svg.addEventListener('pointerleave',hide);
-    svg.addEventListener('focus',function(){cur=cur<0?0:cur;show(hits[cur]);});
-    svg.addEventListener('blur',hide);
-    svg.addEventListener('keydown',function(e){
-      if(e.key==='ArrowRight'){cur=Math.min(hits.length-1,cur+1);show(hits[cur]);e.preventDefault();}
-      else if(e.key==='ArrowLeft'){cur=Math.max(0,cur-1);show(hits[cur]);e.preventDefault();}
-      else if(e.key==='Escape'){hide();}
-    });
-  });
-})();
-</script><script>
-(function(){
-  var fig=document.getElementById('fig-vel'); if(!fig) return;
-  var tip=fig.querySelector('.viz-tip');
-  function show(el){
-    tip.textContent='';
-    var h=document.createElement('div'); var b=document.createElement('b'); b.textContent=el.dataset.t; h.appendChild(b); tip.appendChild(h);
-    ['a','b','c'].forEach(function(k){var d=document.createElement('div'); d.textContent=el.dataset[k]; tip.appendChild(d);});
-    tip.hidden=false;
-    var fb=fig.getBoundingClientRect(), rb=el.getBoundingClientRect(), tw=tip.offsetWidth;
-    var x=rb.right-fb.left+8; if(x+tw>fb.width-8) x=rb.left-fb.left-tw-8;
-    tip.style.left=Math.max(8,x)+'px'; tip.style.top=Math.max(8,rb.top-fb.top-10)+'px';
-  }
-  function hide(){tip.hidden=true;}
-  fig.querySelectorAll('.vhot').forEach(function(el){
-    el.addEventListener('pointerenter',function(){show(el);}); el.addEventListener('pointerleave',hide);
-    el.addEventListener('focus',function(){show(el);}); el.addEventListener('blur',hide);
-  });
-})();
-</script>
+</div></body></html>

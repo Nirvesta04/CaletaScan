@@ -185,7 +185,7 @@ El split que publica FishNet reparte **foto por foto**, sin mirar a qué secuenc
 cada una. Resultado: el fotograma 5 de un lance queda en entrenamiento y el fotograma 7 del
 **mismo lance** queda en prueba. Son casi la misma imagen.
 
-- **44,5 %** de la prueba oficial comparte secuencia con el entrenamiento.
+- **45,8 %** de las cajas de prueba oficiales (39,1 % de las imágenes) comparte secuencia con el entrenamiento, en nuestro subconjunto. El 44,5 % que se dijo en el Avance era del archivo oficial completo.
 - Correlación de píxeles entre dos fotogramas del mismo lance: **0,87**. Entre dos fotos
   cualquiera: **0,03**.
 - Usar ese reparto sin corregir **infla el resultado ~80 %**:

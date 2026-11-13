@@ -137,9 +137,9 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   <h1>Data Card</h1>
   <p class="sub">Qué contienen los datos con los que se entrenó, de dónde salieron, qué decisiones de curación tomamos nosotros, y qué no se puede concluir con ellos.</p>
   <div class="mastmeta">
-    <span><b>Versión</b> · 1.0 · 19-sep-2026</span>
+    <span><b>Versión</b> · 1.1 · 12-nov-2026</span>
     <span><b>Cubre</b> · data/splits/*.csv</span>
-    <span><b>Fuentes</b> · Kaggle Fish · FishNet Open Images</span>
+    <span><b>Fuentes</b> · Kaggle Fish · FishNet Open Images · iNaturalist (solo prueba)</span>
     <span><b>Licencias</b> · CC BY 4.0 · CC BY-SA 4.0</span>
   </div>
 </header>
@@ -198,7 +198,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   <h2><span class="n">02</span>Fuentes, procedencia y licencias</h2>
   <div class="tw">
     <table>
-      <caption>Las tres licencias son distintas y se declaran por separado. <strong>CC BY-SA es vírica:</strong> un derivado combinado que se redistribuya arrastraría ShareAlike sobre el conjunto.</caption>
+      <caption>Las licencias son distintas y se declaran por separado. <strong>CC BY-SA es vírica:</strong> un derivado combinado que se redistribuya arrastraría ShareAlike sobre el conjunto.</caption>
       <thead><tr><th>Fuente</th><th>Qué es</th><th>Cómo se recolectó</th><th>Licencia</th></tr></thead>
       <tbody>
         <tr><td class="name">Kaggle · A Large Scale Fish Dataset<br><span class="mono" style="font-size:12px">Ulucan, Karakaya &amp; Turkan, ASYU 2020</span></td>
@@ -209,6 +209,10 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
             <td class="name">143.818 imágenes y 549.209 cajas anotadas; usamos 20.002 imágenes</td>
             <td class="name">Monitoreo electrónico a bordo: cámaras fijas en cubierta de barcos pesqueros, grabando la faena</td>
             <td class="name">CC BY-SA 4.0</td></tr>
+        <tr><td class="name">iNaturalist · fotos de especies chilenas<br><span class="mono" style="font-size:12px">45 observaciones, créditos en data/chile_creditos.csv</span></td>
+            <td class="name">15 fotos de reineta, 15 de merluza y 15 de congrio, solo para probar el «no sé»; no se entrena con ellas</td>
+            <td class="name">Fotos de observadores, en general peces en la mano, en una mesa o en la orilla</td>
+            <td class="name">CC0, CC BY o CC BY-NC según la foto</td></tr>
         <tr><td class="name">OzFish</td>
             <td class="name">No descargado</td>
             <td class="name">Video submarino (BRUVS) en Australia; el portal exige API por token y devolvió 401/404</td>
@@ -267,7 +271,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <li>Tamaño de caja: lado corto p5 45 px, mediana 130 px, p95 322 px. Razón de aspecto p1 0,32 y p99 3,89 — de ahí que el preproceso deforme a 224×224 en vez de recortar a cuadrado.</li>
     <li>Resolución de las imágenes: variable, entre 1.200×675 y 1.920×1.030 px; la más frecuente es 1.280×720.</li>
     <li><strong>Oclusión:</strong> solo el 26,4 % de los recortes no solapa con ninguna otra caja; el 42,6 % tiene más del 30 % de su área tapada por otras.</li>
-    <li>De las 53 cámaras que aparecen en test, <strong>31 también están en train</strong>; 22 son cámaras que el modelo nunca vio.</li>
+    <li>De las 53 cámaras que aparecen en test, <strong>31 también están en train</strong>; 22 son cámaras que el modelo nunca vio. En el test purgado quedan 35 cámaras: <strong>21 no están en train y aportan el 69 % de las cajas</strong> (§7, problema 4).</li>
   </ul>
   </div>
 </section>
@@ -284,13 +288,14 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <dt>Qué contiene <code>Other_rare</code></dt><dd>14 taxones: Oilfish (777 cajas), Indo Pacific sailfish (129), Black marlin (83), Sickle pomfret (83), Lancetfish (80), Marlin (57), Pomfret (54), Pelagic stingray (51), Mola mola (6), Roudie scolar (4), y cuatro con una sola caja (Thresher shark, Brama, Snake mackerel, Rainbow runner).</dd>
   </dl>
   <div class="col">
-  <p><strong>Tres clases no son especies y se tratan aparte:</strong></p>
+  <p><strong>Cinco clases no entran en el macro-F1 de especies</strong>, que por eso promedia 15 clases:</p>
   <ul>
     <li><code>Human</code> y <code>No fish</code> son la compuerta operativa —¿esto es un pez o un operario?— y se excluyen del macro-F1 de especies.</li>
     <li><code>Unknown</code> significa «el anotador no pudo identificarlo»: se entrena, pero no promedia dentro del macro-F1 de especies.</li>
     <li><code>Tuna</code> es una superclase ambigua: el recorte <em>es</em> algún atún específico, y el anotador no resolvió cuál. Al evaluar se le da crédito jerárquico.</li>
+    <li><code>Other_rare</code> agrupa 14 taxones distintos, así que no es una especie.</li>
   </ul>
-  <p>Para el informe hay que distinguir siempre entre <strong>clases que el modelo predice</strong> (20) y <strong>clases sobre las que se reporta F1 con respaldo</strong> (13: 11 especies más <code>Tuna</code> y <code>Other_rare</code>). Confundirlas promete una cobertura que el test no sostiene.</p>
+  <p>Hay que distinguir siempre entre <strong>clases que el modelo predice</strong> (20), <strong>especies que promedia el macro-F1</strong> (15) y <strong>clases con soporte suficiente para leer su F1 por separado</strong> (13: 11 especies más <code>Tuna</code> y <code>Other_rare</code>). Las cuatro especies con menos de 30 cajas de test purgado entran en el promedio, pero su F1 individual no es confiable.</p>
   </div>
 </section>
 
@@ -337,7 +342,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
 <section id="s7">
   <h2><span class="n">07</span>Fugas y atajos, medidos</h2>
   <div class="col">
-  <p class="lead">Cuatro problemas que no vienen documentados en las fuentes y que se midieron en este proyecto. Los cuatro cambian cómo hay que leer cualquier número que se reporte sobre estos datos.</p>
+  <p class="lead">Cinco problemas que no vienen documentados en las fuentes y que se midieron en este proyecto. Todos cambian cómo hay que leer cualquier número que se reporte sobre estos datos.</p>
   </div>
 
   <div class="find">
@@ -350,9 +355,9 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
 
   <div class="find">
     <span class="tag">2 · fuga por secuencia · FishNet</span>
-    <h4>El split oficial publicado filtra: el 44,5 % del test comparte secuencia con train</h4>
+    <h4>El split oficial publicado filtra: en nuestro subconjunto, el 45,8 % de las cajas de test comparte secuencia con train</h4>
     <div class="col">
-    <p>3.743 de las 13.097 secuencias del CSV oficial cruzan particiones (28,6 %). En nuestro subconjunto son el 45,8 % de las cajas de test y el 52,5 % de las de val. Los fotogramas de una misma secuencia son casi duplicados: la correlación media entre miniaturas de pares que cruzan train/test es 0,87, contra 0,03 de la línea base.</p>
+    <p>3.743 de las 13.097 secuencias del CSV oficial cruzan particiones (28,6 %), y en el CSV completo el 44,5 % de las cajas de test pertenece a una de ellas. En nuestro subconjunto, que es sobre el que se mide todo, son el 45,8 % de las cajas de test (el 39,1 % de las imágenes) y el 52,5 % de las cajas de val. Los fotogramas de una misma secuencia son casi duplicados: la correlación media entre miniaturas de pares que cruzan train/test es 0,87, contra 0,03 de la línea base.</p>
     <p><strong>Efecto medido:</strong> evaluar en el test oficial infla el macro-F1 alrededor de un 80 % respecto del test purgado. No es una fuga que fabricamos para ilustrar; es la del split publicado.</p>
     <p>Hay además <strong>7 imágenes que aparecen enteras en train y en test</strong>, porque el split oficial se armó caja por caja y no por imagen. La purga por secuencia las elimina también: en el test purgado no queda ninguna caja cuya imagen esté en train.</p>
     </div>
@@ -369,7 +374,15 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   </div>
 
   <div class="find warn">
-    <span class="tag">4 · potencia estadística</span>
+    <span class="tag">4 · barcos repetidos · FishNet</span>
+    <h4>El 31 % del test purgado viene de cámaras que también están en train</h4>
+    <div class="col">
+    <p>La purga por secuencia elimina los casi duplicados, pero no evalúa barcos nuevos: 14 de las 35 cámaras del test purgado aparecen en train. Separando las cajas, en las cámaras nuevas los dos modelos bajan cerca de 0,10 de macro-F1 y la diferencia entre ResNet y ViT deja de distinguirse (<code>runs/analisis_final.json</code>). Un split por cámara mediría directamente la generalización a un barco nuevo; queda como trabajo pendiente.</p>
+    </div>
+  </div>
+
+  <div class="find warn">
+    <span class="tag">5 · potencia estadística</span>
     <h4>Las unidades independientes son 62 y 612, no 1.336 y 7.159</h4>
     <div class="col">
     <p>En Kaggle la unidad es la foto original; en FishNet, la secuencia. Cualquier intervalo o prueba tiene que remuestrear clústeres completos. Con el conteo por imagen, una diferencia de 2 puntos parece significativa cuando no lo es.</p>
@@ -439,6 +452,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
       <li><strong>No se entrena ni se evalúa reconocimiento de personas.</strong> <code>Human</code> se usa solo como compuerta «esto no es un pez» y queda fuera del macro-F1 de especies.</li>
       <li><strong>El uso es académico.</strong> Un sistema así, desplegado sobre trabajadores, es vigilancia laboral: en un despliegue real haría falta consentimiento de la tripulación, y esa conversación es previa a cualquier modelo.</li>
       <li>Las imágenes de Kaggle no tienen personas: son pescado sobre una superficie.</li>
+      <li><strong>Fotos en la presentación.</strong> Las láminas muestran algunas fotos de FishNet. El dataset ya publica las caras pixeladas, pero no siempre; además difuminamos la parte superior de cada caja <code>Human</code> y revisamos cada imagen a mano. El mazo con fotos no se sube al repositorio.</li>
     </ul>
     </div>
   </div>
@@ -458,7 +472,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
 
   <h3>Usos inapropiados</h3>
   <ul>
-    <li><strong>Desplegar en la Caleta Portales</strong> sin recolectar datos locales: cero solapamiento de especies y un dominio visual distinto.</li>
+    <li><strong>Desplegar en la Caleta Portales</strong> sin recolectar datos locales: cero solapamiento de especies y un dominio visual distinto. Con 45 fotos de reineta, merluza y congrio, el ResNet rechazó el 10 % y el ViT el 32 %; el resto lo clasificaron casi siempre como atún aleta amarilla.</li>
     <li><strong>Prometer conteo</strong> a partir de una foto cruda: no hay detector entrenado, y el conteo que se reporta es «dadas las cajas».</li>
     <li><strong>Leer la confianza como probabilidad:</strong> está mal calibrada en las dos direcciones a la vez, y una temperatura no lo arregla.</li>
     <li><strong>Usar el test oficial de FishNet como benchmark</strong> sin purgar por secuencia, o compararse contra números publicados que sí lo usan sin decirlo.</li>
@@ -472,7 +486,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
   <h2><span class="n">11</span>Distribución, mantenimiento y reproducción</h2>
   <div class="col">
   <ul>
-    <li><strong>Qué se versiona:</strong> los CSV de <code>data/splits/</code>, los scripts de descarga y construcción, y los <code>config.yaml</code> y <code>metrics.json</code> de cada corrida. <strong>Qué no:</strong> las imágenes (7,6 GB), los pesos y los logits.</li>
+    <li><strong>Qué se versiona:</strong> los CSV de <code>data/splits/</code>, los scripts de descarga y construcción, y los <code>config.yaml</code> y <code>metrics.json</code> de cada corrida. <strong>Qué no:</strong> las imágenes (7,6 GB), los pesos, los logits, las figuras con fotos (<code>docs/figs_privadas/</code>) y el mazo con fotos (<code>entrega/</code>).</li>
     <li><strong>Mantenimiento:</strong> el grupo G3 durante el semestre 2026-2. Los splits se regeneran de forma idempotente; si cambiaran los datos crudos, los conteos de esta ficha se recalculan con el mismo comando.</li>
     <li><strong>Errores conocidos:</strong> los de §7 y §8, todos medidos y declarados. No se conocen etiquetas corregidas por nosotros: no se tocó ninguna anotación original.</li>
   </ul>
@@ -487,7 +501,7 @@ python -m src.data                         <span style="color:var(--ink-3)"># im
 </div>
 
 <footer>
-  Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · data card v1.0, 19-sep-2026<br>
+  Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · data card v1.1, 12-nov-2026<br>
   Todas las cifras se calcularon sobre <code>data/splits/*.csv</code> y <code>data/raw/fishnet/foid_labels_v100.csv</code>.<br>
   Fuentes bajo CC BY 4.0 (Kaggle) y CC BY-SA 4.0 (FishNet); las imágenes no se redistribuyen.
 </footer>
