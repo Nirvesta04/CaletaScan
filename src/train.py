@@ -41,6 +41,7 @@ from . import data, models
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, "runs")
+STOP_FILE = os.path.join(RUNS, "STOP")   # ver scripts/entrenar_pares.py
 
 DEFAULTS = {
     "model": "resnet50",
@@ -264,6 +265,15 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
                                      if torch.cuda.is_available() else None),
                         "hist": hist, "best": best, "step": step, "epoch": ep}, tmp)
             os.replace(tmp, resume_path)   # atomico: nunca queda medio escrito
+
+            # Parada ordenada: si existe runs/STOP, se corta aqui, con la epoca
+            # ya guardada. La proxima llamada con el mismo config reanuda en la
+            # epoca siguiente sin perder nada.
+            if os.path.exists(STOP_FILE):
+                print("  STOP encontrado: detenido tras la epoca %d, guardada en %s"
+                      % (ep + 1, resume_path), flush=True)
+                data.shutdown_loaders(tl, vl, el)
+                raise SystemExit(3)
 
     # El test se toca UNA sola vez, al final, con el modelo ya elegido en val.
     model.load_state_dict(best["state"])
