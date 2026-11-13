@@ -13,6 +13,8 @@ import os
 import shutil
 import subprocess
 
+from scripts.lecturas import lectura
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, 'runs')
 HTML = os.path.join(ROOT, 'docs', 'informe.html')
@@ -85,24 +87,26 @@ def fila_par(clave, etiqueta):
                                               'sí' if d['distinguible'] else 'no'))
 
 
-def lectura_par(clave, cnn, tr, si_gana, si_empata, si_pierde):
+def lectura_par(clave, cnn, tr):
     d = VT.get(clave)
-    if d is None:
+    t = lectura(clave, d)
+    if t is None:
         return '<strong>%s contra %s:</strong> pendiente de entrenamiento.' % (tr, cnn)
-    if not d['distinguible']:
-        txt = si_empata
-    elif d['delta_medio'] > 0:
-        txt = si_gana
-    else:
-        txt = si_pierde
     return '<strong>%s contra %s (%s, margen %s):</strong> %s' % (
-        tr, cnn, num(d['delta_medio'], 3, True), ic(d['ic95']), txt)
+        tr, cnn, num(d['delta_medio'], 3, True), ic(d['ic95']), t)
 
 
 def variante(v, m):
     return V[v]['modelos'][m]
 
 
+_ln = [lectura(c, VT.get(c)) for c in ('DeiT-S - ResNet-50', 'Swin-T - ConvNeXt-T')]
+PARES_NUEVOS = ('<li>%s</li>' % ' '.join(t for t in _ln if t)) if any(_ln) else (
+    '<li>Los pares de mismo tamaño (DeiT-S) y moderno (ConvNeXt-T contra Swin-T) están pendientes '
+    'de entrenamiento.</li>')
+SEMILLAS_VR = (' La peor semilla del ViT supera a la mejor del ResNet.'
+               if min(M['e5_vit_b_16_fishnet']['por_semilla']) > max(M['e4_resnet50_fishnet']['por_semilla'])
+               else '')
 pe_r, pe_v = A['por_especie']['ResNet-50'], A['por_especie']['ViT-B/16']
 gana = sum(pe_v[k]['f1'] > pe_r[k]['f1'] + 1e-9 for k in pe_r)
 ef = PG_F['energia_en_la_caja']
@@ -132,6 +136,7 @@ prueba limpia de fugas. Lo principal:</p>
 <ol>
 <li>El ViT-B/16 supera al ResNet-50 por {num(P_VR['delta_medio'], 3, True)} de macro-F1, con un margen
 al 95 % de {ic(P_VR['ic95'])} que no incluye el cero.</li>
+{PARES_NUEVOS}
 <li>Esa ventaja se achica al tratar los cuatro atunes como una sola clase y no se distingue en
 barcos que el modelo no vio, que son el {pct(1 - cam['frac_cajas_camara_vista'])} de la prueba.</li>
 <li>El reparto oficial de FishNet tiene fuga: el {pct(fg['frac_cajas'], 1)} de sus cajas de prueba
@@ -221,17 +226,11 @@ se mira la diferencia; se distingue si su margen no incluye el cero.</p>
 {fila_par('Swin-T - ConvNeXt-T', 'Moderno')}
 </tbody></table></div>
 <ul>
-<li>{lectura_par('ViT-B/16 - ResNet-50', 'ResNet-50', 'ViT-B/16',
-   'el transformer gana con preentrenamiento parejo, y la peor semilla del ViT supera a la mejor del ResNet.',
-   'no se distinguen.', 'el ResNet gana.')}</li>
-<li>{lectura_par('DeiT-S - ResNet-50', 'ResNet-50', 'DeiT-S',
-   'un transformer del mismo tamaño también gana: la ventaja no se explica por tamaño.',
-   'con el mismo tamaño la diferencia ya no se distingue: parte de la ventaja del ViT-B/16 venía de ser más grande.',
-   'con el mismo tamaño gana la CNN: la ventaja del ViT-B/16 venía de su tamaño.')}</li>
-<li>{lectura_par('Swin-T - ConvNeXt-T', 'ConvNeXt-T', 'Swin-T',
-   'entre dos arquitecturas modernas del mismo tamaño también gana el transformer.',
-   'entre dos arquitecturas modernas del mismo tamaño no se distinguen: la ventaja de los transformers es contra el ResNet-50, no contra cualquier CNN.',
-   'entre dos arquitecturas modernas, gana la CNN.')}</li>
+<li>{lectura_par('ViT-B/16 - ResNet-50', 'ResNet-50', 'ViT-B/16')}{SEMILLAS_VR}</li>
+<li>{lectura_par('DeiT-S - ResNet-50', 'ResNet-50', 'DeiT-S')}</li>
+<li>{lectura_par('Swin-T - ConvNeXt-T', 'ConvNeXt-T', 'Swin-T')}</li>
+<li>«No se distingue» no significa que los modelos sean iguales: significa que con esta prueba
+no se puede decir cuál es mejor.</li>
 </ul>
 
 <h3>Qué tan firme es la ventaja del ViT-B/16</h3>

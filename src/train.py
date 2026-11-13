@@ -209,6 +209,12 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
             torch.cuda.set_rng_state_all([s.cpu().to(torch.uint8)
                                           for s in ck["rng_cuda"]])
         hist, best, step, ep0 = ck["hist"], ck["best"], ck["step"], ck["epoch"] + 1
+        # El loader de train se vuelve a crear con la misma semilla: sin esto, la
+        # epoca reanudada repetiria el orden de datos de la epoca 1. Se consumen
+        # las permutaciones de las epocas ya hechas para que el orden no se repita.
+        for _ in range(ep0):
+            for _ in tl.sampler:
+                pass
         print("  reanudando desde la epoca %d (mejor hasta ahora: %.4f)"
               % (ep0 + 1, best["f1"]), flush=True)
 
@@ -255,8 +261,10 @@ def run_one(cfg: dict, seed: int, device: str = "cuda",
 
         if resume_path:
             # Se sobrescribe un unico archivo y se borra al terminar la semilla.
-            # Incluye el estado de los RNG para que reanudar de una corrida
-            # cortada de el mismo resultado que una corrida seguida.
+            # Guarda modelo, optimizador, programa de lr, escalador, RNG y la
+            # mejor epoca. Reanudar no da un resultado identico bit a bit al de
+            # una corrida seguida (los workers vuelven a sortear sus aumentos),
+            # pero es la misma receta y el mismo presupuesto de pasos.
             tmp = resume_path + ".tmp"
             torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
                         "sched": sched.state_dict(), "scaler": scaler.state_dict(),

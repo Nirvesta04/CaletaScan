@@ -25,6 +25,8 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu, Pt
 
+from scripts.lecturas import ETIQUETA, lectura
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, 'runs')
 PRIV = os.path.join(ROOT, 'docs', 'figs_privadas')
@@ -210,33 +212,35 @@ def figuras():
     os.makedirs(FIGS, exist_ok=True)
     plt.rcParams['font.family'] = 'Segoe UI'
 
-    # diferencias con su margen, una fila por comparacion
+    def bosque(filas, ruta):
+        """Una fila por diferencia, con su margen al 95 %."""
+        fig, ax = plt.subplots(figsize=(8, 1.2 + 1.0 * len(filas)), dpi=200)
+        for i, (nombre, d) in enumerate(filas[::-1]):
+            col = '#0C6F66' if d['distinguible'] else '#8A989B'
+            ax.plot(d['ic95'], [i, i], color=col, lw=4, solid_capstyle='round')
+            ax.plot([d['delta_medio']], [i], 'o', color=col, ms=11)
+            ax.text(max(d['ic95'][1], 0.0) + 0.006, i, num(d['delta_medio'], 3, True),
+                    va='center', fontsize=13, color=col, fontweight='bold')
+        ax.axvline(0, color='#B3541E', lw=1.5, ls='--')
+        ax.set_yticks(range(len(filas)), [n for n, _ in filas[::-1]], fontsize=12)
+        ax.set_xlabel('diferencia de macro-F1 (transformer − CNN), con su margen al 95 %', fontsize=12)
+        for lado in ('top', 'right', 'left'):
+            ax.spines[lado].set_visible(False)
+        ax.tick_params(axis='y', length=0)
+        ax.set_xlim(min(-0.06, min(d['ic95'][0] for _, d in filas) - 0.01),
+                    max(0.12, max(d['ic95'][1] for _, d in filas) + 0.04))
+        fig.tight_layout()
+        fig.savefig(ruta, transparent=True)
+        plt.close(fig)
+
+    # lamina 10: solo ViT-B/16 contra ResNet-50, en las tres pruebas
     filas = []
-    for v, etiqueta in (('todas', None), ('atunes_agrupados', 'atunes como una clase'),
+    for v, etiqueta in (('todas', 'prueba limpia completa'), ('atunes_agrupados', 'atunes como una clase'),
                         ('camara_nueva', 'solo barcos no vistos')):
-        for par, d in A['por_variante'][v]['pares'].items():
-            if v != 'todas' and not par.startswith('ViT-B/16'):
-                continue
-            filas.append(('%s%s' % (par.replace(' - ', ' − '),
-                                     '\n(%s)' % etiqueta if etiqueta else ''), d))
-    fig, ax = plt.subplots(figsize=(8, 1.2 + 1.0 * len(filas)), dpi=200)
-    for i, (nombre, d) in enumerate(filas[::-1]):
-        col = '#0C6F66' if d['distinguible'] else '#8A989B'
-        ax.plot(d['ic95'], [i, i], color=col, lw=4, solid_capstyle='round')
-        ax.plot([d['delta_medio']], [i], 'o', color=col, ms=11)
-        ax.text(max(d['ic95'][1], 0.0) + 0.006, i, num(d['delta_medio'], 3, True),
-                va='center', fontsize=13, color=col, fontweight='bold')
-    ax.axvline(0, color='#B3541E', lw=1.5, ls='--')
-    ax.set_yticks(range(len(filas)), [n for n, _ in filas[::-1]], fontsize=12)
-    ax.set_xlabel('diferencia de macro-F1 (transformer − CNN), con su margen al 95 %', fontsize=12)
-    for lado in ('top', 'right', 'left'):
-        ax.spines[lado].set_visible(False)
-    ax.tick_params(axis='y', length=0)
-    ax.set_xlim(min(-0.06, min(d['ic95'][0] for _, d in filas) - 0.01),
-                max(0.12, max(d['ic95'][1] for _, d in filas) + 0.04))
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIGS, 'diferencias.png'), transparent=True)
-    plt.close(fig)
+        d = A['por_variante'][v]['pares'].get('ViT-B/16 - ResNet-50')
+        if d:
+            filas.append(('ViT-B/16 − ResNet-50' + chr(10) + '(%s)' % etiqueta, d))
+    bosque(filas, os.path.join(FIGS, 'diferencias.png'))
 
 
 # ================================================================ LAMINAS
@@ -442,15 +446,20 @@ for clave, et, cnn, tr in pares:
                   ic(d['ic95'], True),
                   ('Sí', True, TEAL) if d['distinguible'] else ('No', True, WARM)])
 tabla(s, 120, 330, 1680, filas, [2.0, 2.6, 2.6, 1.6, 2.4, 1.7], alto_fila=92, size=28)
-texto(s, 120, 740, 1680, 200,
-      'macro-F1 de 15 especies, promedio de 3 semillas. Diferencia = transformer − CNN.', 26, MUTED)
+SEM = sorted({len(M[c]['semillas']) for c in M})
+texto(s, 120, 712, 1680, 40,
+      'macro-F1 de 15 especies, promedio de %s semillas. Diferencia = transformer − CNN.'
+      % ' o '.join(str(n) for n in SEM), 24, MUTED)
+LECT = [(clave, lectura(clave, VT['pares'].get(clave))) for clave, _, _, _ in pares]
+texto(s, 120, 780, 1680, 200,
+      [[('%s: ' % ETIQUETA[c], True, INK), (t or 'pendiente de entrenamiento.', False, INK)]
+       for c, t in LECT], 28, line=1.3, space_after=10)
 pie(s)
 notas(s, 'Esta es la comparación central. Leer fila por fila: el macro-F1 de cada modelo, la '
-         'diferencia y si se distingue del cero. '
-         'Par original: el ViT-B/16 supera al ResNet-50, y la diferencia se distingue. '
-         '[Completar al tener los pares nuevos: si DeiT-S también supera al ResNet, la ventaja no era '
-         'por tamaño. Si Swin-T no supera a ConvNeXt-T, la ventaja es contra el ResNet viejo y no '
-         'de los transformers en general.]')
+         'diferencia y si se distingue del cero. ' +
+         ' '.join('%s: %s' % (ETIQUETA[c], t) for c, t in LECT if t) +
+         ' "No se distingue" no significa que sean iguales: significa que con esta prueba no se '
+         'puede decir cuál es mejor.')
 
 # 10 ---------------------------------------------------------------- robustez
 s = nueva()
@@ -603,17 +612,19 @@ titulo(s, 'Conclusiones', 'Qué podemos afirmar', oscuro=True)
 conc = [
     ('En FishNet, el ViT-B/16 supera al ResNet-50: %s de macro-F1 (margen %s).'
      % (num(P_VR['delta_medio'], 3, True), ic(P_VR['ic95'], True))),
-    'La ventaja se achica al agrupar los atunes y no se distingue en barcos nuevos.',
-    'El ViT no mira menos el fondo: los dos siguen al pez en la misma medida.',
+] + [t for c, t in LECT[1:] if t] + [
+    'La ventaja del ViT-B/16 se achica al agrupar los atunes y no se distingue en barcos nuevos.',
+    'El ViT no mira menos el fondo: los dos siguen al pez en una medida parecida.',
     'El ViT reconoce mejor lo que no conoce, pero ninguno está listo para especies chilenas.',
 ]
+paso = min(150, int(620 / len(conc)))
 for i, c in enumerate(conc):
-    y = 330 + i * 150
-    texto(s, 120, y, 80, 80, str(i + 1), 56, TEALL, bold=True)
-    texto(s, 220, y + 6, 1560, 130, c, 34, ONDARK, line=1.3)
+    y = 320 + i * paso
+    texto(s, 120, y, 80, 80, str(i + 1), 48, TEALL, bold=True)
+    texto(s, 220, y + 6, 1560, paso, c, 30 if len(conc) > 4 else 34, ONDARK, line=1.25)
 pie(s, oscuro=True)
-notas(s, '[Agregar la conclusión de los pares nuevos cuando estén.] '
-         'Cuatro afirmaciones, cada una con su evidencia en una lámina anterior.')
+notas(s, 'Cada afirmación tiene su evidencia en una lámina anterior: la 9 para los pares, la 10 '
+         'para atunes y barcos nuevos, la 12 para dónde mira y la 13 para el "no sé".')
 
 # 16 ---------------------------------------------------------------- próximos pasos
 s = nueva()
