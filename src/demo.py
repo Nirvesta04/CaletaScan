@@ -15,9 +15,10 @@ Que hace, y por que asi:
 - Cada modelo trae su propio ajuste de logits (tau elegido en validacion: 0,18
   el ResNet, 0,05 el ViT) porque esa es la regla de decision que se reporto.
 - Cada modelo puede decir NO SE. El umbral es la energia que deja pasar el 95 % de
-  los recortes de val limpios que no son personas (elegido en validacion). Sobre fotos de otro dominio el ResNet acepta
-  casi todo y el ViT rechaza; verlo en vivo es el resultado mas claro del
-  proyecto.
+  los recortes de val limpios que no son personas (elegido en validacion). Sobre
+  peces de otro dominio el ViT rechaza bastante mas que el ResNet (27 % contra
+  84 % aceptados en Kaggle), pero ninguno rechaza todo: un caso suelto puede
+  pasar en los dos.
 - No hay detector (§2). El usuario marca la caja arrastrando, o elige una de
   las cajas anotadas de una foto de ejemplo. Prometer deteccion seria vender lo
   que no se midio.

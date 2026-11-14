@@ -12,7 +12,9 @@
 >    del grupo. Si detectas que el estudiante cae en una, corrígela de inmediato.
 > 4. **Si te piden practicar**, haz de profesor evaluador y pregunta cosas incómodas.
 >
-> Documento escrito el 2026-09-20. Presentación de avance: fin de septiembre de 2026.
+> Documento escrito el 2026-09-20 y actualizado el 2026-11-14 para la entrega final (16-nov-2026).
+> **Las cifras y el mensaje de la entrega final están en las secciones 1 y 7.** Si algo de otra
+> sección contradice esas dos, mandan esas dos.
 
 ---
 
@@ -26,9 +28,24 @@ revisa y corrige.
 
 **El trabajo académico real es una comparación de arquitecturas:**
 
-> ¿Rinde mejor un **ResNet-50** (red convolucional, 2015) o un **ViT-B/16** (Vision
-> Transformer, 2020) clasificando especies de pescado, con el mismo presupuesto de
-> entrenamiento?
+> ¿Rinde mejor una **red convolucional (CNN)** o un **transformer de visión** clasificando
+> especies de pescado, con el mismo presupuesto de entrenamiento?
+
+Se compararon **cinco modelos en tres pares**, cada par con pesos de partida de calidad pareja:
+
+| Par | CNN | Transformer | Qué responde |
+|---|---|---|---|
+| Original | ResNet-50 (2015) | ViT-B/16 (2020) | La pregunta del curso |
+| Mismo tamaño | ResNet-50 | DeiT-S (22 M parámetros, como el ResNet) | ¿El ViT ganaba por ser transformer o por ser 3,4 veces más grande? |
+| Moderno | ConvNeXt-T (2022) | Swin-T (2021) | ¿El ResNet perdía por ser antiguo? |
+
+**Mensaje central de la entrega final:**
+
+> **A igual tamaño y época, CNN y transformer empatan. Lo que mejora el resultado es usar un
+> modelo moderno, no elegir entre CNN y transformer.**
+
+El Avance decía «el ViT gana». Eso sigue siendo cierto para el par original, pero los pares
+nuevos muestran que esa ventaja no viene de la atención del transformer.
 
 ### Alcance honesto (esto es importante en la nota)
 
@@ -264,7 +281,43 @@ corridas el ViT seguía mejorando al agotarse el presupuesto.
 
 ## 7. Resultados
 
-### Tabla principal
+### Resultado final: los cinco modelos (FishNet, prueba limpia, 3 semillas cada uno)
+
+| Modelo | Tipo | macro-F1 | Margen (IC 95 %) |
+|---|---|---|---|
+| ResNet-50 | CNN, 2015 | 0,352 | 0,306 – 0,385 |
+| ViT-B/16 | Transformer, 2020 | 0,393 | 0,349 – 0,424 |
+| DeiT-S | Transformer pequeño | 0,354 | 0,311 – 0,383 |
+| **ConvNeXt-T** | CNN moderna, 2022 | **0,423** | 0,372 – 0,457 |
+| **Swin-T** | Transformer moderno, 2021 | **0,424** | 0,369 – 0,457 |
+
+| Comparación (pareada) | Diferencia | Margen | ¿Se distingue? |
+|---|---|---|---|
+| ViT-B/16 − ResNet-50 | +0,042 | +0,007 a +0,077 | Sí |
+| DeiT-S − ResNet-50 (mismo tamaño) | +0,003 | −0,036 a +0,040 | No |
+| Swin-T − ConvNeXt-T (modernos) | −0,001 | −0,029 a +0,027 | No |
+| ConvNeXt-T − ResNet-50 (CNN moderna vs antigua) | **+0,069** | +0,035 a +0,105 | **Sí** |
+| Swin-T − ViT-B/16 (transformer moderno vs antiguo) | +0,026 | −0,003 a +0,055 | No |
+
+**Cómo se lee:**
+1. A igual tamaño (DeiT-S) o a igual época (ConvNeXt-T contra Swin-T), CNN y transformer **no se
+   distinguen**. La ventaja del ViT-B/16 no se mantiene en un transformer del tamaño del ResNet.
+2. **Lo que sí se distingue es modernizar:** ConvNeXt-T supera al ResNet-50 por +0,069.
+3. **Advertencia honesta:** el ResNet-50 se entrenó con su propia receta (otra tasa de aprendizaje)
+   y ConvNeXt-T con la de su paper. Ese +0,069 mide **modelo y receta juntos**.
+4. ¿Cuál es el mejor? **ConvNeXt-T y Swin-T empatan arriba** (0,423 y 0,424). No se puede elegir
+   uno entre esos dos con estos datos.
+
+**Barcos que el modelo no vio** (el 69 % de la prueba viene de cámaras que no estaban en
+entrenamiento): todos caen. ResNet-50 0,253, ViT-B/16 0,280, DeiT-S 0,245, ConvNeXt-T 0,336,
+Swin-T 0,338. Ahí los modernos también superan a su versión antigua (ConvNeXt-T − ResNet-50
++0,080; Swin-T − ViT-B/16 +0,059, las dos se distinguen). Es la limitación más importante: en la
+caleta, todo barco sería nuevo.
+
+**Atunes agrupados** (los cuatro atunes como una sola clase): la ventaja del ViT-B/16 sobre el
+ResNet-50 baja a +0,031 y deja de distinguirse. Parte de su ventaja era separar un atún de otro.
+
+### Tabla del par original (Avance)
 
 | | ResNet-50 | ViT-B/16 |
 |---|---|---|
@@ -276,7 +329,7 @@ corridas el ViT seguía mejorando al agotarse el presupuesto.
 **Cuidado con el 88,2 %:** está inflado porque el 68 % de la prueba son personas, y un modelo
 que respondiera «persona» a todo ya sacaría **68,5 %**.
 
-### La comparación (lo central del proyecto)
+### El par original en detalle (lo central del Avance)
 
 | Dato | Valor | Qué significa |
 |---|---|---|
@@ -389,7 +442,13 @@ Con el umbral ajustado para que ambos conserven el 95 % de los peces que sí con
 | AUROC (energía) | 0,766 | **0,926** |
 
 Diferencia de AUROC: **+0,209 [+0,171, +0,249]** a favor del ViT. **Es la diferencia más grande
-encontrada entre las dos arquitecturas.**
+encontrada entre las dos arquitecturas.** (Medido solo para el par original; los modelos nuevos no
+pasaron por esta prueba.)
+
+**Especies chilenas** (entrega final): 45 fotos de iNaturalist de reineta, merluza y congrio. Lo
+correcto es decir «no sé». Con el umbral elegido en **validación**: el ResNet rechaza el 10 % y el
+ViT el 32 %; AUROC 0,639 contra 0,801. Cuando aceptan, casi siempre dicen «atún aleta amarilla».
+Ninguno está listo para la caleta.
 
 Por qué importa: en el muelle van a aparecer especies que el sistema nunca vio. Un sistema que
 las etiqueta con seguridad contamina el registro sin que nadie se entere.
@@ -407,9 +466,9 @@ no arregla nada**. ResNet y ViT no se distinguen en calibración cruda.
 | ViT-B/16 | 119 ms (2,7× más lento) | 16,85 G |
 | ViT-B/32 | 42 ms | 4,36 G |
 
-**Decisión: se elige el ViT-B/16**, porque la latencia no cambia qué es factible — para fotos
-en el muelle, los dos alcanzan de sobra. La velocidad no decide, así que gana el que clasifica
-mejor.
+En el Avance se eligió el ViT-B/16 porque la latencia no cambiaba qué era factible. **Con los
+resultados finales, los mejores son ConvNeXt-T y Swin-T**, que además cuestan lo mismo que el
+ResNet-50 en cómputo (~4,5 G contra 4,1 G). Su latencia en CPU no se midió.
 
 ### Interpretabilidad (dónde mira cada red — *pointing game* en Kaggle)
 
@@ -420,8 +479,14 @@ mejor.
 | ViT · attention rollout | 0,204 | |
 | Línea base (azar) | 0,169 | |
 
-Mide qué fracción de la atención cae dentro de la silueta real del pez. El ResNet apunta mejor
-al pez en este conjunto.
+Mide qué fracción de la atención cae dentro de la silueta real del pez.
+
+**Corrección de la entrega final (FishNet):** con el pez siempre al centro del recorte, un mapa
+fijo en el centro que no mira la imagen ya sacaba 0,757, más que cualquier modelo. La medida
+premiaba mirar el centro. Se corrigió poniendo el pez en posición al azar y restando la atención
+que cae en la caja de **otro** recorte. Resultado: Grad-CAM (ResNet) +0,090, Chefer (ViT) +0,087,
+rollout +0,016. **Los dos siguen al pez en una medida parecida: el ViT no mira menos el fondo.**
+Los 0,582 / 0,408 de Kaggle probablemente tienen el mismo sesgo al centro.
 
 ---
 
@@ -469,6 +534,21 @@ pueden solaparse y la diferencia pareada ser distinta de cero. Eso es exactament
 (son peces sin especie resuelta) y Other_rare (es un agregado). El "19" que aparece en algunas
 láminas cuenta *etiquetas con ≥100 ejemplos*, no especies, e incluye Human, No fish y Unknown.
 
+**«Entonces el transformer es mejor que la CNN»**
+→ No. Solo el ViT-B/16 le gana al ResNet-50, y ese par no es parejo en tamaño ni en época. A igual
+tamaño (DeiT-S) o a igual época (ConvNeXt-T contra Swin-T), no se distinguen.
+
+**«No se distingue significa que son iguales»**
+→ No. Significa que con esta prueba no se puede decir cuál es mejor. El margen incluye el cero.
+
+**«ConvNeXt-T le gana al ResNet-50 solo por la arquitectura»**
+→ No se puede afirmar. También cambió la receta de entrenamiento. Mide modelo y receta juntos.
+
+**«El tercer modelo era ViT-B/32»**
+→ Estaba planeado en el Avance, pero sus pesos tienen 75,9 % en ImageNet contra 80,9 % del
+ResNet-50: compararlos rompía la regla de pesos parejos. Se reemplazó por DeiT-S (79,9 %) y por el
+par moderno.
+
 **«pp es lo mismo que %»
 → No. **pp = puntos porcentuales.** ± 5,4 pp sobre un 95 % significa bajar hasta ~90 %. No es
 el 5,4 % *de* 95.
@@ -515,11 +595,14 @@ el 5,4 % *de* 95.
   http://127.0.0.1:8000). Solo biblioteca estándar, sin gradio ni streamlit.
 - Informe técnico y data card.
 
-**Falta:**
-- **ViT-B/32** entrenado en FishNet (~1,75 h de GPU). Es el **único experimento que podría
-  cambiar la decisión de arquitectura**: cuesta lo mismo que el ResNet (4,36 G vs 4,09 G MACs);
-  si mantiene la ventaja del ViT, sería la mejor opción de las tres.
-- Pulir la demo y cerrar informe y data card para la entrega final.
+- **Entrega final:** DeiT-S, ConvNeXt-T y Swin-T entrenados (9 corridas más); análisis por
+  especie, atunes agrupados y cámaras nuevas; interpretabilidad en FishNet corregida; prueba con
+  45 fotos chilenas; mazo final (22 láminas) e informe de 6 páginas.
+
+**Falta (próximos pasos, no se hará para la entrega):**
+- Un detector para encontrar y contar los peces.
+- Fotos locales de la Caleta Portales.
+- Entrenar y evaluar con un reparto por cámara (barcos nuevos).
 
 ---
 
@@ -537,7 +620,10 @@ src/
 scripts/
   build_splits.py Genera los CSV de particiones (idempotente)
   auditoria.py    Las 4 pruebas de la auditoría
-  build_pptx.py   Genera la presentación
+  entrenar_pares.py  Entrena DeiT-S, ConvNeXt-T y Swin-T; se puede parar y retomar
+  analisis_final.py  Tablas de la entrega final (pares, especies, atunes, cámaras)
+  interpret_fishnet.py, chile_ood.py  Interpretabilidad en FishNet y especies chilenas
+  build_pptx_final.py, build_informe.py  Mazo e informe, con las cifras leídas de runs/
 data/splits/      Los CSV del contrato experimental (versionados)
 runs/             Resultados en JSON + checkpoints + logits guardados
 docs/             Informe, data card, plan y presentación
@@ -547,20 +633,26 @@ tests/            Validación de las estadísticas contra sklearn
 **Archivos de resultados con los números crudos:**
 `runs/comparacion_e4_e5_limpio.json`, `runs/comparacion_e1_e2.json`,
 `runs/comparacion_e7.json`, `runs/auditoria.json`, `runs/calibracion_ood.json`,
-`runs/velocidad.json`, `runs/pointing_game.json`.
+`runs/velocidad.json`, `runs/pointing_game.json`, y para la entrega final
+`runs/analisis_final.json`, `runs/pointing_game_fishnet.json` y `runs/chile_ood.json`.
 
 ---
 
-## 14. Las cuatro preguntas que más probablemente hará el profesor
+## 14. Las preguntas que más probablemente hará el profesor
 
 **1. ¿Por qué el macro-F1 es tan bajo en FishNet (0,393)?**
 Son 20 clases, varias casi idénticas entre sí (cuatro tipos de atún), muy desbalanceadas, y el
 promedio parejo castiga fuerte los errores en las raras. Al azar sería 0,05.
 
 **2. ¿No será que el ViT gana solo por tener más parámetros?**
-Puede ser, y por eso falta el ViT-B/32, que tiene un costo de cómputo parecido al del ResNet.
-Lo que sí está controlado es el presupuesto de entrenamiento y la calidad de los pesos de
-partida (80,86 vs 81,07 en ImageNet).
+Eso fue lo que se midió con DeiT-S, un transformer del tamaño del ResNet: no se distingue de él
+(+0,003, margen −0,036 a +0,040). Y entre dos modelos modernos del mismo tamaño, ConvNeXt-T y
+Swin-T, tampoco hay diferencia. Conclusión: la ventaja del ViT-B/16 se explica mejor por su tamaño
+y su modernidad que por la atención.
+
+**2b. Entonces, ¿qué modelo recomiendan?**
+ConvNeXt-T o Swin-T: empatan arriba (0,423 y 0,424), resisten mejor los barcos nuevos y cuestan
+en cómputo lo mismo que el ResNet-50. No se puede elegir uno de los dos con estos datos.
 
 **3. ¿Esto sirve en Chile?**
 Hoy no. Ninguna especie chilena está en los datos públicos, y habría que recolectar fotos en
