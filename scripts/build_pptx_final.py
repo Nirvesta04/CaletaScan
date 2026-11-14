@@ -56,7 +56,9 @@ def ood(run, sub):
 
 def num(x, d=3, signo=False):
     s = ('%+.*f' if signo else '%.*f') % (d, x)
-    return s.replace('.', ',')
+    # signo menos tipografico: con el guion, PowerPoint puede cortar la linea
+    # entre el signo y el numero
+    return s.replace('.', ',').replace('-', '−')
 
 
 def pct(x, d=0):
@@ -428,7 +430,7 @@ notas(s, 'Misma cantidad de pasos, mismo lote efectivo, mismas semillas, mismos 
 
 # 9 ----------------------------------------------------------------- resultado principal
 s = nueva()
-titulo(s, 'Resultado', 'Los tres pares, en la prueba limpia de FishNet')
+titulo(s, 'Resultado', 'A igual tamaño y época, CNN y transformer empatan')
 filas = [['Par', 'CNN', 'Transformer', 'Diferencia', 'Margen al 95 %', '¿Se distingue?']]
 pares = [('ViT-B/16 - ResNet-50', 'Original', 'e4_resnet50_fishnet', 'e5_vit_b_16_fishnet'),
          ('DeiT-S - ResNet-50', 'Mismo tamaño', 'e4_resnet50_fishnet', 'e10_deit_s_fishnet'),
@@ -461,9 +463,46 @@ notas(s, 'Esta es la comparación central. Leer fila por fila: el macro-F1 de ca
          ' "No se distingue" no significa que sean iguales: significa que con esta prueba no se '
          'puede decir cuál es mejor.')
 
+# 9b --------------------------------------------------------------- lo que si importa
+PV = A['por_variante']
+d_cr, d_sv = VT['pares'].get('ConvNeXt-T - ResNet-50'), VT['pares'].get('Swin-T - ViT-B/16')
+if d_cr and d_sv:
+    n_cr = PV['camara_nueva']['pares']['ConvNeXt-T - ResNet-50']
+    n_sv = PV['camara_nueva']['pares']['Swin-T - ViT-B/16']
+    s = nueva()
+    titulo(s, 'Resultado · qué sí importa', 'Lo que mejora el resultado es usar un modelo moderno')
+    cifra(s, 120, 300, 780, num(d_cr['delta_medio'], 3, True),
+          'de macro-F1 de ConvNeXt-T (CNN moderna) sobre el ResNet-50, en la prueba limpia',
+          vsize=96)
+    cifra(s, 1000, 300, 780, num(n_cr['delta_medio'], 3, True),
+          'en los barcos que los modelos no vieron: ahí la ventaja también se distingue',
+          vsize=96)
+
+    def celda(d):
+        return ('%s  (%s)' % (num(d['delta_medio'], 3, True), ic(d['ic95'], True)),
+                True, TEAL if d['distinguible'] else INK)
+    filas = [['Moderno − antiguo', 'Prueba limpia', 'Barcos no vistos'],
+             ['ConvNeXt-T − ResNet-50 (CNN)', celda(d_cr), celda(n_cr)],
+             ['Swin-T − ViT-B/16 (transformer)', celda(d_sv), celda(n_sv)]]
+    tabla(s, 120, 580, 1680, filas, [3.0, 2.6, 2.6], alto_fila=84, size=26)
+    texto(s, 120, 850, 1680, 120,
+          'Diferencia de macro-F1 con su margen al 95 %; en verde, las que se distinguen. El ResNet-50 se '
+          'entrenó con su propia receta: la diferencia mide el modelo y su receta juntos.',
+          24, MUTED, line=1.35)
+    pie(s)
+    notas(s, 'Esta es la respuesta a la pregunta del profesor sobre qué brecha cierra el tercer modelo. '
+             'Con tamaño parejo, el transformer no gana. Lo que sí cambia el resultado es la '
+             'modernidad del modelo: ConvNeXt-T, una CNN de 2022, supera al ResNet-50 por %s, y en '
+             'barcos nuevos por %s. El transformer moderno, Swin-T, no se distingue del ViT-B/16 en la '
+             'prueba completa, pero sí lo supera en barcos nuevos (%s), con un tercio de sus '
+             'parámetros. Advertencia: el ResNet-50 se entrenó con otra tasa de aprendizaje que '
+             'ConvNeXt-T, así que no separamos arquitectura y receta.'
+          % (num(d_cr['delta_medio'], 3, True), num(n_cr['delta_medio'], 3, True),
+             num(n_sv['delta_medio'], 3, True)))
+
 # 10 ---------------------------------------------------------------- robustez
 s = nueva()
-titulo(s, 'Resultado · qué tan firme es', 'La ventaja se achica en dos pruebas más exigentes')
+titulo(s, 'Resultado · ViT-B/16 contra ResNet-50', 'La ventaja del ViT-B/16 se achica en pruebas exigentes')
 imagen(s, os.path.join(FIGS, 'diferencias.png'), 120, 300, w=1060)
 texto(s, 1240, 330, 560, 600,
       [[('Atunes como una clase. ', True, INK),
@@ -557,7 +596,7 @@ notas(s, 'Calculamos los mapas sobre los mismos recortes de FishNet, como pidió
 o_r, o_v = ood('e4_resnet50_fishnet', 'id_sin_human'), ood('e5_vit_b_16_fishnet', 'id_sin_human')
 ch_r, ch_v = CHILE['modelos']['ResNet-50'], CHILE['modelos']['ViT-B/16']
 s = nueva()
-titulo(s, 'Decir «no sé»', 'El ViT-B/16 reconoce mejor lo que nunca vio')
+titulo(s, 'Decir «no sé»', 'Entre los dos originales, el ViT reconoce mejor lo nuevo')
 for i, esp in enumerate(['reineta', 'merluza', 'congrio']):
     imagen(s, os.path.join(PRIV, 'chile_%s.jpg' % esp), 120 + i * 290, 290, w=270, h=270)
     texto(s, 120 + i * 290, 572, 270, 40, esp.capitalize(), 26, INK, bold=True, align='c')
@@ -596,7 +635,7 @@ filas = [['Problema', 'Medición', 'Qué hicimos'],
          ['FishNet: fuga por lance', '%s de la prueba oficial' % pct(fg['frac_cajas'], 1), 'Prueba limpia por lance'],
          ['Fotos de un lance no son independientes', 'Margen 4,6 veces más angosto', 'Remuestreo por lance'],
          ['FishNet: barcos repetidos', '%s de la prueba limpia' % pct(A['camaras']['frac_cajas_camara_vista'], 0),
-          'Se reporta aparte (lámina 10)']]
+          'Se reporta aparte']]
 tabla(s, 120, 300, 1680, filas, [3.4, 2.6, 2.6], alto_fila=88, size=26)
 texto(s, 120, 860, 1680, 100,
       'Auditoría: ningún lance ni foto original cruza de entrenamiento a prueba en los repartos que '
@@ -609,13 +648,21 @@ notas(s, 'Resumen de la auditoría, que en el Avance ocupaba cuatro láminas. Lo
 # 15 ---------------------------------------------------------------- conclusiones
 s = nueva(DARK)
 titulo(s, 'Conclusiones', 'Qué podemos afirmar', oscuro=True)
+D = VT['pares']
+cv, cn = PV['camara_vista']['modelos']['ConvNeXt-T'], PV['camara_nueva']['modelos']['ConvNeXt-T']
 conc = [
-    ('En FishNet, el ViT-B/16 supera al ResNet-50: %s de macro-F1 (margen %s).'
-     % (num(P_VR['delta_medio'], 3, True), ic(P_VR['ic95'], True))),
-] + [t for c, t in LECT[1:] if t] + [
-    'La ventaja del ViT-B/16 se achica al agrupar los atunes y no se distingue en barcos nuevos.',
-    'El ViT no mira menos el fondo: los dos siguen al pez en una medida parecida.',
-    'El ViT reconoce mejor lo que no conoce, pero ninguno está listo para especies chilenas.',
+    ('Con tamaño y época parejos, CNN y transformer no se distinguen: DeiT-S queda a %s del '
+     'ResNet-50 y Swin-T a %s de ConvNeXt-T.'
+     % (num(D['DeiT-S - ResNet-50']['delta_medio'], 3, True),
+        num(D['Swin-T - ConvNeXt-T']['delta_medio'], 3, True))),
+    ('Lo que mejora el resultado es usar un modelo moderno: ConvNeXt-T supera al ResNet-50 por %s '
+     '(margen %s), también en barcos nuevos.'
+     % (num(D['ConvNeXt-T - ResNet-50']['delta_medio'], 3, True),
+        ic(D['ConvNeXt-T - ResNet-50']['ic95'], True))),
+    ('El mayor problema son los barcos que el modelo no vio: incluso ConvNeXt-T baja de %s a %s.'
+     % (num(cv['macro_f1']), num(cn['macro_f1']))),
+    'ResNet-50 y ViT-B/16 siguen al pez en una medida parecida; el ViT dice «no sé» con más acierto.',
+    'Ninguno está listo para la caleta: faltan fotos locales de reineta, merluza y congrio.',
 ]
 paso = min(150, int(620 / len(conc)))
 for i, c in enumerate(conc):
@@ -623,8 +670,10 @@ for i, c in enumerate(conc):
     texto(s, 120, y, 80, 80, str(i + 1), 48, TEALL, bold=True)
     texto(s, 220, y + 6, 1560, paso, c, 30 if len(conc) > 4 else 34, ONDARK, line=1.25)
 pie(s, oscuro=True)
-notas(s, 'Cada afirmación tiene su evidencia en una lámina anterior: la 9 para los pares, la 10 '
-         'para atunes y barcos nuevos, la 12 para dónde mira y la 13 para el "no sé".')
+notas(s, 'Cada afirmación tiene su evidencia en una lámina anterior: los pares, la comparación '
+         'entre modelos modernos y antiguos, los barcos nuevos, la interpretabilidad y el "no sé". '
+         'El mensaje central es el primero y el segundo: no importa tanto CNN o transformer como '
+         'usar un modelo moderno.')
 
 # 16 ---------------------------------------------------------------- próximos pasos
 s = nueva()

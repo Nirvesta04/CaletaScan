@@ -7,7 +7,7 @@ cero. Si no se distingue, se dice eso y nada mas: no distinguirse no prueba que
 los modelos sean iguales.
 """
 
-# (gana el transformer, no se distinguen, gana la CNN)
+# (gana el primero, no se distinguen, gana el segundo)
 TEXTOS = {
     'ViT-B/16 - ResNet-50': (
         'El ViT-B/16 supera al ResNet-50.',
@@ -23,11 +23,22 @@ TEXTOS = {
         'Entre dos modelos modernos del mismo tamaño también gana el transformer.',
         'Entre dos modelos modernos del mismo tamaño, CNN y transformer no se distinguen.',
         'Entre dos modelos modernos del mismo tamaño gana la CNN.'),
+    'ConvNeXt-T - ResNet-50': (
+        'La CNN moderna supera al ResNet-50: modernizar el modelo y su receta mejora el resultado.',
+        'La CNN moderna y el ResNet-50 no se distinguen.',
+        'El ResNet-50 supera a la CNN moderna.'),
+    'Swin-T - ViT-B/16': (
+        'El transformer moderno supera al ViT-B/16.',
+        'El transformer moderno y el ViT-B/16 no se distinguen, aunque Swin-T tiene un tercio de '
+        'sus parámetros.',
+        'El ViT-B/16 supera al transformer moderno.'),
 }
 
 ETIQUETA = {'ViT-B/16 - ResNet-50': 'Par original',
             'DeiT-S - ResNet-50': 'Mismo tamaño',
-            'Swin-T - ConvNeXt-T': 'Par moderno'}
+            'Swin-T - ConvNeXt-T': 'Par moderno',
+            'ConvNeXt-T - ResNet-50': 'CNN moderna contra antigua',
+            'Swin-T - ViT-B/16': 'Transformer moderno contra antiguo'}
 
 
 def lectura(clave, d):

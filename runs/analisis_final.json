@@ -201,6 +201,26 @@
           ],
           "p_delta_positivo": 0.4745,
           "distinguible": false
+        },
+        "ConvNeXt-T - ResNet-50": {
+          "etiqueta": "CNN moderna contra antigua",
+          "delta_medio": 0.06946571258175117,
+          "ic95": [
+            0.034596316138276496,
+            0.10543286421442806
+          ],
+          "p_delta_positivo": 1.0,
+          "distinguible": true
+        },
+        "Swin-T - ViT-B/16": {
+          "etiqueta": "Transformer moderno contra antiguo",
+          "delta_medio": 0.02646025118254153,
+          "ic95": [
+            -0.0026265576178364004,
+            0.05464439088640173
+          ],
+          "p_delta_positivo": 0.9625,
+          "distinguible": false
         }
       }
     },
@@ -281,6 +301,26 @@
             0.030977249909930824
           ],
           "p_delta_positivo": 0.5495,
+          "distinguible": false
+        },
+        "ConvNeXt-T - ResNet-50": {
+          "etiqueta": "CNN moderna contra antigua",
+          "delta_medio": 0.058154168315787805,
+          "ic95": [
+            0.024312185644940226,
+            0.09243776832965488
+          ],
+          "p_delta_positivo": 1.0,
+          "distinguible": true
+        },
+        "Swin-T - ViT-B/16": {
+          "etiqueta": "Transformer moderno contra antiguo",
+          "delta_medio": 0.029268570761969443,
+          "ic95": [
+            -0.003711250908260545,
+            0.06113589026395857
+          ],
+          "p_delta_positivo": 0.9575,
           "distinguible": false
         }
       }
@@ -363,6 +403,26 @@
           ],
           "p_delta_positivo": 0.404,
           "distinguible": false
+        },
+        "ConvNeXt-T - ResNet-50": {
+          "etiqueta": "CNN moderna contra antigua",
+          "delta_medio": 0.06550409001748204,
+          "ic95": [
+            0.023024879850368555,
+            0.1083564954334252
+          ],
+          "p_delta_positivo": 1.0,
+          "distinguible": true
+        },
+        "Swin-T - ViT-B/16": {
+          "etiqueta": "Transformer moderno contra antiguo",
+          "delta_medio": 0.013987119016867607,
+          "ic95": [
+            -0.030362553946257226,
+            0.055130640157148796
+          ],
+          "p_delta_positivo": 0.7325,
+          "distinguible": false
         }
       }
     },
@@ -444,6 +504,26 @@
           ],
           "p_delta_positivo": 0.634,
           "distinguible": false
+        },
+        "ConvNeXt-T - ResNet-50": {
+          "etiqueta": "CNN moderna contra antigua",
+          "delta_medio": 0.07987617802932608,
+          "ic95": [
+            0.022024236432279506,
+            0.14059176551865007
+          ],
+          "p_delta_positivo": 0.997,
+          "distinguible": true
+        },
+        "Swin-T - ViT-B/16": {
+          "etiqueta": "Transformer moderno contra antiguo",
+          "delta_medio": 0.05943407704569568,
+          "ic95": [
+            0.003573952489168002,
+            0.11398408296233303
+          ],
+          "p_delta_positivo": 0.983,
+          "distinguible": true
         }
       }
     }

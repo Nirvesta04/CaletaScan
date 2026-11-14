@@ -357,16 +357,26 @@ no alcanzaron a corregirse antes del plazo. No repetirlos en la final:
 - **Especies chilenas** (`scripts/chile_ood.py`, 45 fotos de iNaturalist): el ResNet rechaza el
   10 % y el ViT el 32 %; AUROC 0,639 contra 0,801.
 
+**Resultado de los pares (3 semillas cada uno, prueba limpia):** ResNet-50 0,352, ViT-B/16 0,393,
+DeiT-S 0,354, ConvNeXt-T 0,423, Swin-T 0,424.
+- DeiT-S − ResNet-50 +0,003 [-0,036, +0,040] y Swin-T − ConvNeXt-T
+  -0,001 [-0,029, +0,027]: a igual tamaño y época, CNN y transformer no se distinguen.
+- ConvNeXt-T − ResNet-50 +0,069 [+0,035, +0,105], también en barcos nuevos: lo que
+  mejora el resultado es un modelo moderno. Ojo: el ResNet-50 usa otra receta (dos niveles de lr),
+  así que la diferencia mezcla arquitectura y receta.
+- **Mensaje central de la entrega final:** no importa tanto CNN o transformer como usar un modelo
+  moderno. Reemplaza al «el ViT gana» del Avance.
+
 ### 9.3 Entregables
 
 - Mazo: `scripts/build_pptx_final.py` → `entrega/Caleta-Scan-Final-G3.pptx` (no versionado:
   lleva fotos). Orden del profesor; las cifras se leen de `runs/`. Revisar siempre exportando a
   PNG: python-pptx no avisa cuando un texto se sale de su caja.
-- Informe: `scripts/build_informe.py` → `docs/informe.html` y `docs/informe.pdf` (5 páginas).
+- Informe: `scripts/build_informe.py` → `docs/informe.html` y `docs/informe.pdf` (6 páginas).
 - Data card v1.1 y README actualizados.
 
 ### 9.4 Pendiente
 
-- Terminar E10 (semilla 2), E11 y E12; luego `analisis_final`, `build_informe` y
-  `build_pptx_final`, y escribir la conclusión de los pares en las notas de las láminas 9 y 15.
+- E10–E12 terminados el 13-nov. Las conclusiones de los pares se generan solas desde
+  `scripts/lecturas.py`.
 - Detector para contar peces: en espera; por ahora solo figura como próximo paso.

@@ -42,11 +42,16 @@ MODELOS = {
     "e11_convnext_t_fishnet": "ConvNeXt-T",
     "e12_swin_t_fishnet": "Swin-T",
 }
-# (transformer, CNN): la diferencia se reporta como transformer - CNN.
+# (a, b): la diferencia se reporta como a - b. Los tres primeros son transformer - CNN.
 PARES = [
     ("e5_vit_b_16_fishnet", "e4_resnet50_fishnet", "Par original"),
     ("e10_deit_s_fishnet", "e4_resnet50_fishnet", "Mismo tamano"),
     ("e12_swin_t_fishnet", "e11_convnext_t_fishnet", "Par moderno"),
+    # moderno - antiguo, dentro de cada familia. OJO: el ResNet-50 usa otra receta
+    # (dos niveles de lr) que ConvNeXt-T (decaimiento por nivel): la diferencia
+    # mide modelo y receta juntos.
+    ("e11_convnext_t_fishnet", "e4_resnet50_fishnet", "CNN moderna contra antigua"),
+    ("e12_swin_t_fishnet", "e5_vit_b_16_fishnet", "Transformer moderno contra antiguo"),
 ]
 N_BOOT = 2000
 

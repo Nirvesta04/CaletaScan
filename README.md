@@ -23,15 +23,16 @@ cinco modelos en tres pares con preentrenamiento parejo.
 |---|---|
 | Datos y splits | construidos y verificados (0 fugas de grupo en Kaggle; test de FishNet purgado por secuencia) |
 | Par original · ResNet-50 vs ViT-B/16 | FishNet limpio: ViT +0,042 de macro-F1, margen [+0,007, +0,077] |
-| Mismo tamaño · ResNet-50 vs DeiT-S | E10, ver `runs/analisis_final.json` |
-| Par moderno · ConvNeXt-T vs Swin-T | E11 y E12, ver `runs/analisis_final.json` |
+| Mismo tamaño · ResNet-50 vs DeiT-S | DeiT-S 0,354; diferencia +0,003 [-0,036, +0,040]: no se distinguen |
+| Par moderno · ConvNeXt-T vs Swin-T | 0,423 vs 0,424; diferencia -0,001 [-0,029, +0,027]: no se distinguen |
+| Moderno vs antiguo | ConvNeXt-T − ResNet-50 +0,069 [+0,035, +0,105]: lo que mejora el resultado es un modelo moderno, no la familia |
 | Robustez | con los atunes agrupados y en cámaras no vistas, la ventaja del ViT deja de distinguirse |
 | Kaggle | ResNet y ViT no se distinguen; sin ver el pez, las dos redes aciertan ~97 % |
 | Interpretabilidad | Kaggle (máscaras) y FishNet (cajas, pez en posición al azar y control barajado) |
 | «No sé» | umbral de energía elegido en validación; el ViT rechaza mejor peces ajenos y especies chilenas |
 | Velocidad | ViT-B/16 2,7× más lento en CPU (119 vs 43 ms por pez) sin cambiar qué es factible |
 | Demo | `python -m src.demo` compara las dos arquitecturas en vivo, con «no sé» |
-| Informe técnico | `docs/informe.html` y `docs/informe.pdf` (5 páginas) |
+| Informe técnico | `docs/informe.html` y `docs/informe.pdf` (6 páginas) |
 | Data card | `docs/data-card.html` |
 
 ---

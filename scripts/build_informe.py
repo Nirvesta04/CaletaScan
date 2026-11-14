@@ -96,6 +96,14 @@ def lectura_par(clave, cnn, tr):
         tr, cnn, num(d['delta_medio'], 3, True), ic(d['ic95']), t)
 
 
+def fila_extra(clave, etiqueta):
+    def c(d):
+        txt = '%s %s' % (num(d['delta_medio'], 3, True), ic(d['ic95']))
+        return '<strong>%s</strong>' % txt if d['distinguible'] else txt
+    return ('<tr><td class="name">%s</td><td class="num">%s</td><td class="num">%s</td></tr>'
+            % (etiqueta, c(VT[clave]), c(V['camara_nueva']['pares'][clave])))
+
+
 def variante(v, m):
     return V[v]['modelos'][m]
 
@@ -134,16 +142,24 @@ Caleta Portales. Entrenamos cinco modelos en tres pares con preentrenamiento par
 presupuesto, y los evaluamos en FishNet, un conjunto de cámaras a bordo de barcos reales, con una
 prueba limpia de fugas. Lo principal:</p>
 <ol>
-<li>El ViT-B/16 supera al ResNet-50 por {num(P_VR['delta_medio'], 3, True)} de macro-F1, con un margen
-al 95 % de {ic(P_VR['ic95'])} que no incluye el cero.</li>
-{PARES_NUEVOS}
-<li>Esa ventaja se achica al tratar los cuatro atunes como una sola clase y no se distingue en
-barcos que el modelo no vio, que son el {pct(1 - cam['frac_cajas_camara_vista'])} de la prueba.</li>
+<li><strong>A igual tamaño y época, CNN y transformer no se distinguen.</strong> DeiT-S queda a
+{num(VT['DeiT-S - ResNet-50']['delta_medio'], 3, True)} del ResNet-50 y Swin-T a
+{num(VT['Swin-T - ConvNeXt-T']['delta_medio'], 3, True)} de ConvNeXt-T, con márgenes que incluyen el cero.
+La ventaja del ViT-B/16 sobre el ResNet-50 ({num(P_VR['delta_medio'], 3, True)}, margen
+{ic(P_VR['ic95'])}) no se mantiene en un transformer del tamaño del ResNet.</li>
+<li><strong>Lo que mejora el resultado es usar un modelo moderno.</strong> ConvNeXt-T, una CNN de 2022,
+supera al ResNet-50 por {num(VT['ConvNeXt-T - ResNet-50']['delta_medio'], 3, True)} (margen
+{ic(VT['ConvNeXt-T - ResNet-50']['ic95'])}), también en barcos que no vio. Esta diferencia mide modelo y
+receta de entrenamiento juntos.</li>
+<li>Los barcos que el modelo no vio, que son el {pct(1 - cam['frac_cajas_camara_vista'])} de la prueba,
+son el mayor problema: todos los modelos caen, incluso el mejor baja de
+{num(V['camara_vista']['modelos']['ConvNeXt-T']['macro_f1'])} a
+{num(V['camara_nueva']['modelos']['ConvNeXt-T']['macro_f1'])}.</li>
 <li>El reparto oficial de FishNet tiene fuga: el {pct(fg['frac_cajas'], 1)} de sus cajas de prueba
 comparte lance con el entrenamiento, y eso infla los resultados alrededor de un 80 %.</li>
-<li>Con el pez en posición al azar, ResNet y ViT concentran su atención en el pez en una medida
-parecida: el ViT no mira menos el fondo.</li>
-<li>El ViT reconoce mejor lo que no conoce, pero ninguno de los dos sirve todavía para especies chilenas.</li>
+<li>Entre ResNet-50 y ViT-B/16: con el pez en posición al azar, los dos concentran su atención en el
+pez en una medida parecida, y el ViT reconoce mejor lo que no conoce. Ninguno sirve todavía para
+especies chilenas.</li>
 </ol>
 </section>
 
@@ -233,6 +249,21 @@ se mira la diferencia; se distingue si su margen no incluye el cero.</p>
 no se puede decir cuál es mejor.</li>
 </ul>
 
+<h3>Lo que sí importa: modelo moderno contra antiguo</h3>
+<div class="tw"><table>
+<caption>Diferencia moderno − antiguo dentro de cada familia, con bootstrap pareado. El ResNet-50 se entrenó con su
+propia receta (dos niveles de tasa de aprendizaje) y ConvNeXt-T con decaimiento por nivel: la diferencia mide el modelo
+y su receta juntos.</caption>
+<thead><tr><th>Comparación</th><th class="num">prueba limpia</th><th class="num">barcos no vistos</th></tr></thead>
+<tbody>
+{fila_extra('ConvNeXt-T - ResNet-50', 'CNN · ConvNeXt-T − ResNet-50')}
+{fila_extra('Swin-T - ViT-B/16', 'Transformer · Swin-T − ViT-B/16')}
+</tbody></table></div>
+<p>{lectura('ConvNeXt-T - ResNet-50', VT['ConvNeXt-T - ResNet-50'])} {lectura('Swin-T - ViT-B/16', VT['Swin-T - ViT-B/16'])}
+En barcos no vistos, los dos modelos modernos superan a su versión antigua. La pregunta del Avance, qué
+brecha cierra el tercer modelo, tiene respuesta: con estos datos, la ventaja del ViT-B/16 se explica mejor por
+su tamaño y su modernidad que por la atención.</p>
+
 <h3>Qué tan firme es la ventaja del ViT-B/16</h3>
 <div class="tw"><table>
 <thead><tr><th>Prueba</th><th class="num">ResNet-50</th><th class="num">ViT-B/16</th><th class="num">diferencia [margen]</th></tr></thead>
@@ -256,7 +287,7 @@ oclusión (Spearman −0,60).</p>
 
 <section>
 <h2>6 · Dónde mira cada modelo</h2>
-<p>Medimos qué fracción de la atención de cada mapa cae dentro de la caja del pez, sobre {PG_F['n']}
+<p>Este análisis y el siguiente se hicieron sobre el par original, ResNet-50 y ViT-B/16. Medimos qué fracción de la atención de cada mapa cae dentro de la caja del pez, sobre {PG_F['n']}
 recortes de la prueba limpia de FishNet, los mismos para los dos modelos: Grad-CAM (Selvaraju et al.,
 2017) para el ResNet; attention rollout (Abnar y Zuidema, 2020) y la relevancia de Chefer et al.
 (2021), que sí depende de la clase como Grad-CAM, para el ViT.</p>
@@ -311,6 +342,8 @@ lo que se puede hacer.</p>
 <section>
 <h2>9 · Límites y próximos pasos</h2>
 <ul>
+<li><strong>Receta del ResNet-50.</strong> Se entrenó con su propia tasa de aprendizaje, distinta de la de
+ConvNeXt-T; la ventaja de la CNN moderna mezcla arquitectura y receta.</li>
 <li><strong>Barcos nuevos.</strong> El rendimiento cae en cámaras no vistas. Próximo paso: entrenar y evaluar
 con un reparto por cámara.</li>
 <li><strong>Conteo.</strong> El objetivo original incluía contar peces amontonados. Falta un detector,
