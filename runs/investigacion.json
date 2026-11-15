@@ -1,0 +1,393 @@
+{
+  "tamano": {
+    "< 80 px": {
+      "cajas_especie": 261,
+      "ResNet-50": {
+        "acierto": 0.3218390804597701,
+        "macro_f1": 0.28228345324394377
+      },
+      "DeiT-S": {
+        "acierto": 0.35632183908045983,
+        "macro_f1": 0.28910653746839315
+      },
+      "ViT-B/16": {
+        "acierto": 0.39846743295019155,
+        "macro_f1": 0.31789027799864633
+      },
+      "ConvNeXt-T": {
+        "acierto": 0.38186462324393355,
+        "macro_f1": 0.33351980190098435
+      },
+      "Swin-T": {
+        "acierto": 0.3818646232439336,
+        "macro_f1": 0.3063059942643191
+      }
+    },
+    "80-130 px": {
+      "cajas_especie": 407,
+      "ResNet-50": {
+        "acierto": 0.5151515151515151,
+        "macro_f1": 0.3858010194130554
+      },
+      "DeiT-S": {
+        "acierto": 0.5708435708435708,
+        "macro_f1": 0.38878458945718375
+      },
+      "ViT-B/16": {
+        "acierto": 0.6117936117936118,
+        "macro_f1": 0.43170437209893975
+      },
+      "ConvNeXt-T": {
+        "acierto": 0.6183456183456184,
+        "macro_f1": 0.4330867748778673
+      },
+      "Swin-T": {
+        "acierto": 0.6109746109746109,
+        "macro_f1": 0.41718775057432805
+      }
+    },
+    "130-220 px": {
+      "cajas_especie": 472,
+      "ResNet-50": {
+        "acierto": 0.5084745762711864,
+        "macro_f1": 0.31307072295287597
+      },
+      "DeiT-S": {
+        "acierto": 0.5338983050847458,
+        "macro_f1": 0.3062668549091619
+      },
+      "ViT-B/16": {
+        "acierto": 0.6045197740112994,
+        "macro_f1": 0.38292030912122405
+      },
+      "ConvNeXt-T": {
+        "acierto": 0.6532485875706214,
+        "macro_f1": 0.40894459128154903
+      },
+      "Swin-T": {
+        "acierto": 0.7118644067796609,
+        "macro_f1": 0.4814608568172895
+      }
+    },
+    "> 220 px": {
+      "cajas_especie": 310,
+      "ResNet-50": {
+        "acierto": 0.44946236559139785,
+        "macro_f1": 0.2353152483139305
+      },
+      "DeiT-S": {
+        "acierto": 0.47956989247311826,
+        "macro_f1": 0.2962627954517426
+      },
+      "ViT-B/16": {
+        "acierto": 0.5129032258064515,
+        "macro_f1": 0.3236131524499242
+      },
+      "ConvNeXt-T": {
+        "acierto": 0.6064516129032258,
+        "macro_f1": 0.4285992973669919
+      },
+      "Swin-T": {
+        "acierto": 0.6236559139784946,
+        "macro_f1": 0.5159713643432645
+      }
+    }
+  },
+  "luz": {
+    "cortes_brillo": [
+      100.5068359375,
+      120.5810546875
+    ],
+    "oscuro": {
+      "cajas": 483,
+      "ResNet-50": 0.4002760524499655,
+      "DeiT-S": 0.4444444444444444,
+      "ViT-B/16": 0.46652864044168396,
+      "ConvNeXt-T": 0.5037957211870255,
+      "Swin-T": 0.5162180814354728
+    },
+    "medio": {
+      "cajas": 483,
+      "ResNet-50": 0.4437543133195307,
+      "DeiT-S": 0.48861283643892345,
+      "ViT-B/16": 0.5307108350586611,
+      "ConvNeXt-T": 0.5873015873015873,
+      "Swin-T": 0.6017943409247758
+    },
+    "claro": {
+      "cajas": 484,
+      "ResNet-50": 0.5482093663911846,
+      "DeiT-S": 0.5688705234159779,
+      "ViT-B/16": 0.6522038567493113,
+      "ConvNeXt-T": 0.662534435261708,
+      "Swin-T": 0.6976584022038567
+    }
+  },
+  "datos_por_especie": {
+    "ResNet-50": {
+      "spearman_f1_vs_ejemplos_train": 0.24285714285714283,
+      "p": 0.38312834183934175,
+      "f1": {
+        "Albacore": 0.3116883116883117,
+        "Bigeye tuna": 0.05263157894736842,
+        "Blue marlin": 0.006944444444444444,
+        "Escolar": 0.2938388625592417,
+        "Great barracuda": 0.2469135802469136,
+        "Long snouted lancetfish": 0.2261904761904762,
+        "Mahi mahi": 0.7739438890680427,
+        "Opah": 0.8076923076923077,
+        "Shark": 0.5536332179930796,
+        "Shortbill spearfish": 0.0,
+        "Skipjack tuna": 0.8611111111111112,
+        "Striped marlin": 0.2114735658042745,
+        "Swordfish": 0.37966804979253116,
+        "Wahoo": 0.3854166666666666,
+        "Yellowfin tuna": 0.2082429501084599
+      }
+    },
+    "DeiT-S": {
+      "spearman_f1_vs_ejemplos_train": 0.48745832825820473,
+      "p": 0.06531267632586316,
+      "f1": {
+        "Albacore": 0.48216216216216207,
+        "Bigeye tuna": 0.0,
+        "Blue marlin": 0.0,
+        "Escolar": 0.16042780748663102,
+        "Great barracuda": 0.2028985507246377,
+        "Long snouted lancetfish": 0.24852071005917156,
+        "Mahi mahi": 0.8466579292267367,
+        "Opah": 0.7975077881619937,
+        "Shark": 0.515625,
+        "Shortbill spearfish": 0.0,
+        "Skipjack tuna": 0.8857142857142857,
+        "Striped marlin": 0.11494252873563218,
+        "Swordfish": 0.45654692931633845,
+        "Wahoo": 0.36666666666666664,
+        "Yellowfin tuna": 0.2589928057553957
+      }
+    },
+    "ViT-B/16": {
+      "spearman_f1_vs_ejemplos_train": 0.4647008111181005,
+      "p": 0.08094322560617724,
+      "f1": {
+        "Albacore": 0.5410199556541019,
+        "Bigeye tuna": 0.0,
+        "Blue marlin": 0.022346368715083796,
+        "Escolar": 0.26851851851851855,
+        "Great barracuda": 0.048,
+        "Long snouted lancetfish": 0.32298136645962733,
+        "Mahi mahi": 0.8728786423310919,
+        "Opah": 0.8986486486486486,
+        "Shark": 0.5806451612903226,
+        "Shortbill spearfish": 0.0,
+        "Skipjack tuna": 0.9374999999999999,
+        "Striped marlin": 0.2792792792792793,
+        "Swordfish": 0.47491638795986624,
+        "Wahoo": 0.3668122270742358,
+        "Yellowfin tuna": 0.3076923076923077
+      }
+    },
+    "ConvNeXt-T": {
+      "spearman_f1_vs_ejemplos_train": 0.5428571428571428,
+      "p": 0.036521822554837366,
+      "f1": {
+        "Albacore": 0.5321701199563795,
+        "Bigeye tuna": 0.05333333333333333,
+        "Blue marlin": 0.019736842105263157,
+        "Escolar": 0.3292682926829268,
+        "Great barracuda": 0.17021276595744683,
+        "Long snouted lancetfish": 0.2948717948717949,
+        "Mahi mahi": 0.8588308457711442,
+        "Opah": 0.7941176470588236,
+        "Shark": 0.6213017751479288,
+        "Shortbill spearfish": 0.02564102564102564,
+        "Skipjack tuna": 0.9374999999999999,
+        "Striped marlin": 0.33587786259541985,
+        "Swordfish": 0.6226012793176972,
+        "Wahoo": 0.4090909090909091,
+        "Yellowfin tuna": 0.36231884057971014
+      }
+    },
+    "Swin-T": {
+      "spearman_f1_vs_ejemplos_train": 0.45933887868212253,
+      "p": 0.08498300185373231,
+      "f1": {
+        "Albacore": 0.5611353711790392,
+        "Bigeye tuna": 0.02564102564102564,
+        "Blue marlin": 0.0,
+        "Escolar": 0.48453608247422675,
+        "Great barracuda": 0.14953271028037382,
+        "Long snouted lancetfish": 0.35365853658536583,
+        "Mahi mahi": 0.8780940594059404,
+        "Opah": 0.7621776504297995,
+        "Shark": 0.5579937304075235,
+        "Shortbill spearfish": 0.0,
+        "Skipjack tuna": 0.9014084507042254,
+        "Striped marlin": 0.409282700421941,
+        "Swordfish": 0.6108273748723186,
+        "Wahoo": 0.29607250755287007,
+        "Yellowfin tuna": 0.34862385321100914
+      }
+    },
+    "ejemplos_train": {
+      "Albacore": 4831,
+      "Bigeye tuna": 305,
+      "Blue marlin": 552,
+      "Escolar": 409,
+      "Great barracuda": 139,
+      "Long snouted lancetfish": 106,
+      "Mahi mahi": 3167,
+      "Opah": 1276,
+      "Shark": 554,
+      "Shortbill spearfish": 1794,
+      "Skipjack tuna": 2503,
+      "Striped marlin": 705,
+      "Swordfish": 1249,
+      "Wahoo": 509,
+      "Yellowfin tuna": 8267
+    },
+    "cajas_test": {
+      "Albacore": 129,
+      "Bigeye tuna": 22,
+      "Blue marlin": 31,
+      "Escolar": 43,
+      "Great barracuda": 12,
+      "Long snouted lancetfish": 41,
+      "Mahi mahi": 528,
+      "Opah": 46,
+      "Shark": 57,
+      "Shortbill spearfish": 7,
+      "Skipjack tuna": 11,
+      "Striped marlin": 230,
+      "Swordfish": 141,
+      "Wahoo": 69,
+      "Yellowfin tuna": 83
+    }
+  },
+  "errores": {
+    "cajas_especie": 1450,
+    "todos_aciertan": 0.3275862068965517,
+    "todos_fallan": 0.2489655172413793,
+    "al_menos_uno_acierta": 0.7510344827586207,
+    "solapamiento_errores_jaccard": {
+      "ResNet-50 | DeiT-S": 0.6168122270742358,
+      "ResNet-50 | ViT-B/16": 0.5680272108843537,
+      "ResNet-50 | ConvNeXt-T": 0.5667828106852497,
+      "ResNet-50 | Swin-T": 0.5757575757575758,
+      "DeiT-S | ViT-B/16": 0.6588380716934487,
+      "DeiT-S | ConvNeXt-T": 0.6556962025316456,
+      "DeiT-S | Swin-T": 0.6532156368221942,
+      "ViT-B/16 | ConvNeXt-T": 0.6598079561042524,
+      "ViT-B/16 | Swin-T": 0.6414073071718539,
+      "ConvNeXt-T | Swin-T": 0.6964028776978417
+    },
+    "todos_fallan_por_especie": {
+      "Albacore": 19,
+      "Bigeye tuna": 20,
+      "Blue marlin": 31,
+      "Escolar": 18,
+      "Great barracuda": 6,
+      "Long snouted lancetfish": 24,
+      "Mahi mahi": 15,
+      "Opah": 1,
+      "Shark": 14,
+      "Shortbill spearfish": 7,
+      "Skipjack tuna": 1,
+      "Striped marlin": 115,
+      "Swordfish": 21,
+      "Wahoo": 26,
+      "Yellowfin tuna": 43
+    }
+  },
+  "combinar": {
+    "ConvNeXt-T + Swin-T": {
+      "macro_f1": 0.4446049803547778
+    },
+    "los cinco": {
+      "macro_f1": 0.4326958229451574
+    },
+    "ResNet-50 + ViT-B/16": {
+      "macro_f1": 0.41798837270429745
+    },
+    "ResNet-50": {
+      "macro_f1": 0.3519948092086804
+    },
+    "DeiT-S": {
+      "macro_f1": 0.3537813021849763
+    },
+    "ViT-B/16": {
+      "macro_f1": 0.39325428228862375
+    },
+    "ConvNeXt-T": {
+      "macro_f1": 0.42260568185305813
+    },
+    "Swin-T": {
+      "macro_f1": 0.4237162666755599
+    }
+  },
+  "derivar": {
+    "ResNet-50": {
+      "100 %": 0.5521934037784182,
+      "80 %": 0.6240496198479392,
+      "60 %": 0.7115025353616226,
+      "40 %": 0.8175270108043217,
+      "20 %": 0.923076923076923
+    },
+    "ViT-B/16": {
+      "100 %": 0.6287223823246878,
+      "80 %": 0.7178871548619448,
+      "60 %": 0.8145182812917001,
+      "40 %": 0.907563025210084,
+      "20 %": 0.9375
+    },
+    "ConvNeXt-T": {
+      "100 %": 0.654338776817163,
+      "80 %": 0.7388955582232893,
+      "60 %": 0.825727248465439,
+      "40 %": 0.8915566226490595,
+      "20 %": 0.9366987179487181
+    },
+    "Swin-T": {
+      "100 %": 0.6666666666666666,
+      "80 %": 0.7470988395358144,
+      "60 %": 0.8283960501734721,
+      "40 %": 0.9087635054021609,
+      "20 %": 0.9711538461538461
+    },
+    "nota": "acierto sobre los peces (is_fish=1) que el modelo responde, ordenando por confianza; la cobertura es la fraccion de peces que responde solo"
+  },
+  "camaras": {
+    "ResNet-50": {
+      "n_camaras": 8,
+      "min": 0.16124031007751938,
+      "mediana": 0.5757082299421008,
+      "max": 0.804878048780488,
+      "por_camara": {
+        "3": 0.804878048780488,
+        "6": 0.3156565656565657,
+        "7": 0.764069264069264,
+        "26": 0.6137820512820512,
+        "45": 0.5376344086021505,
+        "46": 0.627906976744186,
+        "63": 0.42098273572377165,
+        "68": 0.16124031007751938
+      }
+    },
+    "ConvNeXt-T": {
+      "n_camaras": 8,
+      "min": 0.3596899224806201,
+      "mediana": 0.6638743019088105,
+      "max": 0.8292682926829268,
+      "por_camara": {
+        "3": 0.8292682926829268,
+        "6": 0.40025252525252525,
+        "7": 0.8138528138528139,
+        "26": 0.7467948717948718,
+        "45": 0.6559139784946236,
+        "46": 0.6718346253229974,
+        "63": 0.646746347941567,
+        "68": 0.3596899224806201
+      }
+    }
+  }
+}
