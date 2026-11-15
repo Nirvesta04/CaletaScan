@@ -115,6 +115,10 @@ PARES_NUEVOS = ('<li>%s</li>' % ' '.join(t for t in _ln if t)) if any(_ln) else 
 SEMILLAS_VR = (' La peor semilla del ViT supera a la mejor del ResNet.'
                if min(M['e5_vit_b_16_fishnet']['por_semilla']) > max(M['e4_resnet50_fishnet']['por_semilla'])
                else '')
+OF = J('oficial_por_modelo.json')
+_MF = {v['modelo']: v['macro_f1'] for v in M.values()}
+_inf = [OF[m] / _MF[m] - 1 for m in OF]
+INFLA_LO, INFLA_HI = round(100 * min(_inf)), round(100 * max(_inf))
 pe_r, pe_v = A['por_especie']['ResNet-50'], A['por_especie']['ViT-B/16']
 gana = sum(pe_v[k]['f1'] > pe_r[k]['f1'] + 1e-9 for k in pe_r)
 ef = PG_F['energia_en_la_caja']
@@ -156,7 +160,7 @@ son el mayor problema: todos los modelos caen, incluso el mejor baja de
 {num(V['camara_vista']['modelos']['ConvNeXt-T']['macro_f1'])} a
 {num(V['camara_nueva']['modelos']['ConvNeXt-T']['macro_f1'])}.</li>
 <li>El reparto oficial de FishNet tiene fuga: el {pct(fg['frac_cajas'], 1)} de sus cajas de prueba
-comparte lance con el entrenamiento, y eso infla los resultados alrededor de un 80 %.</li>
+comparte lance con el entrenamiento, y eso infla los resultados entre un {INFLA_LO} % y un {INFLA_HI} % según el modelo.</li>
 <li>Entre ResNet-50 y ViT-B/16: con el pez en posición al azar, los dos concentran su atención en el
 pez en una medida parecida, y el ViT reconoce mejor lo que no conoce. Ninguno sirve todavía para
 especies chilenas.</li>
@@ -278,8 +282,9 @@ su tamaño y su modernidad que por la atención.</p>
 En total el ViT gana en {gana} de las 15 especies. En barcos que no estaban en entrenamiento los dos
 modelos caen cerca de 0,10 y la diferencia deja de distinguirse. Para la caleta, todo barco sería nuevo:
 es la limitación más importante de este trabajo.</p>
-<p>Otros dos resultados del Avance se mantienen. Con el reparto oficial, el macro-F1 sube a 0,602
-(ResNet) y 0,641 (ViT): la fuga infla los números alrededor de un 80 %. Y la hipótesis del enunciado,
+<p>Otros dos resultados del Avance se mantienen. Con el reparto oficial, el macro-F1 sube a
+{num(OF['ResNet-50'])} (ResNet-50) y {num(OF['ViT-B/16'])} (ViT-B/16), y en los cinco modelos la fuga infla los
+números entre un {INFLA_LO} % y un {INFLA_HI} %. Y la hipótesis del enunciado,
 que el ViT gana gracias a la atención global sobre peces amontonados, no se sostiene: separando la
 prueba en cuatro grados de oclusión, la ventaja es +0,052, +0,071, +0,017 y +0,044, sin crecer con la
 oclusión (Spearman −0,60).</p>

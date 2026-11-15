@@ -85,7 +85,7 @@ son el mayor problema: todos los modelos caen, incluso el mejor baja de
 0,426 a
 0,336.</li>
 <li>El reparto oficial de FishNet tiene fuga: el 45,8 % de sus cajas de prueba
-comparte lance con el entrenamiento, y eso infla los resultados alrededor de un 80 %.</li>
+comparte lance con el entrenamiento, y eso infla los resultados entre un 59 % y un 77 % según el modelo.</li>
 <li>Entre ResNet-50 y ViT-B/16: con el pez en posición al azar, los dos concentran su atención en el
 pez en una medida parecida, y el ViT reconoce mejor lo que no conoce. Ninguno sirve todavía para
 especies chilenas.</li>
@@ -207,8 +207,9 @@ su tamaño y su modernidad que por la atención.</p>
 En total el ViT gana en 10 de las 15 especies. En barcos que no estaban en entrenamiento los dos
 modelos caen cerca de 0,10 y la diferencia deja de distinguirse. Para la caleta, todo barco sería nuevo:
 es la limitación más importante de este trabajo.</p>
-<p>Otros dos resultados del Avance se mantienen. Con el reparto oficial, el macro-F1 sube a 0,602
-(ResNet) y 0,641 (ViT): la fuga infla los números alrededor de un 80 %. Y la hipótesis del enunciado,
+<p>Otros dos resultados del Avance se mantienen. Con el reparto oficial, el macro-F1 sube a
+0,616 (ResNet-50) y 0,656 (ViT-B/16), y en los cinco modelos la fuga infla los
+números entre un 59 % y un 77 %. Y la hipótesis del enunciado,
 que el ViT gana gracias a la atención global sobre peces amontonados, no se sostiene: separando la
 prueba en cuatro grados de oclusión, la ventaja es +0,052, +0,071, +0,017 y +0,044, sin crecer con la
 oclusión (Spearman −0,60).</p>

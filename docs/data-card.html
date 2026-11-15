@@ -358,7 +358,7 @@ footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--rule);
     <h4>El split oficial publicado filtra: en nuestro subconjunto, el 45,8 % de las cajas de test comparte secuencia con train</h4>
     <div class="col">
     <p>3.743 de las 13.097 secuencias del CSV oficial cruzan particiones (28,6 %), y en el CSV completo el 44,5 % de las cajas de test pertenece a una de ellas. En nuestro subconjunto, que es sobre el que se mide todo, son el 45,8 % de las cajas de test (el 39,1 % de las imágenes) y el 52,5 % de las cajas de val. Los fotogramas de una misma secuencia son casi duplicados: la correlación media entre miniaturas de pares que cruzan train/test es 0,87, contra 0,03 de la línea base.</p>
-    <p><strong>Efecto medido:</strong> evaluar en el test oficial infla el macro-F1 alrededor de un 80 % respecto del test purgado. No es una fuga que fabricamos para ilustrar; es la del split publicado.</p>
+    <p><strong>Efecto medido:</strong> evaluar en el test oficial infla el macro-F1 respecto del test purgado: entre un 59 % y un 77 % en los cinco modelos, con el ajuste de logits de los resultados finales (alrededor de un 80 % sin ese ajuste). No es una fuga que fabricamos para ilustrar; es la del split publicado.</p>
     <p>Hay además <strong>7 imágenes que aparecen enteras en train y en test</strong>, porque el split oficial se armó caja por caja y no por imagen. La purga por secuencia las elimina también: en el test purgado no queda ninguna caja cuya imagen esté en train.</p>
     </div>
   </div>

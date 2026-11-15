@@ -132,6 +132,53 @@ def fishnet_ejemplos(df, n=4):
                                         quality=88)
 
 
+def kaggle_rotaciones(n=8):
+    """Copias de UNA sola foto original de Kaggle: lo que hay detras de las
+    1.000 imagenes por especie. Se elige un grupo de tamano tipico (20)."""
+    k = pd.read_csv(os.path.join(SPLITS, "kaggle_split.csv"))
+    tam = k.groupby("group_id").size()
+    g = tam[(tam == 20)].index
+    g = [x for x in g if x.startswith("Sea Bass")][0] if any(x.startswith("Sea Bass") for x in g) else g[0]
+    paths = k[k["group_id"] == g]["path"].tolist()[:n]
+    t, pad = 300, 12
+    lienzo = Image.new("RGB", (4 * t + 5 * pad, 2 * int(t * 445 / 590) + 3 * pad), "white")
+    for i, p in enumerate(paths):
+        im = Image.open(os.path.join(ROOT, p)).convert("RGB")
+        im = im.resize((t, int(t * im.height / im.width)))
+        lienzo.paste(im, (pad + (i % 4) * (t + pad), pad + (i // 4) * (im.height + pad)))
+    lienzo.save(os.path.join(OUT, "kaggle_rotaciones.jpg"), quality=90)
+    print("rotaciones: grupo %s, %d copias en total" % (g, len(k[k["group_id"] == g])))
+
+
+def tiene_marca(path):
+    """Algunas camaras de FishNet traen sobreimpreso un aviso de confidencialidad
+    del proveedor (una franja blanca arriba a la izquierda). Esas fotos no se
+    muestran en las laminas."""
+    with Image.open(os.path.join(ROOT, path)) as im:
+        w, h = im.size
+        franja = np.asarray(im.convert("L").crop((0, 0, int(w * 0.33), max(4, h // 100))))
+    return franja.mean() > 200
+
+
+def fishnet_sin_peces(df, n=3):
+    """Fotogramas sin ningun pez: cubierta vacia o solo tripulantes. Son el
+    10,8 % de las imagenes del subconjunto."""
+    g = df.groupby("img_id").agg(peces=("is_fish", "sum"), cam=("cam_id", "first"),
+                                 hum=("label_model", lambda s: (s == "Human").sum()))
+    total, sin = len(g), int((g["peces"] == 0).sum())
+    ruta = df.groupby("img_id")["path"].first()
+    g = g[g["peces"] == 0].drop_duplicates(["cam", "hum"])
+    g = g[[not tiene_marca(ruta[i]) for i in g.index]]
+    vacias = g[(g["peces"] == 0) & (g["hum"] == 0)].drop_duplicates("cam")
+    for j, iid in enumerate(vacias.index[:n]):
+        foto_fishnet(df, iid, 800, con_cajas=False).save(
+            os.path.join(OUT, "fishnet_vacia_%d.jpg" % (j + 1)), quality=88)
+    personas = g[(g["peces"] == 0) & (g["hum"] >= 2)].drop_duplicates("cam")
+    foto_fishnet(df, personas.index[0], 800, con_cajas=False).save(
+        os.path.join(OUT, "fishnet_solo_personas.jpg"), quality=88)
+    print("sin peces: %d de %d imagenes" % (sin, total))
+
+
 def chile():
     with open(os.path.join(ROOT, "data", "chile_creditos.csv"), encoding="utf-8") as fh:
         filas = list(csv.DictReader(fh))
@@ -153,7 +200,9 @@ def main():
     df = pd.read_csv(os.path.join(SPLITS, "fishnet_crops.csv"))
     kaggle_grilla()
     kaggle_borrado()
+    kaggle_rotaciones()
     fishnet_secuencia(df)
+    fishnet_sin_peces(df)
     fishnet_ejemplos(df)
     chile()
     print("listo: %s" % OUT)

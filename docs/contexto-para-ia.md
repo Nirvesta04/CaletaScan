@@ -205,7 +205,7 @@ cada una. Resultado: el fotograma 5 de un lance queda en entrenamiento y el foto
 - **45,8 %** de las cajas de prueba oficiales (39,1 % de las imágenes) comparte secuencia con el entrenamiento, en nuestro subconjunto. El 44,5 % que se dijo en el Avance era del archivo oficial completo.
 - Correlación de píxeles entre dos fotogramas del mismo lance: **0,87**. Entre dos fotos
   cualquiera: **0,03**.
-- Usar ese reparto sin corregir **infla el resultado ~80 %**:
+- Usar ese reparto sin corregir **infla el resultado ~80 %** (cifras sin ajuste de logits; con el ajuste de los resultados finales, entre 59 % y 77 % según el modelo):
 
 | | Test oficial (con fuga) | Test limpio |
 |---|---|---|

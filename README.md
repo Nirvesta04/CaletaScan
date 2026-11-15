@@ -99,7 +99,7 @@ python scripts/auditoria.py                 # fuga, duplicados y sobreajuste
 python -m tests.test_stats && python -m tests.test_calibrate
 python -m src.demo                          # demo en http://127.0.0.1:8000
 python -m scripts.build_informe             # docs/informe.html y .pdf
-python -m scripts.figuras_mazo && python -m scripts.build_pptx_final   # mazo en entrega/
+python -m scripts.figuras_mazo && python -m scripts.graficos_mazo && python -m scripts.build_pptx_final   # mazo en entrega/
 ```
 
 El mazo final lleva fotos de los datasets y se escribe en `entrega/`, que no se
