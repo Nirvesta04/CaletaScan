@@ -24,10 +24,12 @@ from PIL import Image
 from scipy.stats import spearmanr
 
 from src import data
-from src.evaluate import Run, confusion, logit_adjust, macro_f1, report, hierarchical_credit
+from src.evaluate import (Run, cluster_index, confusion, hierarchical_credit, logit_adjust, macro_f1,
+                          paired_bootstrap, report)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, "runs")
+COBERTURAS = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2)
 MOD = {"ResNet-50": "e4_resnet50_fishnet", "DeiT-S": "e10_deit_s_fishnet",
        "ViT-B/16": "e5_vit_b_16_fishnet", "ConvNeXt-T": "e11_convnext_t_fishnet",
        "Swin-T": "e12_swin_t_fishnet"}
@@ -149,12 +151,11 @@ def main():
             conf = p.max(1)
             orden = np.argsort(-conf)
             fila = []
-            for cob in (1.0, 0.8, 0.6, 0.4, 0.2):
+            for cob in COBERTURAS:
                 sel = orden[:int(round(cob * len(orden)))]
                 fila.append(float((pred[sel] == y[peces][sel]).mean()))
             curva.append(fila)
-        out["derivar"][m] = dict(zip(["100 %", "80 %", "60 %", "40 %", "20 %"],
-                                     [float(x) for x in np.mean(curva, 0)]))
+        out["derivar"][m] = {"%d %%" % round(100 * c): float(x) for c, x in zip(COBERTURAS, np.mean(curva, 0))}
     out["derivar"]["nota"] = ("acierto sobre los peces (is_fish=1) que el modelo responde, ordenando por "
                               "confianza; la cobertura es la fraccion de peces que responde solo")
 
@@ -170,6 +171,47 @@ def main():
         v = np.array(list(accs.values()))
         out["camaras"][m] = {"n_camaras": len(v), "min": float(v.min()), "mediana": float(np.median(v)),
                              "max": float(v.max()), "por_camara": accs}
+
+    # ---------------------------------------------------------- 8. margenes de error
+    seq = df["seq_id"].to_numpy()
+
+    def acc_fn(m, rows):
+        return lambda r: float(np.mean([(p[rows][r] == y[rows][r]).mean() for p in P[m]]))
+
+    out["margenes"] = {"tamano": {}}
+    for a, b, n in zip(cortes[:-1], cortes[1:], nombres):
+        rows = np.flatnonzero((lado >= a) & (lado < b) & es_especie)
+        g = cluster_index(seq[rows])
+        out["margenes"]["tamano"][n] = {
+            m: paired_bootstrap(acc_fn(m, rows), acc_fn("ResNet-50", rows), g, 2000)
+            for m in ("Swin-T", "ConvNeXt-T", "ViT-B/16")}
+    rows = np.flatnonzero(es_especie)
+    g = cluster_index(seq[rows])
+
+    def ventaja(m):
+        def f(r):
+            rr = rows[r]
+            dif = lambda mk: np.mean([(p[rr][mk] == y[rr][mk]).mean() - (q[rr][mk] == y[rr][mk]).mean()
+                                      for p, q in zip(P[m], P["ResNet-50"])])
+            return float(dif(lado[rr] >= 130) - dif(lado[rr] < 80))
+        return f
+    out["margenes"]["interaccion"] = {m: paired_bootstrap(ventaja(m), lambda r: 0.0, g, 2000)
+                                      for m in ("Swin-T", "ConvNeXt-T")}
+    ens = [hierarchical_credit(((probs("ConvNeXt-T", s_) + probs("Swin-T", s_)) / 2).argmax(1), y, cls)
+           for s_ in seeds]
+    ga = cluster_index(seq)
+    out["margenes"]["ensamble_vs_swin"] = paired_bootstrap(
+        lambda r: float(np.mean([macro_f1(confusion(y[r], p[r], K), keep) for p in ens])),
+        lambda r: float(np.mean([macro_f1(confusion(y[r], p[r], K), keep) for p in P["Swin-T"]])), ga, 2000)
+
+    # dentro de cada especie: acierto chico (<130 px) contra grande (>=130 px)
+    out["por_especie_y_tamano"] = {}
+    for k in sp:
+        sm = np.flatnonzero((y == k) & (lado < 130)); gr = np.flatnonzero((y == k) & (lado >= 130))
+        if len(sm) >= 20 and len(gr) >= 20:
+            out["por_especie_y_tamano"][cls[k]] = {
+                "n_chico": int(len(sm)), "n_grande": int(len(gr)),
+                **{m: {"chico": acc(sm, P[m]), "grande": acc(gr, P[m])} for m in MOD}}
 
     with open(os.path.join(RUNS, "investigacion.json"), "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)

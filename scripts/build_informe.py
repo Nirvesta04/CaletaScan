@@ -33,6 +33,7 @@ CH = J('chile_ood.json')
 CAL = J('calibracion_ood.json')
 E7 = J('comparacion_e7.json')
 KAG = J('comparacion_e1_e2.json')
+INV = J('investigacion.json')
 
 
 def num(x, d=3, s=False):
@@ -119,6 +120,14 @@ OF = J('oficial_por_modelo.json')
 _MF = {v['modelo']: v['macro_f1'] for v in M.values()}
 _inf = [OF[m] / _MF[m] - 1 for m in OF]
 INFLA_LO, INFLA_HI = round(100 * min(_inf)), round(100 * max(_inf))
+_T, _MT = INV['tamano'], INV['margenes']['tamano']
+FILAS_TAMANO = '\n'.join(
+    '<tr><td class="name">%s</td><td class="num">%d</td><td class="num">%s</td><td class="num">%s</td>'
+    '<td class="num">%s</td><td class="num">%s %s</td></tr>'
+    % (t, _T[t]['cajas_especie'], pct(_T[t]['ResNet-50']['acierto']), pct(_T[t]['ConvNeXt-T']['acierto']),
+       pct(_T[t]['Swin-T']['acierto']), num(100 * _MT[t]['Swin-T']['delta_medio'], 0, True) + ' pts',
+       '[%s, %s]' % (num(100 * _MT[t]['Swin-T']['ic95'][0], 0, True), num(100 * _MT[t]['Swin-T']['ic95'][1], 0, True)))
+    for t in _T)
 pe_r, pe_v = A['por_especie']['ResNet-50'], A['por_especie']['ViT-B/16']
 gana = sum(pe_v[k]['f1'] > pe_r[k]['f1'] + 1e-9 for k in pe_r)
 ef = PG_F['energia_en_la_caja']
@@ -133,8 +142,7 @@ cuerpo = f'''
 <header class="mast">
   <div class="kicker">Caleta-Scan · G3 · Aprendizaje Automático II · PUCV · noviembre 2026</div>
   <h1>Informe técnico</h1>
-  <p class="sub">Clasificación de especies de pescado con redes convolucionales y transformers:
-  datos, protocolo de comparación, resultados y límites.</p>
+  <p class="sub">¿CNN o transformer para reconocer peces? Con un buen modelo, el límite es la foto.</p>
   <p class="autores">Patricio Toledo · Andrés Saavedra · Sebastián Casas · Bastián Molina</p>
 </header>
 
@@ -148,22 +156,20 @@ prueba limpia de fugas. Lo principal:</p>
 <ol>
 <li><strong>A igual tamaño y época, CNN y transformer no se distinguen.</strong> DeiT-S queda a
 {num(VT['DeiT-S - ResNet-50']['delta_medio'], 3, True)} del ResNet-50 y Swin-T a
-{num(VT['Swin-T - ConvNeXt-T']['delta_medio'], 3, True)} de ConvNeXt-T, con márgenes que incluyen el cero.
-La ventaja del ViT-B/16 sobre el ResNet-50 ({num(P_VR['delta_medio'], 3, True)}, margen
-{ic(P_VR['ic95'])}) no se mantiene en un transformer del tamaño del ResNet.</li>
-<li><strong>Lo que mejora el resultado es usar un modelo moderno.</strong> ConvNeXt-T, una CNN de 2022,
-supera al ResNet-50 por {num(VT['ConvNeXt-T - ResNet-50']['delta_medio'], 3, True)} (margen
-{ic(VT['ConvNeXt-T - ResNet-50']['ic95'])}), también en barcos que no vio. Esta diferencia mide modelo y
-receta de entrenamiento juntos.</li>
-<li>Los barcos que el modelo no vio, que son el {pct(1 - cam['frac_cajas_camara_vista'])} de la prueba,
-son el mayor problema: todos los modelos caen, incluso el mejor baja de
-{num(V['camara_vista']['modelos']['ConvNeXt-T']['macro_f1'])} a
-{num(V['camara_nueva']['modelos']['ConvNeXt-T']['macro_f1'])}.</li>
-<li>El reparto oficial de FishNet tiene fuga: el {pct(fg['frac_cajas'], 1)} de sus cajas de prueba
-comparte lance con el entrenamiento, y eso infla los resultados entre un {INFLA_LO} % y un {INFLA_HI} % según el modelo.</li>
-<li>Entre ResNet-50 y ViT-B/16: con el pez en posición al azar, los dos concentran su atención en el
-pez en una medida parecida, y el ViT reconoce mejor lo que no conoce. Ninguno sirve todavía para
-especies chilenas.</li>
+{num(VT['Swin-T - ConvNeXt-T']['delta_medio'], 3, True)} de ConvNeXt-T. La ventaja del ViT-B/16 sobre el
+ResNet-50 ({num(P_VR['delta_medio'], 3, True)}, margen {ic(P_VR['ic95'])}) no se mantiene en un transformer
+del tamaño del ResNet.</li>
+<li><strong>Los modelos de diseño moderno rinden más</strong> (ConvNeXt-T y Swin-T, 0,42 de macro-F1, contra
+0,35 del ResNet-50), <strong>pero sobre todo cuando el pez se ve grande en la foto.</strong> Con peces de
+menos de 80 píxeles todos fallan parecido; con peces de 130 a 220 píxeles, Swin-T acierta
+{pct(INV['tamano']['130-220 px']['Swin-T']['acierto'])} y el ResNet-50 {pct(INV['tamano']['130-220 px']['ResNet-50']['acierto'])}.</li>
+<li><strong>Con un buen modelo, el límite es la foto.</strong> Con el mismo modelo, el acierto va de
+{pct(INV['camaras']['ConvNeXt-T']['min'])} a {pct(INV['camaras']['ConvNeXt-T']['max'])} según la cámara, y baja con poca luz. En barcos que no
+estaban en entrenamiento ({pct(1 - cam['frac_cajas_camara_vista'])} de la prueba) todos los modelos caen.</li>
+<li><strong>Uno de cada cuatro peces falla en los cinco modelos</strong>, sobre todo peces de pico y
+atunes: ahí faltan datos, no un modelo mejor.</li>
+<li><strong>Uso realista hoy:</strong> si el sistema responde solo los peces en que más confía, acierta el
+{pct(INV['derivar']['Swin-T']['60 %'])} en 6 de cada 10 y deriva el resto al inspector.</li>
 </ol>
 </section>
 
@@ -291,7 +297,41 @@ oclusión (Spearman −0,60).</p>
 </section>
 
 <section>
-<h2>6 · Dónde mira cada modelo</h2>
+<h2>6 · Qué significan los resultados</h2>
+<p>Analizamos las predicciones guardadas de los cinco modelos sobre la prueba limpia, sin reentrenar
+(<code>scripts/investigacion.py</code>).</p>
+<div class="tw"><table>
+<caption>Acierto en peces de las 15 especies según el tamaño del pez en la foto (lado corto de su caja). Diferencia
+Swin-T − ResNet-50 con bootstrap pareado por lance.</caption>
+<thead><tr><th>Tamaño</th><th class="num">peces</th><th class="num">ResNet-50</th><th class="num">ConvNeXt-T</th><th class="num">Swin-T</th><th class="num">Swin-T − ResNet-50</th></tr></thead>
+<tbody>
+{FILAS_TAMANO}
+</tbody></table></div>
+<ul>
+<li><strong>La ventaja del modelo moderno depende de cuántos píxeles tiene el pez.</strong> Con peces chicos
+la imagen no trae el detalle y todos fallan parecido; con peces grandes, los modernos lo aprovechan y el
+ResNet-50 no mejora. Pasa también dentro de una misma especie: con albacoras grandes, Swin-T acierta
+{pct(INV['por_especie_y_tamano']['Albacore']['Swin-T']['grande'])} y el ResNet-50 {pct(INV['por_especie_y_tamano']['Albacore']['ResNet-50']['grande'])}.</li>
+<li><strong>La cámara y la luz pesan más que el modelo.</strong> Entre las 8 cámaras con al menos 40 peces de
+prueba, ConvNeXt-T acierta entre {pct(INV['camaras']['ConvNeXt-T']['min'])} y {pct(INV['camaras']['ConvNeXt-T']['max'])}. Swin-T acierta
+{pct(INV['luz']['oscuro']['Swin-T'])} en el tercio de recortes más oscuros y {pct(INV['luz']['claro']['Swin-T'])} en el más claro.</li>
+<li><strong>Los errores difíciles son compartidos.</strong> En el {pct(INV['errores']['todos_fallan'])} de los peces fallan los
+cinco modelos; un tercio de esos casos es el marlín rayado, y otra parte importante son atunes. Ningún diseño
+los resuelve: faltan ejemplos de esos grupos.</li>
+<li><strong>Responder solo lo seguro.</strong> Ordenando los peces por la confianza del modelo, Swin-T acierta el
+{pct(INV['derivar']['Swin-T']['100 %'])} si responde todo, el {pct(INV['derivar']['Swin-T']['60 %'])} si responde el 60 % más seguro y el
+{pct(INV['derivar']['Swin-T']['40 %'])} si responde el 40 %.</li>
+<li><strong>Combinar ConvNeXt-T y Swin-T</strong> da {num(INV['combinar']['ConvNeXt-T + Swin-T']['macro_f1'])} de macro-F1, una mejora
+de {num(INV['margenes']['ensamble_vs_swin']['delta_medio'], 3, True)} sobre Swin-T (margen {ic(INV['margenes']['ensamble_vs_swin']['ic95'])}), a cambio de duplicar el cómputo.</li>
+</ul>
+<p><strong>Recomendaciones para la Caleta Portales.</strong> (1) Una buena foto: cámara fija cerca de donde
+se ordena el pescado, para que cada pez ocupe más de 130 píxeles, y con buena luz. (2) Un modelo moderno,
+ConvNeXt-T o Swin-T. (3) Usarlo como apoyo: que proponga la especie solo cuando está seguro y derive el
+resto al inspector. (4) Reunir ejemplos de atunes y peces de pico.</p>
+</section>
+
+<section>
+<h2>7 · Dónde mira cada modelo</h2>
 <p>Este análisis y el siguiente se hicieron sobre el par original, ResNet-50 y ViT-B/16. Medimos qué fracción de la atención de cada mapa cae dentro de la caja del pez, sobre {PG_F['n']}
 recortes de la prueba limpia de FishNet, los mismos para los dos modelos: Grad-CAM (Selvaraju et al.,
 2017) para el ResNet; attention rollout (Abnar y Zuidema, 2020) y la relevancia de Chefer et al.
@@ -316,7 +356,7 @@ que ve normalmente (semilla 0).</p>
 </section>
 
 <section>
-<h2>7 · Decir «no sé»</h2>
+<h2>8 · Decir «no sé»</h2>
 <p><strong>Criterio:</strong> si la energía de la salida (Liu et al., 2020) es más baja que la del 95 % de los
 peces de validación, el modelo responde «no sé». El umbral se fija en validación. Medimos la separación
 con el AUROC (1 = separa perfecto lo conocido de lo nuevo; 0,5 = no separa).</p>
@@ -334,14 +374,6 @@ cuando ninguno rechaza, casi siempre responden «atún aleta amarilla». Es una 
 fotos de peces en la mano o sobre una mesa, así que parte de lo detectado es el cambio de tipo de foto.
 Además, la confianza que muestran los modelos no está calibrada: es baja en personas y demasiado alta en
 peces, y un ajuste de temperatura único no lo corrige.</p>
-</section>
-
-<section>
-<h2>8 · Costo</h2>
-<p>En un PC sin GPU (i5-12400F), clasificar un pez toma 43 ms con el ResNet-50 y 119 ms con el ViT-B/16.
-Una foto típica de FishNet tiene 5 peces: 0,2 s contra 0,6 s. Para fotos de desembarque, los dos
-alcanzan; para video continuo, ninguno alcanza en CPU y los dos alcanzan en GPU. La velocidad no cambia
-lo que se puede hacer.</p>
 </section>
 
 <section>
@@ -367,13 +399,10 @@ redistribuimos imágenes y las fotos de las láminas llevan las caras pixeladas.
 entrenamiento trabaja sobre las salidas guardadas y no usa la GPU. La demo (<code>python -m src.demo</code>)
 pasa la misma caja por las dos arquitecturas y muestra la especie, la confianza, si responde «no sé» y
 el tiempo de cada una; no necesita instalar nada fuera de los requisitos.</p>
-<div class="fx">python scripts/build_splits.py
-python -m scripts.entrenar_pares            <span class="c"># E10-E12; --parar para detener</span>
-python -m scripts.analisis_final            <span class="c"># tablas de este informe</span>
-python -m scripts.interpret_fishnet
-python -m scripts.chile_ood
-python -m src.demo                          <span class="c"># demo local en el puerto 8000</span>
-python -m tests.test_stats &amp;&amp; python -m tests.test_calibrate</div>
+<div class="fx">python -m scripts.entrenar_pares        <span class="c"># entrena; --parar para detener</span>
+python -m scripts.analisis_final        <span class="c"># tablas de resultados</span>
+python -m scripts.investigacion         <span class="c"># sección 6</span>
+python -m src.demo                      <span class="c"># demo local</span></div>
 </section>
 
 <section>

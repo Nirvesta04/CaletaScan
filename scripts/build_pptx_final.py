@@ -37,7 +37,7 @@ FIGS = os.path.join(ROOT, 'docs', 'figs')
 SALIDA = os.path.join(ROOT, 'entrega', 'Caleta-Scan-Final-G3.pptx')
 
 TITULO = '¿CNN o transformer para reconocer peces?'
-ESLOGAN = 'No importa si es CNN o transformer: importa que sea moderno.'
+ESLOGAN = 'Con un buen modelo, el límite es la foto.'
 
 
 def J(nombre):
@@ -53,6 +53,7 @@ CHILE = J('chile_ood.json')
 CAL = J('calibracion_ood.json')
 E7 = J('comparacion_e7.json')
 KAG = J('comparacion_e1_e2.json')
+INV = J('investigacion.json')
 
 
 def ood(run, sub):
@@ -267,9 +268,10 @@ texto(s, x0, 670, 840, 140, ESLOGAN, 34, ACCL, line=1.3)
 texto(s, x0, 860, 840, 120, [[n] for n in NOM], 24, DMUTED, line=1.2)
 notas(s, 'Somos el grupo G3 y nuestro proyecto es Caleta-Scan. La pregunta es simple: para reconocer '
          'la especie de un pez en una foto de faena, ¿conviene una red convolucional (CNN) o un '
-         'transformer? La respuesta corta está en el eslogan: lo que importa no es la familia del '
-         'modelo, sino que sea moderno. En 15 minutos mostramos los datos, cómo comparamos de forma '
-         'justa y qué encontramos.')
+         'transformer? La respuesta corta: a igual tamaño y época, da lo mismo. Y con un modelo '
+         'moderno, lo que más limita el resultado deja de ser el modelo y pasa a ser la foto: qué tan '
+         'grande se ve el pez, la luz y la cámara. En 15 minutos mostramos los datos, cómo comparamos '
+         'de forma justa, qué encontramos y qué recomendamos para la caleta.')
 
 # 2 ----------------------------------------------------------------- problema
 s = nueva()
@@ -483,26 +485,34 @@ notas(s, 'Cada línea es una diferencia entre dos modelos, con su margen. Si la 
          lectura('Swin-T - ConvNeXt-T', VT['Swin-T - ConvNeXt-T']),
          lectura('ConvNeXt-T - ResNet-50', VT['ConvNeXt-T - ResNet-50'])))
 
-# 13 ---------------------------------------------------------------- lo que si importa
-d_cr = VT['ConvNeXt-T - ResNet-50']
-n_cr = PV['camara_nueva']['pares']['ConvNeXt-T - ResNet-50']
-s = nueva(DARK)
-titulo(s, 'Lo que sí importa', 'Usar un modelo moderno', oscuro=True)
-cifra(s, 120, 360, 820, num(d_cr['delta_medio'], 3, True),
-      'de macro-F1 de ConvNeXt-T sobre el ResNet-50 (margen %s)' % ic(d_cr['ic95'], True),
-      col=ACCL, vsize=130, esize=30, ecol=DMUTED)
-cifra(s, 1000, 360, 800, num(n_cr['delta_medio'], 3, True),
-      'en barcos que los modelos nunca vieron (margen %s)' % ic(n_cr['ic95'], True),
-      col=ACCL, vsize=130, esize=30, ecol=DMUTED)
-texto(s, 120, 760, 1680, 80, ESLOGAN, 40, ONDARK, bold=True)
-texto(s, 120, 860, 1680, 80, 'El ResNet-50 usó su propia receta de entrenamiento: la diferencia '
-      'mide el modelo y su receta juntos.', 24, DMUTED, line=1.3)
-pie(s, oscuro=True)
-notas(s, 'Este es el mensaje del proyecto. Cambiar de CNN a transformer, a igual tamaño, no mejora '
-         'nada. Cambiar de un modelo de 2015 a uno de 2022 sí: %s en la prueba limpia y %s en los '
-         'barcos que el modelo no vio. Advertencia honesta: el ResNet-50 se entrenó con otra tasa de '
-         'aprendizaje que ConvNeXt-T, así que no separamos la arquitectura de la receta.'
-      % (num(d_cr['delta_medio'], 3, True), num(n_cr['delta_medio'], 3, True)))
+# 13 ---------------------------------------------------------------- tamano del pez
+MT = INV['margenes']['tamano']
+chico, medio = MT['< 80 px']['Swin-T'], MT['130-220 px']['Swin-T']
+alb = INV['por_especie_y_tamano'].get('Albacore')
+s = nueva()
+titulo(s, 'Resultado · dónde gana el moderno', 'La ventaja aparece cuando el pez se ve grande')
+figura(s, 'g_tamano.png', 120, 280, w=1240)
+cifra(s, 1420, 310, 380, num(chico['delta_medio'] * 100, 0, True).replace(',0', '') + ' pts',
+      'de acierto de Swin-T sobre el ResNet-50 con peces de menos de 80 px', col='9AA5AE', vsize=64, esize=23)
+cifra(s, 1420, 540, 380, num(medio['delta_medio'] * 100, 0, True).replace(',0', '') + ' pts',
+      'con peces de 130 a 220 px', col='2F7FC1', vsize=64, esize=23)
+if alb:
+    texto(s, 1420, 760, 380, 200,
+          [[('Albacora grande: ', True, INK),
+            ('%s de acierto con Swin-T, %s con el ResNet-50.'
+             % (pct(alb['Swin-T']['grande']), pct(alb['ResNet-50']['grande'])), False, MUTED)]],
+          23, line=1.3)
+pie(s, 'Acierto en peces de las 15 especies, prueba limpia · pts = puntos porcentuales de acierto')
+notas(s, 'Este es el hallazgo central. La ventaja de los modelos modernos no es pareja: con peces chicos '
+         'en la foto, de menos de 80 píxeles, todos fallan parecido, porque la imagen no trae el detalle. '
+         'Cuando el pez se ve grande, los modernos aprovechan ese detalle y el ResNet no: Swin-T le saca '
+         '%s puntos con peces chicos (margen %s a %s) y %s con peces de 130 a 220 px (margen %s a %s). '
+         'Pasa también dentro de una misma especie, así que no es que los peces grandes sean otras '
+         'especies. El caso más claro es el albacora. Qué significa: elegir un buen modelo solo rinde si '
+         'la foto le da suficientes píxeles al pez.'
+      % (num(100 * chico['delta_medio'], 0, True), num(100 * chico['ic95'][0], 0, True),
+         num(100 * chico['ic95'][1], 0, True), num(100 * medio['delta_medio'], 0, True),
+         num(100 * medio['ic95'][0], 0, True), num(100 * medio['ic95'][1], 0, True)))
 
 # 14 ---------------------------------------------------------------- barcos nuevos
 cv, cn = PV['camara_vista']['modelos'], PV['camara_nueva']['modelos']
@@ -521,6 +531,25 @@ notas(s, 'Hallazgo que nos marcó el profesor: el 31 %% de la prueba viene de c�
       % (num(cv['ConvNeXt-T']['macro_f1']), num(cn['ConvNeXt-T']['macro_f1']),
          num(cv['ResNet-50']['macro_f1']), num(cn['ResNet-50']['macro_f1'])))
 
+# 14b --------------------------------------------------------------- camara y luz
+CA = INV['camaras']['ConvNeXt-T']
+LZ = INV['luz']
+s = nueva()
+titulo(s, 'Resultado · la foto', 'La cámara y la luz pesan más que el modelo')
+figura(s, 'g_camaras_acierto.png', 120, 280, w=1000)
+figura(s, 'g_luz.png', 1180, 280, w=620)
+texto(s, 120, 880, 1680, 100,
+      [[('Mismo modelo, otra cámara: ', True, INK),
+        ('ConvNeXt-T acierta entre %s y %s según la cámara. ' % (pct(CA['min']), pct(CA['max'])), False, MUTED),
+        ('Con poca luz, ', True, INK), ('todos aciertan menos.', False, MUTED)]], 26, line=1.3)
+pie(s, 'Acierto en peces de las 15 especies · cámaras con 40 peces o más en la prueba · luz = brillo del recorte en tercios')
+notas(s, 'Con el mismo modelo, ConvNeXt-T, el acierto va de %s a %s según la cámara: esa diferencia es '
+         'mucho mayor que la que hay entre modelos. Influye el ángulo, la distancia y la luz de cada '
+         'barco. Con la luz pasa lo mismo: Swin-T acierta %s en las fotos más oscuras y %s en las más '
+         'claras. Para la caleta, cómo y dónde se pone la cámara importa tanto como el modelo. Solo 8 '
+         'cámaras tienen suficientes peces para compararlas, así que es una tendencia, no una medición fina.'
+      % (pct(CA['min']), pct(CA['max']), pct(LZ['oscuro']['Swin-T']), pct(LZ['claro']['Swin-T'])))
+
 # 15 ---------------------------------------------------------------- especies
 pe = A['por_especie']
 s = nueva()
@@ -537,21 +566,31 @@ notas(s, 'Cada fila es una especie, de la más común a la más rara; cada colum
          'todos, y las raras, con pocas cajas de prueba, quedan cerca de cero en todos. Esas especies '
          'raras son las que bajan el macro-F1.')
 
-# 16 ---------------------------------------------------------------- atunes
+# 16 ---------------------------------------------------------------- errores compartidos
+ER = INV['errores']
+tf = ER['todos_fallan_por_especie']
+n_tf = sum(tf.values())
 s = nueva()
-titulo(s, 'Resultado · el error más común', 'Confundir un atún con otro')
-figura(s, 'g_atunes.png', 120, 280, h=680)
-texto(s, 1240, 330, 560, 600,
-      [[('El aleta amarilla ', True, INK), ('se confunde con el albacora en casi un tercio de los casos.', False, MUTED)],
-       [('El patudo ', True, INK), ('casi nunca se reconoce: tiene solo 22 cajas de prueba.', False, MUTED)],
-       [('Con los cuatro atunes como una sola clase, ', True, INK),
-        ('todos los modelos suben y la ventaja del ViT-B/16 sobre el ResNet-50 deja de distinguirse.', False, MUTED)]],
-      26, line=1.35, space_after=24)
-pie(s, 'ConvNeXt-T · porcentaje de cada fila · «otra clase» incluye atún sin especie y desconocido')
-notas(s, 'Matriz de confusión entre los cuatro atunes, para el mejor modelo. Cada fila es el atún '
-         'real y suma 100 %. El albacora se reconoce bien, pero el aleta amarilla y el patudo se '
-         'confunden con el albacora o caen en "otra clase". Son especies muy parecidas, y es justo '
-         'donde un inspector también necesitaría mirar de cerca.')
+titulo(s, 'Resultado · lo que ningún modelo resuelve', 'Uno de cada cuatro peces falla en los cinco modelos')
+figura(s, 'g_errores.png', 120, 280, w=1680)
+figura(s, 'g_atunes.png', 120, 550, h=430)
+texto(s, 860, 580, 940, 380,
+      [[('Un tercio de esos errores ', True, INK),
+        ('es una sola especie: el marlín rayado (%d de %d), que se confunde con los otros peces de pico.'
+         % (tf.get('Striped marlin', 0), n_tf), False, MUTED)],
+       [('Los atunes ', True, INK),
+        ('se confunden entre sí (a la izquierda, ConvNeXt-T): el aleta amarilla pasa por albacora en casi '
+         'un tercio de los casos.', False, MUTED)],
+       [('Cambiar de modelo no lo arregla: ', True, WARM),
+        ('hacen falta más ejemplos de esos grupos.', False, INK)]],
+      25, line=1.3, space_after=18)
+pie(s, 'Peces de las 15 especies en la prueba limpia, semilla 0 de cada modelo · matriz: porcentaje de cada fila')
+notas(s, 'En el %s de los peces fallan los cinco modelos a la vez, y en el %s aciertan los cinco. Los '
+         'errores son en gran parte los mismos para todos los diseños. Se concentran en dos grupos de '
+         'especies parecidas: los peces de pico (el marlín rayado solo es un tercio de esos errores) y '
+         'los atunes. Como ningún diseño los resuelve, el camino no es otro modelo sino más ejemplos de '
+         'esos grupos, o reportarlos a nivel de grupo («atún», «pez de pico»).'
+      % (pct(ER['todos_fallan']), pct(ER['todos_aciertan'])))
 
 # 17 ---------------------------------------------------------------- dónde mira
 ef = PG_F['energia_en_la_caja']
@@ -600,44 +639,71 @@ notas(s, 'Probamos el "no sé" con 45 fotos de reineta, merluza y congrio de iNa
       % (pct(ch_v['rechaza_total']), pct(ch_r['rechaza_total']),
          num(ch_v['auroc_vs_test_limpio_sin_personas']), num(ch_r['auroc_vs_test_limpio_sin_personas'])))
 
-# 19 ---------------------------------------------------------------- riesgos y auditoría
+# 18b --------------------------------------------------------------- derivar
+DV = INV['derivar']['Swin-T']
 s = nueva()
-titulo(s, 'Riesgos y auditoría', 'Cinco problemas de los datos, medidos y corregidos')
-filas = [['Problema', 'Medición', 'Qué hicimos'],
-         ['Kaggle: ~21 copias por foto', '411 fotos originales en 9.000', 'Reparto por foto original'],
-         ['Kaggle: el fondo delata la especie', '%s sin ver el pez' % num(k_f['macro_f1_b']), 'Kaggle no decide'],
-         ['FishNet: fuga por lance', '%s de la prueba oficial' % pct(fg['frac_cajas'], 1), 'Prueba limpia'],
-         ['Fotos de un lance no son independientes', 'Margen hasta 4,6 veces más angosto', 'Remuestreo por lance'],
-         ['FishNet: barcos repetidos', '%s de la prueba limpia' % pct(cam['frac_cajas_camara_vista']), 'Se reporta aparte']]
-tabla(s, 120, 300, 1680, filas, [3.4, 2.8, 2.4], alto_fila=88, size=26)
-texto(s, 120, 860, 1680, 100, 'Auditoría: ningún lance ni foto original cruza de entrenamiento a prueba '
-      'en los repartos que usamos.', 26, MUTED, line=1.35)
-pie(s)
-notas(s, 'Resumen de la auditoría, que en el Avance ocupaba cuatro láminas. Lo nuevo es la última '
-         'fila: el reparto por lance limpia los casi duplicados, pero no evalúa barcos nuevos; lo '
-         'reportamos aparte.')
+titulo(s, 'Cómo usarlo hoy', 'Que responda solo cuando está seguro y derive el resto')
+figura(s, 'g_derivar.png', 120, 280, w=1240)
+cifra(s, 1420, 320, 380, pct(DV['60 %']), 'de acierto si Swin-T responde solo 6 de cada 10 peces', vsize=80, esize=24)
+cifra(s, 1420, 580, 380, pct(DV['40 %']), 'si responde 4 de cada 10', vsize=80, esize=24)
+texto(s, 1420, 820, 380, 140, 'El resto va al inspector, que hoy revisa todo.', 24, INK, bold=True, line=1.3)
+pie(s, 'Peces de la prueba limpia, ordenados por la confianza del modelo · promedio de 3 semillas')
+notas(s, 'Con un macro-F1 de 0,42 el sistema no puede reemplazar al inspector, pero sí repartir el '
+         'trabajo. Si responde solo los peces en los que más confía, acierta mucho más: con Swin-T, el '
+         '%s en los 6 de cada 10 peces más seguros y el %s en los 4 de cada 10 más seguros. El resto lo '
+         'revisa el inspector, igual que hoy. Respondiendo todo, acierta el %s. Es la forma honesta de '
+         'usar estos resultados hoy.' % (pct(DV['60 %']), pct(DV['40 %']), pct(DV['100 %'])))
+
+# 18c --------------------------------------------------------------- recomendaciones
+s = nueva(DARK)
+titulo(s, 'Recomendaciones para la Caleta Portales', ESLOGAN, oscuro=True)
+for i, (t, d) in enumerate([
+        ('Una buena foto', 'Cámara fija cerca de donde se ordena el pescado, para que cada pez ocupe más '
+                           'de 130 píxeles, y con buena luz.'),
+        ('Un modelo moderno', 'ConvNeXt-T o Swin-T: rinden más y cuestan en cómputo lo mismo que el ResNet-50. '
+                              'Combinados suben un poco más.'),
+        ('Responder solo lo seguro', 'El sistema propone en los peces que reconoce con confianza y deriva '
+                                     'el resto al inspector.')]):
+    x = 120 + i * 570
+    caja(s, x, 340, 530, 520, '16304F', None)
+    texto(s, x + 44, 380, 450, 50, '%d' % (i + 1), 44, ACCL, bold=True)
+    texto(s, x + 44, 450, 450, 60, t, 34, ONDARK, bold=True)
+    texto(s, x + 44, 530, 450, 320, d, 27, DMUTED, line=1.4)
+pie(s, oscuro=True)
+notas(s, 'Lo que se desprende de los resultados, en orden de impacto. Primero, la foto: el modelo '
+         'moderno solo marca diferencia cuando el pez se ve grande, y la cámara y la luz pesan más que el '
+         'modelo. Segundo, un modelo moderno de cualquiera de las dos familias; combinar ConvNeXt-T y '
+         'Swin-T da %s de macro-F1 (+%s sobre Swin-T solo, margen %s a %s). Tercero, usarlo como apoyo: '
+         'que responda solo cuando está seguro. Además, para los atunes y los peces de pico hacen falta '
+         'más ejemplos.'
+      % (num(INV['combinar']['ConvNeXt-T + Swin-T']['macro_f1']),
+         num(INV['margenes']['ensamble_vs_swin']['delta_medio']),
+         num(INV['margenes']['ensamble_vs_swin']['ic95'][0], 3, True),
+         num(INV['margenes']['ensamble_vs_swin']['ic95'][1], 3, True)))
 
 # 20 ---------------------------------------------------------------- conclusiones
+d_cr = VT['ConvNeXt-T - ResNet-50']
 s = nueva(DARK)
 titulo(s, 'Conclusiones', 'Qué podemos afirmar', oscuro=True)
 conc = [
-    ('A igual tamaño y época, CNN y transformer no se distinguen: DeiT-S queda a %s del ResNet-50 y '
-     'Swin-T a %s de ConvNeXt-T.'
+    ('A igual tamaño y época, CNN y transformer no se distinguen (DeiT-S %s frente al ResNet-50; Swin-T '
+     '%s frente a ConvNeXt-T).'
      % (num(VT['DeiT-S - ResNet-50']['delta_medio'], 3, True), num(VT['Swin-T - ConvNeXt-T']['delta_medio'], 3, True))),
-    ('Lo que mejora el resultado es un modelo moderno: ConvNeXt-T supera al ResNet-50 por %s, '
-     'también en barcos nuevos.' % num(d_cr['delta_medio'], 3, True)),
-    ('El mayor problema son los barcos que el modelo no vio: incluso ConvNeXt-T baja de %s a %s.'
-     % (num(cv['ConvNeXt-T']['macro_f1']), num(cn['ConvNeXt-T']['macro_f1']))),
-    'ResNet-50 y ViT-B/16 siguen al pez en una medida parecida; el ViT dice «no sé» con más acierto.',
-    'Ninguno está listo para la caleta: faltan fotos locales de reineta, merluza y congrio.',
+    ('Los modelos de diseño moderno rinden más (ConvNeXt-T %s sobre el ResNet-50), pero esa ventaja aparece '
+     'sobre todo cuando el pez se ve grande en la foto.' % num(d_cr['delta_medio'], 3, True)),
+    ('Con un buen modelo, lo que más limita es la foto: el tamaño del pez, la cámara y la luz.'),
+    ('Uno de cada cuatro peces falla en todos los modelos: atunes y peces de pico necesitan más ejemplos.'),
+    ('Hoy sirve como apoyo: responder solo lo seguro (%s de acierto en 6 de cada 10 peces) y derivar el resto.'
+     % pct(INV['derivar']['Swin-T']['60 %'])),
 ]
 for i, c in enumerate(conc):
     y = 320 + i * 124
     texto(s, 120, y, 80, 80, str(i + 1), 46, ACCL, bold=True)
-    texto(s, 220, y + 6, 1560, 120, c, 30, ONDARK, line=1.25)
+    texto(s, 220, y + 6, 1560, 120, c, 29, ONDARK, line=1.25)
 pie(s, oscuro=True)
-notas(s, 'Cada afirmación tiene su evidencia en una lámina anterior. El mensaje central son las dos '
-         'primeras: no importa tanto CNN o transformer como usar un modelo moderno.')
+notas(s, 'Cada afirmación tiene su evidencia en una lámina anterior. La respuesta a la pregunta del '
+         'título es la primera: CNN o transformer da lo mismo a igual tamaño y época. Lo que aprendimos '
+         'y no esperábamos es la segunda y la tercera: con un modelo moderno, el límite pasa a ser la foto.')
 
 # 21 ---------------------------------------------------------------- próximos pasos
 s = nueva()
@@ -645,7 +711,8 @@ titulo(s, 'Próximos pasos', 'Qué haría falta para usarlo en la caleta')
 for i, (t, d) in enumerate([
         ('Contar', 'Un detector entrenado con las cajas de FishNet, para encontrar y contar los peces '
                    'antes de clasificarlos.'),
-        ('Fotos locales', 'Fotos de la Caleta Portales con reineta, merluza y congrio marcados.'),
+        ('Fotos locales', 'Fotos de la Caleta Portales con reineta, merluza y congrio, tomadas con la '
+                          'cámara cerca y con buena luz.'),
         ('Barcos nuevos', 'Entrenar y evaluar con un reparto por cámara, para medir el rendimiento en '
                           'un barco que el modelo nunca vio.')]):
     x = 120 + i * 570
@@ -690,6 +757,23 @@ notas(s, 'Cerrar con el eslogan e invitar a preguntas. El repositorio tiene el c
          'resultados, la data card y el informe.')
 
 # ================================================================ ANEXOS
+# A0 --------------------------------------------------------------- riesgos y auditoría
+s = nueva()
+titulo(s, 'Anexo · riesgos y auditoría', 'Cinco problemas de los datos, medidos y corregidos')
+filas = [['Problema', 'Medición', 'Qué hicimos'],
+         ['Kaggle: ~21 copias por foto', '411 fotos originales en 9.000', 'Reparto por foto original'],
+         ['Kaggle: el fondo delata la especie', '%s sin ver el pez' % num(k_f['macro_f1_b']), 'Kaggle no decide'],
+         ['FishNet: fuga por lance', '%s de la prueba oficial' % pct(fg['frac_cajas'], 1), 'Prueba limpia'],
+         ['Fotos de un lance no son independientes', 'Margen hasta 4,6 veces más angosto', 'Remuestreo por lance'],
+         ['FishNet: barcos repetidos', '%s de la prueba limpia' % pct(cam['frac_cajas_camara_vista']), 'Se reporta aparte']]
+tabla(s, 120, 300, 1680, filas, [3.4, 2.8, 2.4], alto_fila=88, size=26)
+texto(s, 120, 860, 1680, 100, 'Auditoría: ningún lance ni foto original cruza de entrenamiento a prueba '
+      'en los repartos que usamos.', 26, MUTED, line=1.35)
+pie(s)
+notas(s, 'Resumen de la auditoría, que en el Avance ocupaba cuatro láminas. Lo nuevo es la última '
+         'fila: el reparto por lance limpia los casi duplicados, pero no evalúa barcos nuevos; lo '
+         'reportamos aparte.')
+
 # A1 --------------------------------------------------------------- épocas
 s = nueva()
 titulo(s, 'Anexo · entrenamiento', 'Macro-F1 de validación por época')

@@ -364,8 +364,10 @@ DeiT-S 0,354, ConvNeXt-T 0,423, Swin-T 0,424.
 - ConvNeXt-T − ResNet-50 +0,069 [+0,035, +0,105], también en barcos nuevos: lo que
   mejora el resultado es un modelo moderno. Ojo: el ResNet-50 usa otra receta (dos niveles de lr),
   así que la diferencia mezcla arquitectura y receta.
-- **Mensaje central de la entrega final:** no importa tanto CNN o transformer como usar un modelo
-  moderno. Reemplaza al «el ViT gana» del Avance.
+- **Mensaje central de la entrega final:** «Con un buen modelo, el límite es la foto.» A igual
+  tamaño y época CNN y transformer empatan; los modernos rinden más sobre todo con peces grandes en
+  la foto; la cámara y la luz pesan más que el modelo (`scripts/investigacion.py`). Se descartó «lo
+  moderno gana» porque DeiT-S, de 2021, rinde como el ResNet-50, y «el diseño importa» por obvio.
 
 ### 9.3 Entregables
 

@@ -39,10 +39,26 @@ Se compararon **cinco modelos en tres pares**, cada par con pesos de partida de 
 | Mismo tamaño | ResNet-50 | DeiT-S (22 M parámetros, como el ResNet) | ¿El ViT ganaba por ser transformer o por ser 3,4 veces más grande? |
 | Moderno | ConvNeXt-T (2022) | Swin-T (2021) | ¿El ResNet perdía por ser antiguo? |
 
-**Mensaje central de la entrega final:**
+**Mensaje central de la entrega final (eslogan: «Con un buen modelo, el límite es la foto.»):**
 
-> **A igual tamaño y época, CNN y transformer empatan. Lo que mejora el resultado es usar un
-> modelo moderno, no elegir entre CNN y transformer.**
+> **A igual tamaño y época, CNN y transformer empatan. Los modelos de diseño moderno rinden más,
+> pero sobre todo cuando el pez se ve grande en la foto. Con un buen modelo, lo que más limita es
+> la foto: el tamaño del pez, la cámara y la luz.**
+
+Hallazgos que sostienen el eslogan (`scripts/investigacion.py`, prueba limpia):
+- **Tamaño del pez en la foto:** con peces de menos de 80 píxeles, Swin-T acierta 38 % y el
+  ResNet-50 32 % (+6 puntos); con peces de 130 a 220 píxeles, 71 % contra 51 % (+20 puntos). Pasa
+  también dentro de una misma especie: albacoras grandes, 93 % contra 35 %.
+- **Cámara y luz:** con el mismo modelo (ConvNeXt-T), el acierto va de 36 % a 83 % según la
+  cámara. Swin-T acierta 52 % en los recortes más oscuros y 70 % en los más claros.
+- **Errores compartidos:** el 25 % de los peces falla en los cinco modelos; un tercio de esos es
+  el marlín rayado y otra parte son atunes. Faltan datos, no un modelo mejor.
+- **Uso realista:** si Swin-T responde solo el 60 % de los peces en que más confía, acierta el
+  83 %; con el 40 %, el 91 %. El resto va al inspector.
+- **Combinar ConvNeXt-T y Swin-T:** 0,445 de macro-F1 (+0,021, margen +0,002 a +0,042).
+- **Ojo:** DeiT-S es de 2021 como Swin-T, pero mantiene el diseño del ViT original y rinde como
+  el ResNet-50. Por eso el mensaje no es «lo más nuevo gana», sino que el modelo moderno solo marca
+  diferencia si la foto le da detalle.
 
 El Avance decía «el ViT gana». Eso sigue siendo cierto para el par original, pero los pares
 nuevos muestran que esa ventaja no viene de la atención del transformer.

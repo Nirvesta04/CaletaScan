@@ -26,6 +26,7 @@ cinco modelos en tres pares con preentrenamiento parejo.
 | Mismo tamaño · ResNet-50 vs DeiT-S | DeiT-S 0,354; diferencia +0,003 [-0,036, +0,040]: no se distinguen |
 | Par moderno · ConvNeXt-T vs Swin-T | 0,423 vs 0,424; diferencia -0,001 [-0,029, +0,027]: no se distinguen |
 | Moderno vs antiguo | ConvNeXt-T − ResNet-50 +0,069 [+0,035, +0,105]: lo que mejora el resultado es un modelo moderno, no la familia |
+| Qué significan | con un buen modelo, el límite es la foto: la ventaja moderna crece con el tamaño del pez (+6 a +20 puntos de acierto), la cámara cambia el acierto de 36 % a 83 %; ver `scripts/investigacion.py` |
 | Robustez | con los atunes agrupados y en cámaras no vistas, la ventaja del ViT deja de distinguirse |
 | Kaggle | ResNet y ViT no se distinguen; sin ver el pez, las dos redes aciertan ~97 % |
 | Interpretabilidad | Kaggle (máscaras) y FishNet (cajas, pez en posición al azar y control barajado) |

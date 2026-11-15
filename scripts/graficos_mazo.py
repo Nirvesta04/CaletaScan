@@ -293,6 +293,118 @@ def g_composicion():
     guardar(fig, "g_composicion.png")
 
 
+# ---------------------------------------------------------------- investigacion
+def _inv():
+    with open(os.path.join(RUNS, "investigacion.json"), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def g_tamano():
+    I = _inv()["tamano"]
+    tr = list(I)
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    x = np.arange(len(tr))
+    for m in ORDEN:
+        v = [I[t][m]["acierto"] for t in tr]
+        grueso = m in ("ResNet-50", "Swin-T", "ConvNeXt-T")
+        ax.plot(x, v, "-o", color=COL[m], lw=3.5 if grueso else 1.6, ms=9 if grueso else 5,
+                alpha=1 if grueso else 0.55, label=m)
+        if grueso:
+            ax.text(x[-1] + 0.08, v[-1], m, va="center", fontsize=12, color=COL[m], fontweight="bold")
+    ax.set_xticks(x, ["%s\n(%d peces)" % (t, I[t]["cajas_especie"]) for t in tr], fontsize=12.5)
+    ax.set_xlim(-0.3, len(tr) - 0.2)
+    ax.set_ylim(0.2, 0.8)
+    ax.set_yticks([.2, .3, .4, .5, .6, .7, .8], ["20 %", "30 %", "40 %", "50 %", "60 %", "70 %", "80 %"])
+    ax.set_ylabel("acierto en peces de las 15 especies")
+    ax.set_xlabel("tamaño del pez en la foto (lado corto de la caja, en píxeles)")
+    ax.grid(axis="y", color=GRID)
+    ax.set_axisbelow(True)
+    ax.legend(frameon=False, fontsize=11, loc="upper left", ncol=5)
+    limpio(ax)
+    guardar(fig, "g_tamano.png")
+
+
+def g_camaras_acierto():
+    I = _inv()["camaras"]
+    cams = sorted(I["ConvNeXt-T"]["por_camara"], key=lambda c: I["ConvNeXt-T"]["por_camara"][c])
+    fig, ax = plt.subplots(figsize=(9, 5.2))
+    for i, c in enumerate(cams):
+        a, b = I["ResNet-50"]["por_camara"][c], I["ConvNeXt-T"]["por_camara"][c]
+        ax.plot([a, b], [i, i], color=GRID, lw=5, zorder=1)
+        ax.scatter([a], [i], s=140, color=COL["ResNet-50"], zorder=2)
+        ax.scatter([b], [i], s=140, color=COL["ConvNeXt-T"], zorder=2)
+    ax.set_yticks(range(len(cams)), ["cámara %s" % c for c in cams], fontsize=12)
+    ax.set_xlim(0, 1)
+    ax.set_xticks([0, .25, .5, .75, 1], ["0 %", "25 %", "50 %", "75 %", "100 %"])
+    ax.set_xlabel("acierto en peces de las 15 especies, por cámara")
+    ax.scatter([], [], s=100, color=COL["ResNet-50"], label="ResNet-50")
+    ax.scatter([], [], s=100, color=COL["ConvNeXt-T"], label="ConvNeXt-T")
+    ax.legend(frameon=False, loc="lower right", fontsize=12)
+    ax.grid(axis="x", color=GRID)
+    ax.set_axisbelow(True)
+    limpio(ax, ("top", "right", "left"))
+    ax.tick_params(axis="y", length=0)
+    guardar(fig, "g_camaras_acierto.png")
+
+
+def g_luz():
+    I = _inv()["luz"]
+    fig, ax = plt.subplots(figsize=(7, 5.2))
+    tr = ["oscuro", "medio", "claro"]
+    x = np.arange(3)
+    for k, m in enumerate(("ResNet-50", "Swin-T")):
+        v = [I[t][m] for t in tr]
+        ax.bar(x + (k - 0.5) * 0.38, v, 0.36, color=COL[m], label=m)
+        for i, yv in enumerate(v):
+            ax.text(i + (k - 0.5) * 0.38, yv + 0.012, "%d %%" % round(100 * yv), ha="center", fontsize=13,
+                    fontweight="bold", color=INK)
+    ax.set_xticks(x, ["foto oscura", "media", "clara"], fontsize=13)
+    ax.set_ylim(0, 0.85)
+    ax.set_yticks([0, .2, .4, .6, .8], ["0 %", "20 %", "40 %", "60 %", "80 %"])
+    ax.set_ylabel("acierto en peces de las 15 especies")
+    ax.legend(frameon=False, loc="upper left", fontsize=12)
+    limpio(ax)
+    guardar(fig, "g_luz.png")
+
+
+def g_errores():
+    E_ = _inv()["errores"]
+    todos_ok, todos_mal = E_["todos_aciertan"], E_["todos_fallan"]
+    alguno = 1 - todos_ok - todos_mal
+    fig, ax = plt.subplots(figsize=(14, 1.9))
+    izq = 0
+    for v, col, t in ((todos_ok, "#0C6F66", "los cinco aciertan"), (alguno, "#C9CFD4", "aciertan algunos"),
+                      (todos_mal, "#B3541E", "los cinco fallan")):
+        ax.barh(0, v, left=izq, color=col, height=0.6)
+        ax.text(izq + v / 2, 0, "%d %%\n%s" % (round(100 * v), t), ha="center", va="center", fontsize=14,
+                fontweight="bold", color="white" if col != "#C9CFD4" else INK)
+        izq += v
+    ax.set_xlim(0, 1)
+    ax.axis("off")
+    guardar(fig, "g_errores.png")
+
+
+def g_derivar():
+    I = _inv()["derivar"]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    for m in ("ResNet-50", "ViT-B/16", "ConvNeXt-T", "Swin-T"):
+        d = I[m]
+        cob = [int(k.split()[0]) for k in d]
+        ax.plot(cob, list(d.values()), "-o", color=COL[m], lw=3 if m in ("Swin-T", "ResNet-50") else 1.6,
+                ms=7, label=m)
+    ax.invert_xaxis()
+    ax.set_xticks([100, 80, 60, 40, 20], ["100 %", "80 %", "60 %", "40 %", "20 %"])
+    ax.set_yticks([.5, .6, .7, .8, .9, 1], ["50 %", "60 %", "70 %", "80 %", "90 %", "100 %"])
+    ax.set_ylim(0.5, 1.0)
+    ax.set_xlabel("peces que el sistema responde solo (el resto va al inspector)")
+    ax.set_ylabel("acierto en los que responde")
+    ax.legend(frameon=False, loc="lower right", fontsize=12)
+    ax.grid(color=GRID)
+    ax.set_axisbelow(True)
+    limpio(ax)
+    guardar(fig, "g_derivar.png")
+
+
 def main():
     os.makedirs(FIGS, exist_ok=True)
     g_modelos()
@@ -303,6 +415,11 @@ def main():
     g_kaggle()
     g_nose()
     g_composicion()
+    g_tamano()
+    g_camaras_acierto()
+    g_luz()
+    g_errores()
+    g_derivar()
     with open(os.path.join(RUNS, "oficial_por_modelo.json"), "w", encoding="utf-8") as fh:
         json.dump(of, fh, indent=2, ensure_ascii=False)
 
