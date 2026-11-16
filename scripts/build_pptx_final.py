@@ -158,8 +158,14 @@ def pie(s, izq='', oscuro=False):
     texto(s, 1680, 1010, 120, 40, str(N[0]), 22, col, align='r')
 
 
+# El mazo que se entrega va sin notas del orador: el guion de cada parte esta en
+# un documento aparte. Los textos de notas se conservan aqui como referencia.
+CON_NOTAS = False
+
+
 def notas(s, t):
-    s.notes_slide.notes_text_frame.text = t
+    if CON_NOTAS:
+        s.notes_slide.notes_text_frame.text = t
 
 
 def imagen(s, ruta, x, y, w=None, h=None):
