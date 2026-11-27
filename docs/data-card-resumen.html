@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Data card · Caleta-Scan</title>
+<style>
+@page{size:A4;margin:13mm 14mm}
+body{font-family:"Segoe UI",Arial,sans-serif;color:#0D2240;font-size:8.6pt;line-height:1.35;margin:0}
+h1{font-size:14pt;margin:0}
+.sub{color:#62708A;margin:1px 0 7px}
+h2{font-size:9.6pt;margin:8px 0 3px;color:#0F6B63;text-transform:uppercase;letter-spacing:.04em}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid #D5DCE6;padding:3px 5px;text-align:left;vertical-align:top}
+th{background:#0D2240;color:#fff;font-weight:600}
+ul{margin:2px 0 0;padding-left:15px} li{margin:1.5px 0}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+p{margin:2px 0}
+.pie{color:#62708A;font-size:7.6pt;margin-top:7px;border-top:1px solid #D5DCE6;padding-top:4px}
+</style>
+</head>
+<body>
+<h1>Data card · Caleta-Scan</h1>
+<p class="sub">G3 · Aprendizaje Automático II, PUCV · versión 1.1, 27-nov-2026 · versión extendida en <code>docs/data-card.pdf</code></p>
+
+<h2>Origen, licencia y número de imágenes</h2>
+<table>
+<thead><tr><th>Fuente</th><th>Qué es</th><th>Licencia</th><th>Imágenes usadas</th><th>Para qué</th></tr></thead>
+<tbody>
+<tr><td><b>FishNet Open Images</b> v1.0.0<br>Kay y Merrifield, 2021</td>
+<td>Cámaras fijas de monitoreo electrónico sobre la cubierta de barcos pesqueros, de día y de noche</td>
+<td>CC BY-SA 4.0</td>
+<td>20.002 de 143.818 imágenes, 77 cámaras → 99.019 cajas anotadas; 20 clases, 15 de ellas especies</td>
+<td>Entrenar y comparar los cinco modelos</td></tr>
+<tr><td><b>A Large Scale Fish Dataset</b> (Kaggle)<br>Ulucan et al., 2020</td>
+<td>Pescado de supermercado (Esmirna) fotografiado sobre una superficie de estudio</td>
+<td>CC BY 4.0</td>
+<td>9.000 imágenes de 9 especies, que son rotaciones y espejados de 411 fotos originales</td>
+<td>Entorno controlado: atajos e interpretabilidad</td></tr>
+<tr><td><b>iNaturalist</b></td>
+<td>Fotos de observadores de reineta, merluza y congrio</td>
+<td>CC0, CC BY o CC BY-NC</td>
+<td>45 fotos</td>
+<td>Solo prueba del «no sé»; no se entrena con ellas</td></tr>
+</tbody>
+</table>
+
+<h2>División train / val / test</h2>
+<div class="dos">
+<p><b>FishNet:</b> se respeta el split oficial (72.885 / 12.927 / 13.207 cajas), pero ese split mezcla
+fotogramas del mismo lance entre train y test. Quitamos de val y test toda caja cuyo lance aparece en
+train. <b>Prueba limpia: 7.159 cajas de 612 lances</b>, que es donde se reportan todos los resultados.</p>
+<p><b>Kaggle:</b> se divide por foto original, no por imagen, para que las rotaciones de una misma foto no
+queden a ambos lados: 287 / 62 / 62 fotos (6.328 / 1.336 / 1.336 imágenes). Ninguna foto cruza particiones.</p>
+</div>
+
+<h2>Sesgos conocidos</h2>
+<div class="dos">
+<ul>
+<li><b>Ninguna especie chilena.</b> Reineta, merluza y congrio no están en los datos; ante ellas los modelos
+dicen «no sé» o las confunden casi siempre con atún aleta amarilla.</li>
+<li><b>Fuga en el split oficial.</b> El 45,8 % de las cajas de prueba comparte lance con entrenamiento e infla
+el macro-F1 entre 59 % y 77 %.</li>
+<li><b>Cámaras.</b> El 69 % de la prueba limpia viene de cámaras que no están en entrenamiento; con el mismo
+modelo el acierto va de 36 % a 83 % según la cámara.</li>
+<li><b>Luz.</b> Con recortes oscuros Swin-T acierta 52 %; con recortes claros, 70 %.</li>
+</ul>
+<ul>
+<li><b>Tamaño del pez.</b> La mitad de las cajas tiene el lado corto bajo 130 px. Con peces chicos la foto trae
+poco detalle: la ventaja de Swin-T sobre ResNet-50 baja de 20 a 6 puntos de acierto.</li>
+<li><b>Desbalance.</b> Atún aleta amarilla tiene 8.267 cajas de entrenamiento y pez lanceta 106 (78 veces menos).
+Por eso se mide con macro-F1.</li>
+<li><b>Personas.</b> El 53,7 % de las cajas de entrenamiento son tripulantes. No se redistribuyen imágenes y
+las fotos mostradas llevan las caras difuminadas.</li>
+<li><b>Kaggle: el fondo delata la especie.</b> Sin ver el pez (borrado con la máscara), los modelos llegan
+a macro-F1 0,97: cada especie se fotografió sobre su propio fondo.</li>
+</ul>
+</div>
+
+<p class="pie">Los splits se regeneran con <code>python scripts/build_splits.py</code> y están versionados en
+<code>data/splits/</code>. Las cifras de sesgo salen de <code>runs/analisis_final.json</code>,
+<code>runs/investigacion.json</code> y <code>runs/auditoria.json</code>.</p>
+</body>
+</html>

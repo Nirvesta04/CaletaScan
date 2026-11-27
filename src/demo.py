@@ -44,7 +44,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from . import calibrate as C
 from . import data, models
@@ -63,10 +63,34 @@ MODELOS = (("Swin-T", "swin_t", "e12_swin_t_fishnet"),   # de mejor a peor macro
            ("ResNet-50", "resnet50", "e4_resnet50_fishnet"))
 
 
+
+def _difuminar_cabezas(img: Image.Image, cajas: list[dict], frac: float = 0.40) -> Image.Image:
+    """Difumina el 40 % superior de cada caja Human, donde va la cabeza (igual que
+    scripts/figuras_mazo.py). Tapar la caja entera borraria los peces en las manos."""
+    for c in cajas:
+        if c["gt"] != "Human":
+            continue
+        w, h = c["x1"] - c["x0"], c["y1"] - c["y0"]
+        b = (max(0, int(c["x0"] - .10 * w)), max(0, int(c["y0"] - .10 * h)),
+             min(img.width, int(c["x1"] + .10 * w)), min(img.height, int(c["y0"] + frac * h)))
+        if b[2] > b[0] and b[3] > b[1]:
+            img.paste(img.crop(b).filter(ImageFilter.GaussianBlur(22)), b[:2])
+    return img
+
+
+def _tiene_marca(path: str) -> bool:
+    """Camaras con el aviso de confidencialidad del proveedor sobreimpreso arriba a la izquierda."""
+    with Image.open(os.path.join(ROOT, path)) as im:
+        w, h = im.size
+        franja = np.asarray(im.convert("L").crop((0, 0, int(w * 0.33), max(4, h // 100))))
+    return franja.mean() > 200
+
+
 class Motor:
     """Modelos cargados, umbrales de rechazo y el pipeline de una prediccion."""
 
-    def __init__(self, device: str | None = None):
+    def __init__(self, device: str | None = None, difuminar: bool = False):
+        self.difuminar = difuminar
         self.dev = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.ds = data.fishnet()
         self.clases = self.ds["train"].classes
@@ -115,6 +139,8 @@ class Motor:
             # sin los datos crudos (repositorio recien clonado + pesos del release)
             # no hay fotos de ejemplo; la demo sigue funcionando subiendo una foto
             if not os.path.exists(os.path.join(ROOT, fila["path"])):
+                continue
+            if self.difuminar and _tiene_marca(fila["path"]):
                 continue
             vistas.add(fila["label_model"])
             cajas = df[df["path"] == fila["path"]]
@@ -210,6 +236,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "indice fuera de rango"}, 404)
             # la ruta viene del CSV del proyecto, no del cliente: no hay travesia
             img = Image.open(os.path.join(ROOT, self.motor.muestras[i]["path"])).convert("RGB")
+            if self.motor.difuminar:            # solo lo que se muestra; se clasifica la foto original
+                img = _difuminar_cabezas(img, self.motor.muestras[i]["cajas"])
             b = io.BytesIO()
             img.save(b, "JPEG", quality=88)
             return self._enviar(200, "image/jpeg", b.getvalue())
@@ -240,10 +268,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--puerto", type=int, default=PUERTO)
     ap.add_argument("--cpu", action="store_true", help="forzar CPU (escenario caleta sin GPU)")
+    ap.add_argument("--difuminar", action="store_true",
+                    help="para mostrar en publico: difumina las cabezas de los tripulantes y omite "
+                         "las camaras con aviso de confidencialidad")
     args = ap.parse_args()
 
     print("cargando modelos...", flush=True)
-    Handler.motor = Motor("cpu" if args.cpu else None)
+    Handler.motor = Motor("cpu" if args.cpu else None, difuminar=args.difuminar)
     m = Handler.motor
     print("listo en %s · tau %s · umbral de energia %s"
           % (m.dev, {k: round(v, 2) for k, v in m.tau.items()},

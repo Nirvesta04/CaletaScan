@@ -32,9 +32,9 @@ cinco modelos en tres pares con preentrenamiento parejo.
 | Interpretabilidad | Kaggle (máscaras) y FishNet (cajas, pez en posición al azar y control barajado) |
 | «No sé» | umbral de energía elegido en validación; el ViT rechaza mejor peces ajenos y especies chilenas |
 | Velocidad | ViT-B/16 2,7× más lento en CPU (119 vs 43 ms por pez) sin cambiar qué es factible |
-| Demo | `python -m src.demo` compara los cinco modelos en vivo sobre la misma caja, con «no sé» |
+| Demo | video de 2 minutos en `docs/Caleta-Scan-demo.mp4`; en vivo, `python -m src.demo` compara los cinco modelos sobre la misma caja, con «no sé» |
 | Informe técnico | `docs/informe.html` y `docs/informe.pdf` (6 páginas) |
-| Data card | `docs/data-card.html` y `docs/data-card.pdf` |
+| Data card | media página en `docs/data-card-resumen.pdf`; versión extendida en `docs/data-card.pdf` |
 | Tabla de métricas | `docs/tabla-metricas.md` (también `.pdf` y `runs/tabla_metricas.csv`) |
 
 ---
@@ -44,9 +44,9 @@ cinco modelos en tres pares con preentrenamiento parejo.
 | Entregable | Dónde |
 |---|---|
 | Repositorio de código | este repositorio: [`README.md`](README.md) y [`requirements.txt`](requirements.txt) |
-| Data card | [`docs/data-card.html`](docs/data-card.html) · [`docs/data-card.pdf`](docs/data-card.pdf) |
+| Data card (media página) | [`docs/data-card-resumen.pdf`](docs/data-card-resumen.pdf): origen, licencias, número de imágenes, división train/val/test y sesgos conocidos. Versión extendida: [`docs/data-card.pdf`](docs/data-card.pdf) |
 | Modelos comparados y tabla de métricas | [`docs/tabla-metricas.md`](docs/tabla-metricas.md) · [`.pdf`](docs/tabla-metricas.pdf) · [`runs/tabla_metricas.csv`](runs/tabla_metricas.csv); configuración de cada modelo en `configs/e4`, `e5`, `e10`, `e11` y `e12`, y sus métricas por semilla en `runs/<exp>/seed<n>/metrics.json` |
-| Demo | [`src/demo.py`](src/demo.py) + [`src/demo.html`](src/demo.html): `python -m scripts.bajar_pesos` y luego `python -m src.demo`, abrir http://127.0.0.1:8000. Clasifica la misma caja con los cinco modelos |
+| Demo funcional | **Video de 2 minutos:** [`docs/Caleta-Scan-demo.mp4`](docs/Caleta-Scan-demo.mp4), la demo en acción sobre fotos que los modelos no vieron. **En vivo:** [`src/demo.py`](src/demo.py) + [`src/demo.html`](src/demo.html): `python -m scripts.bajar_pesos` y luego `python -m src.demo`, abrir http://127.0.0.1:8000 (`--difuminar` para mostrarla en público). Clasifica la misma caja con los cinco modelos |
 | Presentación interactiva (ExpoData) | https://claude.ai/artifact/KhJuDhZtCWiNUYYNfiQxQU: los resultados para público general, con juegos y controles. Complementa la demo: no corre los modelos, sus cifras vienen de `runs/` |
 | Informe técnico (6 páginas) | [`docs/informe.pdf`](docs/informe.pdf) · [`docs/informe.html`](docs/informe.html) |
 | Láminas de la presentación final | [`docs/Caleta-Scan-Final-G3.pdf`](docs/Caleta-Scan-Final-G3.pdf) · [`.pptx`](docs/Caleta-Scan-Final-G3.pptx) |
@@ -155,6 +155,8 @@ data/
   chile_creditos.csv  autor y licencia de las 45 fotos chilenas
 docs/
   informe.html / .pdf  informe técnico final (4 a 6 páginas)
+  data-card-resumen.pdf  data card de media página
+  Caleta-Scan-demo.mp4  video de la demo (2 min)
   data-card.html / .pdf  qué contienen los datos, de dónde salieron, qué curamos
                       nosotros y qué no se puede concluir con ellos
   tabla-metricas.md / .pdf  los cinco modelos y sus comparaciones pareadas
@@ -202,8 +204,8 @@ BITACORA.md     documento de traspaso: estado, decisiones cerradas y hallazgos
 
 **Privacidad.** FishNet es monitoreo electrónico a bordo y el 54 % de su entrenamiento
 son tripulantes. No se redistribuyen los datos crudos ni las figuras de trabajo con fotos
-(`docs/figs_privadas/`). Las únicas fotos publicadas son las de la presentación final y la
-de la ExpoData: pocas, con las caras difuminadas, sin los fotogramas que traen el aviso de
+(`docs/figs_privadas/`). Las únicas fotos publicadas son las de la presentación final, el video
+de la demo y la presentación de la ExpoData: pocas, con las caras difuminadas, sin los fotogramas que traen el aviso de
 confidencialidad del proveedor y con la atribución CC BY-SA 4.0 de FishNet.
 
 ---

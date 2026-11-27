@@ -21,6 +21,18 @@
         "src.demo"
       ],
       "port": 8000
+    },
+    {
+      "name": "demo-publica",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "src.demo",
+        "--difuminar",
+        "--puerto",
+        "8002"
+      ],
+      "port": 8002
     }
   ]
 }
