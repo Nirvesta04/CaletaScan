@@ -24,10 +24,17 @@ SHA256 = "b34766b66f3dc65264f67fd39fe063159f72e2fe0915cbfba8681dae8e09e03c"
 DESTINO = os.path.join(ROOT, "runs", "caleta-scan-pesos.zip")
 
 
+_ultimo = [-1]
+
+
 def progreso(bloques, tam_bloque, total):
-    if total > 0:
-        hecho = min(bloques * tam_bloque, total)
-        sys.stdout.write("\r  %5.1f %%  (%d de %d MB)" % (100 * hecho / total, hecho >> 20, total >> 20))
+    if total <= 0:
+        return
+    hecho = min(bloques * tam_bloque, total)
+    pct = int(100 * hecho / total)
+    if pct != _ultimo[0]:                  # una linea por punto porcentual, no por bloque
+        _ultimo[0] = pct
+        sys.stdout.write("\r  %3d %%  (%d de %d MB)" % (pct, hecho >> 20, total >> 20))
         sys.stdout.flush()
 
 
