@@ -156,6 +156,8 @@ async function init() {
     tiras.appendChild(im);
   });
   if (muestras.length) elegir(0);
+  else $('#res').innerHTML = '<p class="cargando">No están las fotos de FishNet en data/raw/: sube una foto ' +
+    'de un pez con «Subir una foto».</p>';
 }
 
 function elegir(i) {

@@ -46,9 +46,10 @@ cinco modelos en tres pares con preentrenamiento parejo.
 | Repositorio de código | este repositorio: [`README.md`](README.md) y [`requirements.txt`](requirements.txt) |
 | Data card | [`docs/data-card.html`](docs/data-card.html) · [`docs/data-card.pdf`](docs/data-card.pdf) |
 | Modelos comparados y tabla de métricas | [`docs/tabla-metricas.md`](docs/tabla-metricas.md) · [`.pdf`](docs/tabla-metricas.pdf) · [`runs/tabla_metricas.csv`](runs/tabla_metricas.csv); configuración de cada modelo en `configs/e4`, `e5`, `e10`, `e11` y `e12`, y sus métricas por semilla en `runs/<exp>/seed<n>/metrics.json` |
-| Demo | [`src/demo.py`](src/demo.py) + [`src/demo.html`](src/demo.html): `python -m src.demo` y abrir http://127.0.0.1:8000 (necesita los pesos en `runs/`, ver abajo) |
+| Demo | [`src/demo.py`](src/demo.py) + [`src/demo.html`](src/demo.html): `python -m scripts.bajar_pesos` y luego `python -m src.demo`, abrir http://127.0.0.1:8000. Clasifica la misma caja con los cinco modelos |
+| Presentación interactiva (ExpoData) | https://claude.ai/artifact/KhJuDhZtCWiNUYYNfiQxQU: los resultados para público general, con juegos y controles. Complementa la demo: no corre los modelos, sus cifras vienen de `runs/` |
 | Informe técnico (6 páginas) | [`docs/informe.pdf`](docs/informe.pdf) · [`docs/informe.html`](docs/informe.html) |
-| Láminas de la presentación final | se entregan aparte: llevan fotos de FishNet con tripulantes y no se publican aquí (ver «Privacidad») |
+| Láminas de la presentación final | [`docs/Caleta-Scan-Final-G3.pdf`](docs/Caleta-Scan-Final-G3.pdf) · [`.pptx`](docs/Caleta-Scan-Final-G3.pptx) |
 
 **Los cinco modelos, prueba limpia de FishNet** (macro-F1 sobre 15 especies, promedio de 3 semillas,
 margen 95 % por bootstrap de lances):
@@ -64,8 +65,12 @@ margen 95 % por bootstrap de lances):
 La tabla completa, con las comparaciones pareadas, está en `docs/tabla-metricas.md`.
 
 **Pesos.** Los puntos de control (`runs/<exp>/seed<n>/checkpoint.pt`, de 83 MB a 328 MB
-cada uno; 2,1 GB las quince corridas) no se versionan por tamaño. Se regeneran con el paso 4
-de «Cómo reproducir». La demo solo usa la semilla 0 de cada modelo (712 MB en total).
+cada uno) no se versionan por tamaño. Los de la semilla 0 de los cinco modelos, junto con
+los logits que la demo usa para fijar τ y el umbral del «no sé», están en el
+[release v1.0](https://github.com/Nirvesta04/CaletaScan/releases/tag/v1.0) (742 MB):
+`python -m scripts.bajar_pesos` los baja, verifica y deja en `runs/`. Sin los datos crudos
+la demo no muestra fotos de ejemplo, pero clasifica las que se suban. Para regenerar todo
+desde cero, el paso 4 de «Cómo reproducir».
 
 ---
 
@@ -135,8 +140,8 @@ python -m scripts.build_informe             # docs/informe.html y .pdf
 python -m scripts.figuras_mazo && python -m scripts.graficos_mazo && python -m scripts.build_pptx_final   # mazo en entrega/
 ```
 
-El mazo final lleva fotos de los datasets y se escribe en `entrega/`, que no se
-versiona (ver «Privacidad»).
+El mazo se escribe en `entrega/`, que no se versiona; la versión presentada está copiada en
+`docs/Caleta-Scan-Final-G3.pptx` y `.pdf` (ver «Privacidad»).
 
 ---
 
@@ -154,6 +159,7 @@ docs/
                       nosotros y qué no se puede concluir con ellos
   tabla-metricas.md / .pdf  los cinco modelos y sus comparaciones pareadas
   plan-modelos.html   protocolo de modelado del Avance, con su discusión completa
+  Caleta-Scan-Final-G3.pdf / .pptx  la presentación final
   contexto-para-ia.md archivo de contexto para estudiar el proyecto con un asistente
   figs/               figuras sin fotos (matrices de confusión, diferencias)
   Caleta-Scan-Avance-G3.pptx  la presentación del Avance
@@ -161,6 +167,7 @@ runs/<exp>/seed<n>/   config.yaml y metrics.json versionados; logits y pesos no
 runs/*.json           resultados agregados de cada análisis
 scripts/
   download_fishnet_subset.py, build_splits.py
+  bajar_pesos.py      baja del release los pesos que usa la demo
   entrenar_pares.py   entrena E10-E12, se puede detener y retomar
   analisis_final.py   tablas de la entrega final
   tabla_metricas.py   tabla de métricas de los cinco modelos
@@ -194,8 +201,10 @@ BITACORA.md     documento de traspaso: estado, decisiones cerradas y hallazgos
 **CC BY-SA es vírica:** un derivado combinado que se redistribuya arrastraría ShareAlike.
 
 **Privacidad.** FishNet es monitoreo electrónico a bordo y el 54 % de su entrenamiento
-son tripulantes. No se redistribuyen imágenes: ni los datos crudos, ni las figuras con
-fotos (`docs/figs_privadas/`), ni el mazo con fotos (`entrega/`).
+son tripulantes. No se redistribuyen los datos crudos ni las figuras de trabajo con fotos
+(`docs/figs_privadas/`). Las únicas fotos publicadas son las de la presentación final y la
+de la ExpoData: pocas, con las caras difuminadas, sin los fotogramas que traen el aviso de
+confidencialidad del proveedor y con la atribución CC BY-SA 4.0 de FishNet.
 
 ---
 

@@ -112,6 +112,10 @@ class Motor:
         for _, fila in d.iterrows():                      # una foto por especie
             if fila["label_model"] in vistas:
                 continue
+            # sin los datos crudos (repositorio recien clonado + pesos del release)
+            # no hay fotos de ejemplo; la demo sigue funcionando subiendo una foto
+            if not os.path.exists(os.path.join(ROOT, fila["path"])):
+                continue
             vistas.add(fila["label_model"])
             cajas = df[df["path"] == fila["path"]]
             elegidas.append({
