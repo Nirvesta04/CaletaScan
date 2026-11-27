@@ -10,10 +10,10 @@ proposito.
 
 Que hace, y por que asi:
 
-- Corre las DOS arquitecturas sobre la misma caja y las muestra lado a lado con
-  su latencia. La demo no es "un clasificador": es el experimento del proyecto.
-- Cada modelo trae su propio ajuste de logits (tau elegido en validacion: 0,18
-  el ResNet, 0,05 el ViT) porque esa es la regla de decision que se reporto.
+- Corre los CINCO modelos comparados sobre la misma caja y los muestra uno bajo
+  otro, de mejor a peor macro-F1, con su latencia. La demo no es "un clasificador": es el experimento del proyecto.
+- Cada modelo trae su propio ajuste de logits (tau elegido en validacion: de
+  0,03 el ConvNeXt a 0,18 el ResNet) porque esa es la regla de decision que se reporto.
 - Cada modelo puede decir NO SE. El umbral es la energia que deja pasar el 95 % de
   los recortes de val limpios que no son personas (elegido en validacion). Sobre
   peces de otro dominio el ViT rechaza bastante mas que el ResNet (27 % contra
@@ -28,7 +28,7 @@ Que hace, y por que asi:
 Sobre los milisegundos que muestra: son los de ESA llamada, con la GPU
 despertando entre peticiones separadas por el trabajo de la interfaz. Salen 3
 a 5 veces por encima del benchmark de §11, donde las llamadas van seguidas y
-la GPU se mantiene caliente. Sirven para comparar las dos arquitecturas entre
+la GPU se mantiene caliente. Sirven para comparar los modelos entre
 si en el mismo momento, no como medicion de latencia: esa es la de §11.
 """
 
@@ -56,8 +56,11 @@ PUERTO = 8000
 N_MUESTRAS = 12
 TPR = 0.95          # el umbral de rechazo conserva el 95 % del test limpio
 
-MODELOS = (("ResNet-50", "resnet50", "e4_resnet50_fishnet"),
-           ("ViT-B/16", "vit_b_16", "e5_vit_b_16_fishnet"))
+MODELOS = (("Swin-T", "swin_t", "e12_swin_t_fishnet"),   # de mejor a peor macro-F1 en la prueba limpia
+           ("ConvNeXt-T", "convnext_t", "e11_convnext_t_fishnet"),
+           ("ViT-B/16", "vit_b_16", "e5_vit_b_16_fishnet"),
+           ("DeiT-S", "deit_s", "e10_deit_s_fishnet"),
+           ("ResNet-50", "resnet50", "e4_resnet50_fishnet"))
 
 
 class Motor:

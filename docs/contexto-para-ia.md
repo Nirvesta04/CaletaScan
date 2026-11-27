@@ -607,7 +607,7 @@ el 5,4 % *de* 95.
 - Calibración y detección de «no sé».
 - Velocidad vs precisión.
 - Interpretabilidad (pointing game).
-- **Demo funcional** que corre las dos arquitecturas en vivo (`python -m src.demo` →
+- **Demo funcional** que corre los cinco modelos en vivo sobre la misma caja (`python -m src.demo` →
   http://127.0.0.1:8000). Solo biblioteca estándar, sin gradio ni streamlit.
 - Informe técnico y data card.
 
